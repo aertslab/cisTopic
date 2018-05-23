@@ -5,7 +5,8 @@
 \title{Initialize and setup the cisTopic object}
 \usage{
 createcisTopicObject(count.matrix, project.name = "cisTopicProject",
-  min.cells = 1, min.regions = 1, is.acc = 0, ...)
+  min.cells = 1, min.regions = 1, is.acc = 0, keepCountsMatrix = TRUE,
+  ...)
 }
 \arguments{
 \item{count.matrix}{Count matrix containing cells as rows and regions as columns. The row names must be the coordinates in position format (e.g. chr1:110-610).}
@@ -18,6 +19,9 @@ createcisTopicObject(count.matrix, project.name = "cisTopicProject",
 
 \item{is.acc}{Number of counts necessary to consider a region as accessible. When using single cell methylation data, this threshold
 represents the beta value from which above regions will be considered methylated.}
+
+\item{keepCountsMatrix}{Whether to keep the counts matrix or not inside the object. For large matrices, we recommend to set this
+to FALSE.}
 
 \item{...}{Ignored}
 }

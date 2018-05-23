@@ -20,9 +20,9 @@
 #' @examples
 #' bamfiles <- c('example_1.bam', 'example_2.bam', 'example_3.bam')
 #' regions <- 'example.bed'
-#' cisTopicObject <- createcisTopicObjectfromBAM(bamfiles, regions)
+#' cisTopicObject <- createcisTopicObjectFromBAM(bamfiles, regions)
 #' cisTopicObject
-createcisTopicObjectfromBAM <- function(
+createcisTopicObjectFromBAM <- function(
   bamfiles,
   regions,
   project.name = "cisTopicProject",
@@ -60,7 +60,7 @@ createcisTopicObjectfromBAM <- function(
   Total_reads <- as.numeric(cell.data[,'Assigned']) + as.numeric(cell.data[,'Unassigned_NoFeatures'])
   cell.data <- cbind(Total_reads, cell.data[,c('Assigned', 'Unassigned_NoFeatures')])
 
-  object <- createcisTopicObject(count.matrix = count.matrix)
+  object <- createcisTopicObject(count.matrix = count.matrix, ...)
   object <- addCellMetadata(object, cell.data = as.data.frame(cell.data))
   return(object)
 }
@@ -88,9 +88,9 @@ createcisTopicObjectfromBAM <- function(
 #' @examples
 #' methfiles <- c('meth_1.txt', 'meth_2.txt', 'meth_3.txt')
 #' regions <- 'example.bed'
-#' cisTopicObject <- createcisTopicObjectfromBAM(methfiles, regions)
+#' cisTopicObject <- createcisTopicObjectFromBAM(methfiles, regions)
 #' cisTopicObject
-createcisTopicObjectfromMeth <- function(
+createcisTopicObjectFromMeth <- function(
   methfiles,
   regions,
   project.name = "cisTopicProject",
