@@ -164,7 +164,7 @@ createcisTopicObjectfromMeth <- function(
 #' @param min.regions Minimal number of regions that have to be accessible within a cell to be kept. By default, all cells with at least one region accessible are kept.
 #' @param is.acc Number of counts necessary to consider a region as accessible. When using single cell methylation data, this threshold
 #' represents the beta value from which above regions will be considered methylated.
-#' @param is.acc Whether to keep the counts mattrix or not inside the object. For large matrices, we recommend to set this
+#' @param keepCountsMatrix Whether to keep the counts matrix or not inside the object. For large matrices, we recommend to set this
 #' to FALSE.
 #' @param ... Ignored
 #'
