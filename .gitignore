@@ -1,9 +1,10 @@
-cisTopic.Rproj
+*.Rproj
 .Rproj.user
 .Rhistory
 .RData
 .Ruserdata
 .Rbuildignore
+.DS_Store
 .DS_Store?
 ._*
 .Spotlight-V100
