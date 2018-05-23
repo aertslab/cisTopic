@@ -11,7 +11,7 @@ License: None
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 6.0.1
-Imports:
+Depends:
     Rsubread,
     GenomicRanges,
     stats,
@@ -23,8 +23,9 @@ Imports:
     destiny,
     fastcluster,
     NMF,
+    DT,
     fitdistrplus,
-    RcisTarget,
+    RcisTarget (>= 1.1.2),
     rGREAT,
     ChIPseeker,
     ggplot2,
