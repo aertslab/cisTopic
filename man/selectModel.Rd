@@ -4,12 +4,17 @@
 \alias{selectModel}
 \title{Model selection based on log likelihood}
 \usage{
-selectModel(object, select = NULL, ...)
+selectModel(object, select = NULL, keepBinaryMatrix = TRUE,
+  keepModels = TRUE, ...)
 }
 \arguments{
 \item{object}{Initialized cisTopic object or list of LDA models.}
 
 \item{select}{Number of topics of the selected model. If NULL, the model with the best log likelihood is picked.}
+
+\item{keepBinaryMatrix}{Whether to keep the binary accessibility matrix within the cisTopic object.}
+
+\item{keepModels}{Whether to keep all the models within the cisTopic object.}
 
 \item{...}{Ignored.}
 }
