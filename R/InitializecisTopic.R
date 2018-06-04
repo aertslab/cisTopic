@@ -7,6 +7,8 @@
 #' @param min.cells Minimal number of cells in which the region has to be accessible. By default, all regions accessible in at least one cell are kept.
 #' @param min.regions Minimal number of regions that have to be accessible within a cell to be kept. By default, all cells with at least one region accessible are kept.
 #' @param is.acc Number of counts necessary to consider a region as accessible.
+#' @param keepCountsMatrix Whether to keep the counts matrix or not inside the object. For large matrices, we recommend to set this
+#' to FALSE.
 #' @param paired Whether data should be treated as paired end or not. If it is FALSE, we count a read if its 5' end falls within
 #' the region, if false, fragments will be counted instead of individual reads.
 #' @param ... See featureCounts function from Rsubread.
@@ -28,7 +30,8 @@ createcisTopicObjectFromBAM <- function(
   project.name = "cisTopicProject",
   min.cells = 1,
   min.regions = 1,
-  is.acc = 0,
+  is.acc = 1,
+  keepCountsMatrix = TRUE,
   paired = FALSE,
   ...
 ) {
@@ -60,7 +63,12 @@ createcisTopicObjectFromBAM <- function(
   Total_reads <- as.numeric(cell.data[,'Assigned']) + as.numeric(cell.data[,'Unassigned_NoFeatures'])
   cell.data <- cbind(Total_reads, cell.data[,c('Assigned', 'Unassigned_NoFeatures')])
 
-  object <- createcisTopicObject(count.matrix = count.matrix, ...)
+  object <- createcisTopicObject(count.matrix = count.matrix, 
+                                 project.name = project.name,
+                                 min.cells = min.cells,
+                                 min.regions = min.regions,
+                                 is.acc = is.acc,
+                                 keepCountsMatrix=keepCountsMatrix)
   object <- addCellMetadata(object, cell.data = as.data.frame(cell.data))
   return(object)
 }
@@ -95,7 +103,7 @@ createcisTopicObjectFromMeth <- function(
   regions,
   project.name = "cisTopicProject",
   min.cells = 1,
-  min.regions = 0,
+  min.regions = 1,
   is.acc = 0.5,
   ...
 ) {
@@ -186,7 +194,7 @@ createcisTopicObject <- function(
   project.name = "cisTopicProject",
   min.cells = 1,
   min.regions = 1,
-  is.acc = 0,
+  is.acc = 1,
   keepCountsMatrix=TRUE,
   ...
 ) {
@@ -201,7 +209,7 @@ createcisTopicObject <- function(
 
   # Binarize and filter matrix
   object.count.matrix <- object@count.matrix
-  object.binary.count.matrix <- 1*(object.count.matrix > is.acc)
+  object.binary.count.matrix <- 1*(object.count.matrix >= is.acc)
   num.acc.cells <- rowSums(object.binary.count.matrix)
   num.acc.regions <- colSums(object.binary.count.matrix)
   cells.use <- which(num.acc.regions >= min.regions)

@@ -91,7 +91,7 @@ getSignaturesRegions <- function(
 #' signaturesHeatmap
 #'
 #' Heatmap containing the row normalised AUC values for the signatures in the topics.
-#' @param object Initialized cisTopic object, after regions scores have been calculated with GetRegionScores and object@@signatures
+#' @param object Initialized cisTopic object, after regions scores have been calculated with getRegionScores and object@@signatures
 #' is filled.
 #' @param topics By default all topics will be used, but topics can be selected based on index.
 #' @param selected.signatures By default all signatures will be used, but signatures can be selected based on index or name.
@@ -122,7 +122,7 @@ signaturesHeatmap <- function(
   ...){
 
   # Get scores
-  scores <- GetScores(object)
+  scores <- .getScores(object)
   if (selected.signatures != 'annotation'){
     signatures <- object@signatures
     if(selected.signatures != 'all'){

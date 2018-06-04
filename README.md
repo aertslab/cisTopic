@@ -17,7 +17,7 @@ library(cisTopic)
 
 ## Dependencies
 
-cisTopic requires RcisTarget (version >= 1.1.2). You can install it with:
+cisTopic requires RcisTarget (version >= 1.1.1). You can install it with:
 
 ```r
 devtools::install_github("aertslab/RcisTarget")
