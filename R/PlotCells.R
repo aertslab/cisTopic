@@ -27,6 +27,7 @@ runtSNE <- function(
   }
 
   if (method == 'probability'){
+    alpha <- 50/length(cisTopicObject@selected.model$topic_sums)
     modelMat <- apply(object@selected.model$document_sums, 2, function(x) {(x + alpha)/sum(x + alpha)})
   }
 
@@ -82,6 +83,7 @@ runDM <- function(
   }
 
   if (method == 'probability'){
+    alpha <- 50/length(cisTopicObject@selected.model$topic_sums)
     modelMat <- apply(object@selected.model$document_sums, 2, function(x) {(x + alpha)/sum(x + alpha)})
   }
 
@@ -142,6 +144,7 @@ runPCA <- function(
   }
 
   if (method == 'probability'){
+    alpha <- 50/length(cisTopicObject@selected.model$topic_sums)
     modelMat <- apply(object@selected.model$document_sums, 2, function(x) {(x + alpha)/sum(x + alpha)})
   }
 
@@ -282,6 +285,7 @@ plotCellStates <- function(
       topic.mat <- scale(object@selected.model$document_expects, center=TRUE, scale=TRUE)
     }
     if (topic_contr == 'probability'){
+      alpha <- 50/length(cisTopicObject@selected.model$topic_sums)
       topic.mat <- apply(object@selected.model$document_sums, 2, function(x) {(x + alpha)/sum(x + alpha)})
     }
     rownames(topic.mat) <- paste('Topic', 1:nrow(topic.mat))
@@ -431,6 +435,7 @@ cellTopicHeatmap <- function(
     topic.mat <- scale(object@selected.model$document_expects, center=TRUE, scale=TRUE)
   }
   else if (method == 'probability'){
+    alpha <- 50/length(cisTopicObject@selected.model$topic_sums)
     topic.mat <- apply(object@selected.model$document_sums, 2, function(x) {(x + alpha)/sum(x + alpha)})
   }
 

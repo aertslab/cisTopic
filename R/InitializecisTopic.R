@@ -36,7 +36,15 @@ createcisTopicObjectFromBAM <- function(
   ...
 ) {
   # Prepare annotation
-  regions_frame <- read.table(regions)[,c(1:3, 5)]
+  regions_frame <- read.table(regions)
+  if (ncol(regions_frame) >= 5){
+    regions_frame <- regions_frame[,c(1:3, 5)]
+  }
+  else {
+    regions_frame <- regions_frame[,c(1:3)]
+    regions_frame <- cbind(regions_frame, rep('*', nrow(regions_frame)))
+  }
+  
   GeneID <- paste(regions_frame[,1], ':', regions_frame[,2], '-', regions_frame[,3], sep='')
   regions_frame <- cbind(GeneID, regions_frame)
   colnames(regions_frame) <- c('GeneID', 'Chr', 'Start', 'End', 'Strand')
