@@ -61,7 +61,7 @@ runModels <- function(
 
   if (length(topic) > 1){
     if (length(topic) < nCores){
-      print(paste('The number of cores (', nCores, ') is higher than the number of topics (', topic,').', sep=''))
+      print(paste('The number of cores (', nCores, ') is higher than the number of topics (', length(topic),').', sep=''))
     }
 
     if (nCores > 1){

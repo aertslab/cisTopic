@@ -14,6 +14,12 @@ getRegionsScores <- function(
   method='Zscore',
   scaled=TRUE)
 {
+  # Restart data frame
+  indexes <- grep('Scores_Topic', colnames(object@region.data))
+  if (length(indexes) > 0){
+    object@region.data <- object@region.data[,-indexes]
+  }
+  
   # Get scores
   topic.mat <- object@selected.model$topics
   if (method == 'Zscore'){
