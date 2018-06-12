@@ -146,6 +146,7 @@ binarizecisTopics  <- function(
 #' Saves topics as bed files
 #' @param object Initialized cisTopic object, after object@@binarized.cisTopics has been filled.
 #' @param path Path to save the coordinates of the cisTopic specific regions as bed files.
+#' @param seqlengths Annotation from where to retrieve the seqlengths
 #'
 #' @export
 
@@ -159,5 +160,39 @@ getBedFiles <- function(
   for (i in 1:length(object.binarized.cisTopics)){
     write.table(coordinates[rownames(object.binarized.cisTopics[[i]]),], file=paste(path, '/Topic_', i, '.bed', sep=''), row.names=FALSE, col.names = FALSE, quote=FALSE,  sep = "\t", eol = "\n")
   }
+}
+
+#' getBigwigFiles
+#'
+#' Saves topics as bigwigs files
+#' @param object Initialized cisTopic object, after running getRegionScores
+#' @param path Path to save bigwig files
+#'
+#' @importFrom rtracklayer export.bw
+#' @export
+
+getBigwigFiles <- function(
+  object,
+  path,
+  seqlengths
+){
+  dir.create(path, showWarnings = FALSE)
+  scores <- .getScores(object)
+  granges <- object@region.ranges
+  seqlengths(granges) <- seqlengths[names(seqlengths(granges))]
+  lapply(1:ncol(scores), function(i) .getOneBigWig(granges, scores, path, i))
+}
+
+.getOneBigWig <- function(
+  granges,
+  scores,
+  path,
+  topic
+){
+  coord <- granges
+  column <- paste('Topic', topic, sep='')
+  elementMetadata(coord)[['score']] <- scores[,column]
+  con <- paste(path, 'Topic_', topic, '.bw', sep='')
+  export.bw(coord, con)
 }
 

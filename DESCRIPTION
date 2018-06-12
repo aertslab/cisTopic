@@ -31,7 +31,8 @@ Depends:
     ggplot2,
     data.table,
     feather,
-    AUCell
+    AUCell,
+    rtracklayer
 Suggests:
     TxDb.Dmelanogaster.UCSC.dm6.ensGene,
     TxDb.Dmelanogaster.UCSC.dm3.ensGene,
