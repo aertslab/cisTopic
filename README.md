@@ -1,6 +1,6 @@
 ### News
 
-25-5-2018 Coming soon: cisTopic vignettes.
+15-6-2018: Vignette on simulated single cell epigenomes added.
 
 # cisTopic: Probabilistic modelling of cis-regulatory topics from single cell epigenomics data
 

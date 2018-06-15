@@ -1,0 +1,347 @@
+---
+title: "cisTopic on simulated single cell epigenomes from melanoma cell lines"
+package: "`r pkg_ver('cisTopic')`"
+author: "Carmen Bravo González-Blas, Liesbeth Minnoye, Sara Aibar and Stein Aerts"
+date: "`r Sys.Date()`"
+vignette: >
+  %\VignetteIndexEntry{cisTopic on simulated single cell epigenomes from melanoma cell lines}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+output: 
+  BiocStyle::html_document:
+    number_sections: yes
+  pdf_document:
+    toc: yes
+  html_notebook:
+    toc: yes
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+# Installation
+
+For installing cisTopic run:
+
+```{r, eval=FALSE, results='asis'}
+devtools::install_github("aertslab/cisTopic")
+```
+
+In this tutorial, you will require additional packages:
+
+```{r, eval=FALSE, results='asis'}
+source("https://bioconductor.org/biocLite.R")
+biocLite(c('TxDb.Hsapiens.UCSC.hg19.knownGene', 'org.Hs.eg.db'))
+```
+
+# What is cisTopic? 
+
+cisTopic is an R/Bioconductor package for the simulataneous identification of *cis-regulatory topics* and cell states from single cell epigenomics data. cisTopic relies on an algorithm called Latent Dirichlet Allocation (LDA), a robust Bayesian method used in text mining to group documents addressing similar topics and related words into topics. Interestingly, this model has a series of assumptions that are fulfilled in single-cell epigenomics data, such as non-ordered features (*'bag of words'*) and the allowance of overlapping topics (i.e. a regulatory region can be co-accessible with different other regions depending on the context, namely, the cell type or state). 
+
+cisTopic uses LDA with a collapsed Gibbs sampler (Griffiths & Steyvers, 2004), where each region in each cell is assigned to a topic based on (1) to which topic the region is assigned in other cells and (2) to which topics the regions are assigned in that cell. After a number of iterations through the data set, these assignments are used to estimate the probability of a region belonging to a cis-regulatory topic (region-topic distribution) and the contributions of a topic within each cell (topic-cell distribution). These distributions can in turn be used to cluster cells and identify cell types, and to analyse the regulatory sequences in each topic. 
+
+cisTopic consists of 4 main steps: (1) generation of a binary accessibility matrix as input for LDA; (2) LDA and model selection; (3) cell state identification using the topic-cell distributions from LDA and (4) exploration of the region-topic distributions. 
+
+![Figure 1. cisTopic workflow. a. The input for cisTopic is a binary accessibility matrix. This matrix can be formed from single-cell BAM files and a set of genome-wide regulatory regions (e.g., from peak calling on the bulk or aggregate data). b. Latent Dirichlet Allocation (LDA) is applied on the binary accessibility matrix to obtain the topic-cell distributions (contributions of each topic per cell) and the region-topic distributions (contributions of each region to a topic). Note that a region can contribute to more than one topic (represented by the purple peaks). c. The topic-cell distributions are used for dimensionality reduction (e.g. PCA, tSNE, diffusion maps) and clustering to identify cell states. d. The region-topic distributions can be used to predict the regulatory code underlying the topic. For example, topics can be compared with known epigenomic signatures using a recovery curve approach; regions can be annotated and linked to genes; and, after topic binarisation, enriched motifs can be identified via RcisTarget.](/media/seq-srv-06/lcb/cbravo/Fig1-01.png) 
+
+If you do not want to run some of the steps in the tutorial, you can load the precomputed cisTopic object:
+
+```{r, eval = FALSE}
+cisTopicObject <- readRDS('cisTopicObject_melanoma.Rds')
+```
+
+# Running cisTopic
+## Input data
+
+Some steps in this tutorial might take a few minutes to run, as reference we mention the running time for this dataset and settings in our system. Your actual running time will depend on your computer and dataset. In this tutorial, we will run cisTopic in 100 simulated epigenomes from bulk H3K27Ac melanoma cell line profiles (20 cells per line, using 3 melanocyte-like [MM001, MM011 and MM034] and 2 mesenchymal-like [MM029, MM047] cell lines). The coverage of these simulated cells is between 26,940 and 59,580 reads.
+
+First, load cisTopic:
+
+```{r, eval = FALSE}
+suppressMessages(library(cisTopic))
+```
+
+The cisTopic object can be initialized either from (a) single cell epigenome profile bam files per cell and defined regulatory regions (e.g. from peak calling with [MACS2](https://github.com/taoliu/MACS) in the aggregate or bulk); or (b) a precomputed matrix with cells as columns, regions as cells and fragments/reads counts as values. 
+
+The cisTopic object contains all the information and outputs from the analysis. For more information, run:
+
+```{r, eval=FALSE, results='asis'}
+?`cisTopic-class`
+```
+
+For initializing the cisTopic object:
+
+- Starting from the **bam files and predefined regions** [Reference running time: 0.4 sec/cell]
+```{r, eval=FALSE}
+pathToBams <- 'data/bamfiles/'
+bamFiles <- paste(pathToBams, list.files(pathToBams), sep='')
+regions <- 'data/regions.bed'
+cisTopicObject <- createcisTopicObjectFromBAM(bamFiles, regions, project.name='cisTopic_melanoma')
+```
+
+- Starting from the **counts matrix**. The rownames of these matrix must contain the region coordinates in position format (e.g. chr1:123456-134567) [Reference running time for the example data set (120 cells; ~80,000 regions): 6 seconds]
+```{r, eval=FALSE}
+data(counts_mel) 
+cisTopicObject <- createcisTopicObject(counts_mel, project.name='cisTopic_melanoma')
+rm(counts_mel)
+```
+
+By default, the slots `@cell.data` and `@region.data` will be initialized with the number of reads and accessible regions (depending on the selected threshold) per cell and region, respectively. Extra metadata can be added using the functions `addCellMetadata` (e.g. phenotype information) and `addRegionMetadata`.
+
+```{r, eval=FALSE}
+data(cellData_mel)
+cisTopicObject <- addCellMetadata(cisTopicObject, cell.data = cellData_mel)
+rm(cellData_mel)
+```
+
+## Building the models
+
+The next step in the cisTopic workflow is to use Latent Dirichlet Allocation (LDA) for the modelling of cis-regulatory topics. LDA allows to derive, from the original high-dimensional and sparse data, (1) the probability distributions over the topics for each cell in the data set and (2) the probability distributions over the regions for each topic (Blei et al., 2003). These distributions indicate, respectively, how important a regulatory topic is for a cell, and how important regions are for the regulatory topic. Here, we use a collapsed Gibbs sampler (Griffiths and Steyvers, 2004), in which we assign regions to a certain topic by randomly sampling from a distribution where the probability of a region being assigned to a topic is proportional to the contributions of that region to the topic and the contributions of that topic in a cell.
+
+To do this, `runModels()` builds several models (e.g. with diferent numbers of topics) using Latent Dirichlet Allocation (LDA) on the binary accessibility matrix (automatically stored in the initialized `cisTopicObject`). We can then select the best model using `selectModel()` and `logLikelihoodByIter()`.
+
+*The LDA algorithm was first introduced by Blei et al. (2003), and this implementation, using a Collapsed Gibbs Sampler, is inspired in Griffiths & Steyvers (2004). This method is extremely suitable for dealing with sparse data.*
+
+The main parameters for running the models (`runModels`) are:
+
+- **Number of topics** (`topic`): The number of topics are usually slightly bigger than the potential cell states in the data set. In the case of single cell epigenomics data the number of topics is low compared to other implementations (e.g. text classification). The running time will be affected by the number of topics.
+
+- The Dirichlet hyperparameters **alpha** (topic proportions) and **beta** (topic multinomials): **Alpha** affects the topic combinations; a low alpha forces to pick for each cell a topic distribution with few topics; a high alpha allows cells to have similar, smooth topic proportions. **Beta** affects to the region combinations; the lower the beta, the fewer regions a topic will have; the higher the beta, the less distinct these topics will be (i.e. there will be more overlap between the topics). By default, we select alpha as 50/number of topics and beta as 0.1 (as Griffiths & Steyvers, 2004).
+
+- Number of **iterations** and **burnin**: For recording the assignments, it is necessary that the likelihood of the model is already stabilised.  cisTopic counts with the function `logLikelihoodByIter` to check whether this parameters should be changed. The number of iterations affect the speed of the algorithm. Note that the burnin will be substracted from the number of iterations (so iterations > burnin).
+
+**NOTE:** For large data sets it may not be feasible to keep all models simultaneously in memory. An alternative is to run the models and
+only save their likelihoods (see *selectModel*), and the model with the highest likelihood. If after checking the likelihood plot another
+model is preferred, the function can be re-run only for that number of topics.
+
+In this tutorial, we will test models with 2, 5, 10 to 15, 20 and 25 topics [Reference running time for the example data set (100 cells; ~110,000 regions): 9 minutes].
+
+```{r, eval=FALSE}
+cisTopicObject <- runModels(cisTopicObject, topic=c(2, 5, 10, 15, 20, 25), seed=987, nCores=6, burnin = 250, iterations = 500)
+```
+
+### Selection of the best model
+
+The log likelihood can be used to estimate the plausibility of a model parameter value, given the observed data.
+`selectModel` will select the model with the highest log likelihood (`P(D|T)`) at the last iteration.
+
+```{r, eval = FALSE}
+cisTopicObject <- selectModel(cisTopicObject)
+```
+
+This plot shows that a model with 10 topics is suitable. If two or more models have comparable log likelihoods, we recommend to pick the one with the lower log likelihood (i.e. lower complexity). By default, this function selects the model with the highest likelihood, but the user can select a certain topic with the `select` parameter in this function. In cases were the topic selection is not clear, the user can rerun the models using a different seed to select the best number of topics. We will continue with the model with 10 topics.
+
+Another way of visualizing the likelihood is to plot the changes in the likelihood through the different iterations. It is important to check that the likelihood of the models is stabilised in the recording iterations, and the area under these curves can also be useful for model selection.
+
+```{r, eval = FALSE}
+logLikelihoodByIter(cisTopicObject)
+```
+
+If the models are stabilized after burnin (grey line), we can conclude that the selection of the `number of iterations` and `burnin` was suitable.
+
+## Interpreting the models
+
+### A. Identification of cell states using the cell-cisTopic distributions
+
+LDA returns two distributions that represent (1) the topic contributions per cell and (2) the region contribution to a topic. We can interpret these values as a dimensinality reduction method, after which the data is re-represented as a matrix with cells as columns, topics as rows and contributions as values. The recorded topic assignments to the cells (not normalised) are stored in `cisTopicObject@selected.model$document_expects` (see `lda` package).
+
+Different methods can be used for clustering and/or visualization. cisTopic includes wrapper functions to easily run tSNE, diffussion maps, and PCA (the results are saved in the slot `@dr`):
+
+```{r, eval=FALSE}
+cisTopicObject <- runtSNE(cisTopicObject, perplexity=10, seed=987)
+cisTopicObject <- runDM(cisTopicObject)
+cisTopicObject <- runPCA(cisTopicObject)
+```
+
+Once calculations are done, cisTopic offers a unified visualization function (`plotCellStates`), which allows to visualize tSNE, diffussion maps, principal components and biplots (in 2/3D), colored by metadata and/or topic enrichment. 
+
+```{r, fig.show='hold', fig.align='center', eval = FALSE}
+plotCellStates(cisTopicObject, method='tSNE', topic_contr='Zscore', topics='all', colorBy=c('LineType', 'cellLine'))
+```
+
+```{r, fig.show='hold', fig.align='center', eval = FALSE}
+plotCellStates(cisTopicObject, method='Biplot', topic_contr='Zscore', topics = c(4,7,8), colorBy=c('LineType', 'cellLine'))
+```
+
+We can also generate a heatmap based on the cell-cisTopic distributions.
+
+```{r, eval = FALSE}
+cellTopicHeatmap(cisTopicObject, colorBy=c('LineType', 'cellLine'))
+```
+
+### B. Analisis of the regulatory topics
+
+#### - Getting and visualising topics
+
+To analyze the regions included in the cisTopics, the first step is always to derive a score that evaluates how likely is for a region to belong to a topic. `getRegionsScores()` calculates these scores based on the proportion of region specific assignments to a topic. These scores can be rescaled into the range [0,1], which will be useful for the binarization step (as it will force data to follow a gamma distribution shape).
+
+```{r, eval = FALSE}
+cisTopicObject <- getRegionsScores(cisTopicObject, method='Zscore', scale=TRUE)
+```
+
+BigWig files for observing the scored regions in the genome can be generated. Note that information on the length of the chromosomes has to be provided. These files can be uploaded in IGV or UCSC for visualisation. This information can be easily found in the TxDb objects of the corresponding genomes, for example.
+
+```{r, eval = FALSE}
+library(TxDb.Hsapiens.UCSC.hg19.knownGene)
+txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene
+getBigwigFiles(cisTopicObject, path='output/cisTopics_asBW', seqlengths=seqlengths(txdb))
+```
+
+However, many tools are limited to work with sets of regions rather than rankings of regions. Keywords, or the most contributing regions in a topic, can be used as a representative set of regions of the topic. `binarizecisTopics()` allows to select the top regions based on two methods:
+
+a) `method = "Predefined"`: to select a predefined number of regions (determined by the `cutoffs` argument)
+
+b) `method = "GammaFit"` (default): to automatically select a threshold based on a fit of the scores to a gamma distribution. Note that the 
+probability threshold must be provided by the user.
+
+**NOTE**: If 'GammaFit' is used for the topic binarization, we recommend to scale the scores between 0 and 1 (see `getRegionsScores`). 
+
+```{r, eval = FALSE}
+cisTopicObject <- binarizecisTopics(cisTopicObject, thrP=0.975, plot=FALSE)
+```
+
+The regions sets selected and distributions for each cisTopic can then be analized in different ways (examples in next sections). They can also be exported to bed files to analyze with external tools:
+
+```{r, eval=FALSE}
+getBedFiles(cisTopicObject, path='output/cisTopics_asBed')
+```
+
+#### - Overlap with previous epigenomic data/signatures
+
+One way to start exploring the nature of the topics is to check their overlap (i.e. the regions included in the topics) with predefined epigenomic signatures/datasets. For example, regions from ChIP-seq can point towards enrichment of binding sites of a given TF, regions from FAIRE- or ATAC-seq to regions generally open in a given cell type or tissue, etc.
+
+For this analysis, we need to identify which regions from the topics overlap with the signature (in this case, the whole distribution is used instead of relying only on the top regions per topic). This is achieved with an adaptation of the recovery curve approach taken by AUCell [Aibar et al., 2017]. First, epigenomic regions are intersected and mapped to regions in the dataset (by default, with at leadt 40% overlap). The corresponding overlapping sets (which are stored in `object@signatures`) are used as input, together with the region rankings per topic. Note that we can give specific labels each signature. If a region is present in the signature, the curve will increase one step in the y-axis. The area under this curve is used as a measurement for enrichment (see `signaturesHeatmap`) [Reference running time: 2 minutes].
+
+```{r, eval = FALSE}
+path_to_signatures <- 'FAIRE_signatures/'
+FAIRE_signatures <- paste(path_to_signatures, list.files(path_to_signatures), sep='')
+
+labels <- sapply(strsplit(FAIRE_signatures, split = "FAIRE_signatures/FAIRE_"), "[", 2)
+labels <- sapply(strsplit(labels, split = ".nofirst5bp"), "[", 1)
+
+cisTopicObject <- getSignaturesRegions(cisTopicObject, FAIRE_signatures, labels=labels, minOverlap = 0.4)
+```
+
+We can visualize how these regions are enriched within each topic with `signaturesHeatmap`. With this function, we obtain a heatmap showing the row normalised AUC scores.
+
+```{r, eval = FALSE}
+signaturesHeatmap(cisTopicObject)
+```
+
+Another example, using ChIP-seq data [Reference running time: 20 seconds]. Note that when adding a new set of signatures, previous signatures will be removed:
+
+```{r, eval = FALSE}
+path_to_signatures <- 'ChIP-seq_signatures/'
+ChIP_Seq_signatures <- paste(path_to_signatures, list.files(path_to_signatures), sep='')
+labels  <- c('TFAP2A', 'SOX10', 'MITF')
+cisTopicObject <- getSignaturesRegions(cisTopicObject, ChIP_Seq_signatures, labels=labels, minOverlap = 0.4)
+signaturesHeatmap(cisTopicObject) 
+```
+
+#### - Annotation to genes and GO terms
+
+Another way of gaining insight on the topics is to link the regions to genes, and to determine GO terms (or pathways or any other type of gene-set) that are enriched within them. cisTopic provides the function `annotateRegions()` to annotate regions to GO terms using the "TxDb" Bioconductor packages (replace 'TxDb.Hsapiens.UCSC.hg19.knownGene' by the appropiate organism package), and annotation databases ("OrgDb" packages).
+
+```{r, eval=FALSE}
+library(org.Hs.eg.db)
+cisTopicObject <- annotateRegions(cisTopicObject, txdb=TxDb.Hsapiens.UCSC.hg19.knownGene, annoDb='org.Hs.eg.db')
+```
+
+As we saw before, we can use the region type annotations as region sets/signatures to check whether a topic is more enriched in a certain type of region.
+
+```{r, eval = FALSE}
+signaturesHeatmap(cisTopicObject, selected.signatures = "annotation") 
+```
+
+For identifying enriched GO terms per topic, cisTopic provides a wrapper over `r Biocpkg("rGREAT")` (Gu Z, 2017) [Reference running time: 15 minutes]. The binarised topics (i.e. sets of top regions per topic) are used in this step. Results are stored in `object@binarized.rGREAT`.
+
+```{r, eval=FALSE}
+cisTopicObject <- GREAT(cisTopicObject, genome='hg19', fold_enrichment=2, geneHits=1, sign=0.05, request_interval=10)
+```
+
+We can visualize the enrichment results within a topic:
+```{r, eval = FALSE}
+ontologyDotPlot(cisTopicObject, top=5, topics=4, var.y='name', order.by='Binom_Adjp_BH')
+```
+
+We can also compare rGREAT results between topics:
+```{r, eval = FALSE}
+ontologyDotPlot(cisTopicObject, top=5, topics=c(4,7), var.y='name', order.by='Binom_Adjp_BH')
+```
+
+#### - (Transcription factor) motif enrichment
+
+It is also possible to identify enriched motifs within the topics and form *cistromes* (i.e. sets of sequences enriched for a given motif). To do this, we use `r Biocpkg("RcisTarget")` (Aibar et al., 2017). The current version provides databases for human (hg19). You can find the region-based database at: https://resources.aertslab.org/cistarget/
+
+For this analysis, we first need to convert the cisTopic regions to the regions in the databases ("ctx regions"). We can do this in two ways:
+
+a) Binarised, converting the binarised topic to a set of equivalent ctx regions (a region can map to more than one ctx region, and all regions which overlap more than the given threshold are taken).
+
+```{r, eval=FALSE, message=FALSE}
+cisTopicObject <- binarizedcisTopicsToCtx(cisTopicObject)
+```
+
+b) Based on the maximum overlap. This is useful if we need to use the scores (a region is mapped to its most overlapping ctx region). This information is stored in `object@region.data`.
+
+```{r, eval=FALSE}
+cisTopicObject <- scoredRegionsToCtx(cisTopicObject)
+```
+
+We are now ready to run RcisTarget in each topic using the wrapper function `topicsRcisTarget()`. This function uses the binarised topic regions converted to ctx regions [Reference running time: 14 minutes]
+
+```{r, eval = FALSE}
+pathToFeather <- "/data/hg19-regions-1M-9species.all_regions.mc9nr.feather"
+cisTopicObject <- topicsRcisTarget(cisTopicObject, genome='hg19', pathToFeather, reduced_database=FALSE, nesThreshold=3, rocthr=0.005, maxRank=20000, nCores=5)
+```
+
+Once RcisTarget is run, interactive motif enrichment tables can be explored (e.g. per topic):
+
+```{r, eval = FALSE}
+Topic4_motif_enr <- cisTopicObject@binarized.RcisTarget[[4]]
+DT::datatable(Topic4_motif_enr[,-c("enrichedRegions", "TF_lowConf"), with=FALSE], escape = FALSE, filter="top", options=list(pageLength=5))
+```
+
+```{r, eval = FALSE}
+Topic7_motif_enr <- cisTopicObject@binarized.RcisTarget[[7]]
+DT::datatable(Topic7_motif_enr[,-c("enrichedRegions", "TF_lowConf"), with=FALSE], escape = FALSE, filter="top", options=list(pageLength=5))
+```
+
+We can also see the all the motifs in all topics:
+```{r, eval = FALSE}
+All_motif_enr <- data.table::rbindlist(cisTopicObject@binarized.RcisTarget)
+DT::datatable(All_motif_enr[,-c("enrichedRegions", "TF_lowConf"), with=FALSE], escape = FALSE, filter="top", options=list(pageLength=5))
+```
+
+##### - Formation of cistromes
+RcisTarget results can be used to form *cistromes*. We define a **cistrome** as a set of sequences enriched for motifs linked to a certain transcription factor. In the case of cisTopic, we build topic-specific cistromes. cisTopic produces 3 different types of cistromes: ctx-regions based, original-regions based and gene based (based on region annotation). The **annotation** parameter decides whether only motifs linked with high confidence should be used or also motifs indirectly annotated should be considered (i.e. in this case, the *_extended cistromes will contain both annotations) [Reference running time: 5 minutes]
+
+```{r, eval = FALSE}
+cisTopicObject <- getCistromes(cisTopicObject, annotation = 'Both', nCores=5)
+```
+
+Cistromes are useful to compare regions linked to a TF which have different spatio-temporal patterns, which may be caused i.e. by the presence of co-factors or different concentrations of the TF. Differential motif enrichment can be performed using RSAT or Homer (Medina-Rivera *et al*, 2015; Heinz *et al*, 2017); and shape features can be modelled per sequence using GBshape bigwig files (Chiu *et al.*, 2015). These features can be used as input to Machine Learning methods (i.e. Random Forest) to determine their relevance in generating the different patterns. 
+
+Finally, you can save your cisTopic object:
+
+```{r, eval = FALSE}
+saveRDS(cisTopicObject, file='cisTopicObject_melanoma.Rds')
+```
+
+# References
+
+1. Blei, D. M., Ng, A. Y., & Jordan, M. I. (2003). Latent dirichlet allocation. *Journal of machine Learning research*, 3(Jan), 993-1022.
+2. Steyvers, M., & Griffiths, T. (2007). Probabilistic topic models. *Handbook of latent semantic analysis*, 427(7), 424-440.
+3. Aibar, S., Bravo González-Blas, C., Moerman, T., Imrichova, H., Hulselmans, G., Rambow, F., ... & Atak, Z. K. (2017). SCENIC: single-cell regulatory network inference and clustering. *Nature methods*, 14(11), 1083.
+4. Medina-Rivera, A., Defrance, M., Sand, O., Herrmann, C., Castro-Mondragon, J. A., Delerce, J., ... & Staines, D. M. (2015). RSAT 2015: regulatory sequence analysis tools. *Nucleic acids research*, 43(W1), W50-W56.
+5. Heinz, S., Benner, C., Spann, N., Bertolino, E., Lin, Y. C., Laslo, P., ... & Glass, C. K. (2010). Simple combinations of lineage-determining transcription factors prime cis-regulatory elements required for macrophage and B cell identities. *Molecular cell*, 38(4), 576-589.
+6. Chiu, T. P., Yang, L., Zhou, T., Main, B. J., Parker, S. C., Nuzhdin, S. V., ... & Rohs, R. (2014). GBshape: a genome browser database for DNA shape annotations. *Nucleic acids research*, 43(D1), D103-D109.
+
+# SessionInfo
+
+```{r}
+sessionInfo()
+```
