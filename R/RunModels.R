@@ -49,6 +49,10 @@ runModels <- function(
   returnType='allModels',
   ...
 ) {
+  if (burnin >= iterations){
+    stop('The number of iterations must be higher than the burnin!')
+  }
+  
   # Take binary count matrix
   object.binary.count.matrix <- object@binary.count.matrix
 
@@ -220,6 +224,7 @@ logLikelihoodByIter <- function(
   col <- rainbow(length(topics),s = 0.5)
   par(bty = 'n')
   matplot(1:iterations,loglikelihood_iterations,  type = 'l', lty=1, lwd=4, col = col, xlab="Iteration number", ylab="log P(D|M,T)", main='Likelihood stabilization')
+  abline(v = burnin, lty=2, col='grey')
   legend("bottomright", legend = colnames(loglikelihood_iterations), fill=col)
 }
 

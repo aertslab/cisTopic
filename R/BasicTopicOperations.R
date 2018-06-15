@@ -192,7 +192,7 @@ getBigwigFiles <- function(
   coord <- granges
   column <- paste('Topic', topic, sep='')
   elementMetadata(coord)[['score']] <- scores[,column]
-  con <- paste(path, 'Topic_', topic, '.bw', sep='')
+  con <- paste(path, '/Topic_', topic, '.bw', sep='')
   export.bw(coord, con)
 }
 

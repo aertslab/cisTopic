@@ -1,9 +1,9 @@
-#' Cell data from simulated single cell epigenomes from 4 bulk H3K27Ac melanoma profiles.
+#' Cell data from simulated single cell epigenomes from 5 bulk H3K27Ac melanoma profiles.
 #'
-#' Counts matrix from simulated single cell epigenomes from 4 bulk H3K27Ac melanoma profiles. Coverage of these cells ranges
-#' from 8,980 to 19,869 reads per cell. Two of these cell lines are classified as melanocyte-like (MM074 and MM087), the other two are
-#' mesenchymal-like (MM029 and MM047)
+#' Counts matrix from simulated single cell epigenomes from 5 bulk H3K27Ac melanoma profiles. Coverage of these cells ranges
+#' from 26,940 to 59,580 reads per cell. Thre of these cell lines are classified as melanocyte-like (MM001, MM011, MM034), 
+#' the other two are mesenchymal-like (MM029, MM047)
 #'
-#' @format A matrix with 80 cells and 69956 regions.
+#' @format A matrix with 100 cells and 110,583 regions.
 #' @source Verfaille, Imrichová & Kalender-Atak et al. (2015, GSE60666)
 "counts_mel"

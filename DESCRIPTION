@@ -32,7 +32,8 @@ Depends:
     data.table,
     feather,
     AUCell,
-    rtracklayer
+    rtracklayer,
+    scatterplot3d
 Suggests:
     TxDb.Dmelanogaster.UCSC.dm6.ensGene,
     TxDb.Dmelanogaster.UCSC.dm3.ensGene,

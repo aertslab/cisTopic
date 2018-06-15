@@ -39,7 +39,7 @@ annotateRegions <- function(
 #' @param geneHits Minimum number of genes associated to keep term.
 #' @param sign Maximum adjusted p-value to keep term.
 #' @param request_interval Time interval for two requests.
-#' @param ... See \code{submitGreatJob} and getEnrichmentTables from rGREAT
+#' @param ... See \code{submitGreatJob} from rGREAT
 #'
 #' @return Non-empty GREAT results per topic are return as a list to object@@binarized.rGREAT
 #'
@@ -145,19 +145,10 @@ ontologyDotPlot <- function(
   }
 
   if (topics[1] == 'all'){
-    GOdata <- llply(1:length(object@binarized.rGREAT), function(i) object@binarized.rGREAT[[i]][[ontology]])
-    null_topics <- which(unlist(llply(1:length(GOdata), function(i) is.null(GOdata[[i]]))))
-    if(!is.null(null_topics)){
-      GOdata <- GOdata[-null_topics]
-    }
+    topics <- which(laply(1:length(object@binarized.rGREAT), function(i) !is.null(object@binarized.rGREAT[[i]][[ontology]])) == TRUE)
+    GOdata <- llply(topics, function(i) object@binarized.rGREAT[[i]][[ontology]])
     GOdata <- llply(1:length(GOdata), function(i) GOdata[[i]][order(GOdata[[i]][order.by], decreasing = decreasing),])
     GOdata <- llply(1:length(GOdata), function(i) GOdata[[i]][1:top,])
-    if(is.null(null_topics)){
-      names(GOdata) <- names(object@binarized.rGREAT)
-    }
-    else{
-      names(GOdata) <- names(object@binarized.rGREAT)[-null_topics]
-    }
   }
   else{
     GOdata <- llply(topics, function(i) object@binarized.rGREAT[[i]][[ontology]])
@@ -166,6 +157,7 @@ ontologyDotPlot <- function(
     names(GOdata) <- names(object@binarized.rGREAT)[topics]
   }
 
+  names(GOdata) <- names(object@binarized.rGREAT)[topics]
   TopicID <- llply(1:length(GOdata), function(i) names(GOdata)[i])
   GOdata <- Map(cbind, GOdata, TopicID = TopicID)
   GOdata <- llply(1:length(GOdata), function(i) GOdata[[i]][!is.na(GOdata[[i]][,1]),])

@@ -202,7 +202,8 @@ runPCA <- function(
 #' @param colorBy Select the cell metadata used to colour the plots with. By default, all features are used.
 #' @param dim Dimensions to use in the plot (2 or 3). Biplot is only doable in 2D.
 #' @param intervals Intervals to apply on the color palette for coloring continuous variables. By default, it is 10.
-#' @param topic_contr Color by topic distribution ('Zscore' or 'probability').
+#' @param topic_contr Color by topic distribution ('Zscore' or 'probability'). 
+#' @param topics Vector containing the numbers of the topics for which the plot has to be made if topic_contr is not null.
 #' @param col.low Color to use for lowest topic enrichment
 #' @param col.mid Color to use for medium topic enrichment
 #' @param col.high Color to use for high topic enrichment
@@ -211,6 +212,7 @@ runPCA <- function(
 #'
 #' @return Plots cell states based on the dimensionality reduction method selected, coloured by the given metadata (one plot per feature).
 #'
+#' @import scatterplot3d
 #' @export
 
 plotCellStates <- function(
@@ -220,6 +222,7 @@ plotCellStates <- function(
   dim=2,
   intervals=10,
   topic_contr='Zscore',
+  topics='all',
   col.low = "dodgerblue",
   col.mid = "floralwhite",
   col.high = "brown1",
@@ -289,6 +292,11 @@ plotCellStates <- function(
       topic.mat <- apply(object@selected.model$document_sums, 2, function(x) {(x + alpha)/sum(x + alpha)})
     }
     rownames(topic.mat) <- paste('Topic', 1:nrow(topic.mat))
+   
+    if(topics != 'all'){
+      topic.mat <- topic.mat[topics,,drop=FALSE]
+    }
+    
     colorPal <- grDevices::colorRampPalette(c(col.low, col.mid, col.high))
     for (i in 1:nrow(topic.mat)){
       if(method != 'Biplot'){

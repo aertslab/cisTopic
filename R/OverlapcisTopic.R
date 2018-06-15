@@ -3,6 +3,7 @@
 #' Get peaks found in region signatures given as a bed files and/or dataframes
 #' @param object Initialized cisTopic object.
 #' @param signature Path to bed file or data frame containing signature regions (or a vector)
+#' @param labels A character vector with the names to be given to the signatures (in the same order as the signature paths or named)
 #' @param minOverlap Minimum overlap between the regions to consider them as overlapping regions
 #' @param ... See findOverlaps from GenomicRanges
 #'
@@ -19,11 +20,21 @@
 getSignaturesRegions <- function(
   object,
   signatures,
+  labels,
   minOverlap=0.4,
   ...
 ){
-  regionsSignatures <- llply(signatures, function(signature) .getSignatureRegions(object, signature))
-  names(regionsSignatures) <- as.character(signatures)
+  regionsSignatures <- llply(signatures, function(signature) .getSignatureRegions(object, signature, ...))
+  if (is.null(regionsSignatures)){
+    names(regionsSignatures) <- as.character(signatures)
+  }
+  else{
+    if (!is.null(names(labels))){
+      labels <- as.vector(labels[as.character(signatures)])
+    }
+    names(regionsSignatures) <- labels
+  }
+  
   object@signatures <- regionsSignatures
   return(object)
 }
@@ -102,7 +113,7 @@ getSignaturesRegions <- function(
 #' @param col.low Color to use for lowest signature enrichment
 #' @param col.mid Color to use for medium signature enrichment
 #' @param col.high Color to use for high signature enrichment
-#' @param ... See \code{AUCell_buildRankings} and \code{AUCell_calcAUC} from AUCell, and \code{aheatmap} from NMF
+#' @param ... See \code{AUCell_calcAUC} from AUCell
 #'
 #' @return Heatmap showing the enrichment per topic per signature
 #'
