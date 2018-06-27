@@ -25,3 +25,15 @@ library(RcisTarget)
 ```
 
 RcisTarget feather databases are available [here](https://resources.aertslab.org/cistarget/).
+
+For installing other Bioconductor dependencies:
+
+```r
+source("https://bioconductor.org/biocLite.R")
+suppressMessages(biocLite(c('Rsubread',
+                            'GenomicRanges',
+                            'destiny',
+                            'rGREAT',
+                            'ChIPseeker'
+                            )))
+```
