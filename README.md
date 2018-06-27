@@ -34,6 +34,7 @@ suppressMessages(biocLite(c('Rsubread',
                             'GenomicRanges',
                             'destiny',
                             'rGREAT',
-                            'ChIPseeker'
+                            'ChIPseeker',
+			    'AUCell'
                             )))
 ```
