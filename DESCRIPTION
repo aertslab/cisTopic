@@ -7,7 +7,7 @@ Maintainer: Carmen Bravo González-Blas <carmen.bravogonzalezblas@kuleuven.vib.b
 Description: The sparse nature of single cell epigenomics data can be overruled using probabilistic modelling methods such as Latent Dirichlet
     Allocation (LDA). This package allows the probabilistic modelling of cis-regulatory topics (cisTopics) from single cell epigenomics data, and includes
     functionalities to identify cell states based on the contribution of cisTopics and explore the nature and regulatory proteins driving them.
-License: None
+License: GPL-3
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 6.0.1
