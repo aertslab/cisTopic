@@ -5,7 +5,7 @@
 \title{Initialize and setup the cisTopic object}
 \usage{
 createcisTopicObject(count.matrix, project.name = "cisTopicProject",
-  min.cells = 1, min.regions = 1, is.acc = 0, keepCountsMatrix = TRUE,
+  min.cells = 1, min.regions = 1, is.acc = 1, keepCountsMatrix = TRUE,
   ...)
 }
 \arguments{

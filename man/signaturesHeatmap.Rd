@@ -10,7 +10,7 @@ signaturesHeatmap(object, topics = "all", selected.signatures = "all",
   ...)
 }
 \arguments{
-\item{object}{Initialized cisTopic object, after regions scores have been calculated with GetRegionScores and object@signatures
+\item{object}{Initialized cisTopic object, after regions scores have been calculated with getRegionScores and object@signatures
 is filled.}
 
 \item{topics}{By default all topics will be used, but topics can be selected based on index.}
@@ -29,7 +29,7 @@ For this, the function AnnotateRegions must be run first.}
 
 \item{col.high}{Color to use for high signature enrichment}
 
-\item{...}{See \code{AUCell_buildRankings} and \code{AUCell_calcAUC} from AUCell, and \code{aheatmap} from NMF}
+\item{...}{See \code{AUCell_calcAUC} from AUCell}
 }
 \value{
 Heatmap showing the enrichment per topic per signature

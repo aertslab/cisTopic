@@ -18,7 +18,7 @@ GREAT(object, genome = "hg19", fold_enrichment = 2, geneHits = 1,
 
 \item{request_interval}{Time interval for two requests.}
 
-\item{...}{See \code{submitGreatJob} and getEnrichmentTables from rGREAT}
+\item{...}{See \code{submitGreatJob} from rGREAT}
 }
 \value{
 Non-empty GREAT results per topic are return as a list to object@binarized.rGREAT

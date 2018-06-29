@@ -360,3 +360,53 @@ addRegionMetadata <- function(
     return(object)
   }
 }
+
+#' Rename cells in a cisTopic object
+#'
+#' Rename cells in a cisTopic object
+#' @param object cisTopic object
+#' @param names Vector with the new names to be given to the cells.
+#' @param ... Ignored
+#'
+#' @return Returns a cisTopic object with updated cell names in the relevant slots.
+#'
+#' @export
+#'
+#' @examples
+#' cisTopic_mel <- createcisTopicObject(count.matrix = count.matrix)
+#' cisTopic_mel <- renameCells(cisTopic_mel, names)
+#'
+#' cisTopic_mel
+#'
+
+renameCells <- function(
+  object,
+  names,
+  ...
+) {
+  object@cell.names <- names
+  rownames(object@cell.data) <- names
+  
+  if (!is.null(object@count.matrix)){
+    colnames(object@count.matrix) <- names
+  }
+  
+  if (!is.null(object@binary.count.matrix)){
+    colnames(object@binary.count.matrix) <- names
+  }
+  
+  if (!is.null(object@dr[['tSNE']])){
+    rownames(object@dr[['tSNE']]) <- names
+  }
+  
+  if (!is.null(object@dr[['DiffusionMap']])){
+    rownames(object@dr[['DiffusionMap']]) <- names
+  }
+  
+  if (!is.null(object@dr[['PCA']])){
+    rownames(object@dr[['PCA']]$ind.coord) <- names
+  }
+
+  return(object)
+}
+ 

@@ -10,6 +10,8 @@ getBedFiles(object, path)
 \item{object}{Initialized cisTopic object, after object@binarized.cisTopics has been filled.}
 
 \item{path}{Path to save the coordinates of the cisTopic specific regions as bed files.}
+
+\item{seqlengths}{Annotation from where to retrieve the seqlengths}
 }
 \description{
 Saves topics as bed files

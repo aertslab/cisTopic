@@ -5,9 +5,9 @@
 \title{Plot cell states based on dimensionality reduction over cell-cisTopic distributions}
 \usage{
 plotCellStates(object, method = "tSNE", colorBy = NULL, dim = 2,
-  intervals = 10, topic_contr = "Zscore", col.low = "dodgerblue",
-  col.mid = "floralwhite", col.high = "brown1", labels = 3,
-  colVars = list(), ...)
+  intervals = 10, topic_contr = "Zscore", topics = "all",
+  col.low = "dodgerblue", col.mid = "floralwhite", col.high = "brown1",
+  labels = 3, colVars = list(), ...)
 }
 \arguments{
 \item{object}{Initialized cisTopic object, after the object@selected.model has been filled.}
@@ -21,6 +21,8 @@ plotCellStates(object, method = "tSNE", colorBy = NULL, dim = 2,
 \item{intervals}{Intervals to apply on the color palette for coloring continuous variables. By default, it is 10.}
 
 \item{topic_contr}{Color by topic distribution ('Zscore' or 'probability').}
+
+\item{topics}{Vector containing the numbers of the topics for which the plot has to be made if topic_contr is not null.}
 
 \item{col.low}{Color to use for lowest topic enrichment}
 

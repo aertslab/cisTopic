@@ -6,7 +6,7 @@
 \usage{
 createcisTopicObjectFromBAM(bamfiles, regions,
   project.name = "cisTopicProject", min.cells = 1, min.regions = 1,
-  is.acc = 0, paired = FALSE, ...)
+  is.acc = 1, keepCountsMatrix = TRUE, paired = FALSE, ...)
 }
 \arguments{
 \item{bamfiles}{List with the paths to the bam files.}
@@ -20,6 +20,9 @@ createcisTopicObjectFromBAM(bamfiles, regions,
 \item{min.regions}{Minimal number of regions that have to be accessible within a cell to be kept. By default, all cells with at least one region accessible are kept.}
 
 \item{is.acc}{Number of counts necessary to consider a region as accessible.}
+
+\item{keepCountsMatrix}{Whether to keep the counts matrix or not inside the object. For large matrices, we recommend to set this
+to FALSE.}
 
 \item{paired}{Whether data should be treated as paired end or not. If it is FALSE, we count a read if its 5' end falls within
 the region, if false, fragments will be counted instead of individual reads.}

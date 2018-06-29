@@ -5,7 +5,7 @@
 \title{Initialize and setup the cisTopic object starting from methylation files}
 \usage{
 createcisTopicObjectFromMeth(methfiles, regions,
-  project.name = "cisTopicProject", min.cells = 1, min.regions = 0,
+  project.name = "cisTopicProject", min.cells = 1, min.regions = 1,
   is.acc = 0.5, ...)
 }
 \arguments{

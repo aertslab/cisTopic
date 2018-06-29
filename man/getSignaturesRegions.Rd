@@ -4,10 +4,12 @@
 \alias{getSignaturesRegions}
 \title{getSignaturesRegions}
 \usage{
-getSignaturesRegions(object, signatures, minOverlap = 0.4, ...)
+getSignaturesRegions(object, signatures, labels, minOverlap = 0.4, ...)
 }
 \arguments{
 \item{object}{Initialized cisTopic object.}
+
+\item{labels}{A character vector with the names to be given to the signatures (in the same order as the signature paths or named)}
 
 \item{minOverlap}{Minimum overlap between the regions to consider them as overlapping regions}
 
