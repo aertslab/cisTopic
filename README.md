@@ -17,7 +17,12 @@ library(cisTopic)
 
 ## Dependencies
 
-cisTopic requires RcisTarget (version >= 1.0.2). You can install it with:
+cisTopic requires AUCell (version >= 1.2.4) and RcisTarget (version >= 1.0.2). You can install them with:
+
+```r
+devtools::install_github("aertslab/AUCell")
+library(AUCell)
+```
 
 ```r
 devtools::install_github("aertslab/RcisTarget")
@@ -34,7 +39,6 @@ suppressMessages(biocLite(c('Rsubread',
                             'GenomicRanges',
                             'destiny',
                             'rGREAT',
-                            'ChIPseeker',
-			    'AUCell'
+                            'ChIPseeker'
                             )))
 ```
