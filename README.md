@@ -42,3 +42,10 @@ suppressMessages(biocLite(c('Rsubread',
                             'ChIPseeker'
                             )))
 ```
+
+Finally, cisTopic requires NMF (version >= 0.23.6). It can be installed with:
+
+```r
+devtools::install_github('renozao/NMF@devel')
+library(NMF)
+```

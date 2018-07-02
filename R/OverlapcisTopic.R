@@ -159,6 +159,7 @@ signaturesHeatmap <- function(
 
   colorPal <- grDevices::colorRampPalette(c("dodgerblue", "floralwhite", "brown1"))
 
+  nmf.options(grid.patch=TRUE)
   NMF::aheatmap(enrichMatrix, scale="none", revC=TRUE, main='Signatures heatmap', sub='Row normalized AUC scores', Colv=dd.col, color = colorPal(20))
 }
 
