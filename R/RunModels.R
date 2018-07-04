@@ -63,6 +63,8 @@ runModels <- function(
   cellList <- lapply(cellList_nozeros, function(x) {colnames(x) <- rownames(object.binary.count.matrix)[x[1,]+1];x})
   regionList <- rownames(object.binary.count.matrix)
 
+  
+
   if (length(topic) > 1){
     if (length(topic) < nCores){
       print(paste('The number of cores (', nCores, ') is higher than the number of models (', length(topic),').', sep=''))

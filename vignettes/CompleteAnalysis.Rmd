@@ -50,7 +50,7 @@ cisTopic consists of 4 main steps: (1) generation of a binary accessibility matr
 
 If you do not want to run some of the steps in the tutorial, you can load the precomputed cisTopic object:
 
-```{r, eval = FALSE}
+```{r}
 cisTopicObject <- readRDS('cisTopicObject_melanoma.Rds')
 ```
 
@@ -61,7 +61,7 @@ Some steps in this tutorial might take a few minutes to run, as reference we men
 
 First, load cisTopic:
 
-```{r, eval = FALSE}
+```{r}
 suppressMessages(library(cisTopic))
 ```
 
@@ -83,7 +83,7 @@ regions <- 'data/regions.bed'
 cisTopicObject <- createcisTopicObjectFromBAM(bamFiles, regions, project.name='cisTopic_melanoma')
 ```
 
-- Starting from the **counts matrix**. The rownames of these matrix must contain the region coordinates in position format (e.g. chr1:123456-134567) [Reference running time for the example data set (120 cells; ~80,000 regions): 6 seconds]
+- Starting from the **counts matrix**. The rownames of these matrix must contain the region coordinates in position format (e.g. chr1:123456-134567) [Reference running time for the example data set (100 cells; ~110,000 regions): 6 seconds]
 ```{r, eval=FALSE}
 data(counts_mel) 
 cisTopicObject <- createcisTopicObject(counts_mel, project.name='cisTopic_melanoma')
@@ -104,19 +104,15 @@ The next step in the cisTopic workflow is to use Latent Dirichlet Allocation (LD
 
 To do this, `runModels()` builds several models (e.g. with diferent numbers of topics) using Latent Dirichlet Allocation (LDA) on the binary accessibility matrix (automatically stored in the initialized `cisTopicObject`). We can then select the best model using `selectModel()` and `logLikelihoodByIter()`.
 
-*The LDA algorithm was first introduced by Blei et al. (2003), and this implementation, using a Collapsed Gibbs Sampler, is inspired in Griffiths & Steyvers (2004). This method is extremely suitable for dealing with sparse data.*
-
 The main parameters for running the models (`runModels`) are:
 
 - **Number of topics** (`topic`): The number of topics are usually slightly bigger than the potential cell states in the data set. In the case of single cell epigenomics data the number of topics is low compared to other implementations (e.g. text classification). The running time will be affected by the number of topics.
 
-- The Dirichlet hyperparameters **alpha** (topic proportions) and **beta** (topic multinomials): **Alpha** affects the topic combinations; a low alpha forces to pick for each cell a topic distribution with few topics; a high alpha allows cells to have similar, smooth topic proportions. **Beta** affects to the region combinations; the lower the beta, the fewer regions a topic will have; the higher the beta, the less distinct these topics will be (i.e. there will be more overlap between the topics). By default, we select alpha as 50/number of topics and beta as 0.1 (as Griffiths & Steyvers, 2004).
+- The Dirichlet hyperparameters **alpha** (`topic proportions`) and **beta** (`topic multinomials`): **Alpha** affects to the topic-cell contributions; a low alpha forces to pick for each cell a few topics with significant contribution, while a high alpha allows cells to have similar, smooth topic proportions. **Beta** affects to the region combinations; the lower the beta, the fewer regions a topic will have; the higher the beta, the less distinct these topics will be (i.e. there will be more overlap between the topics). By default, we select alpha as 50/number of topics and beta as 0.1 (as Griffiths & Steyvers, 2004).
 
-- Number of **iterations** and **burnin**: For recording the assignments, it is necessary that the likelihood of the model is already stabilised.  cisTopic counts with the function `logLikelihoodByIter` to check whether this parameters should be changed. The number of iterations affect the speed of the algorithm. Note that the burnin will be substracted from the number of iterations (so iterations > burnin).
+- Number of **iterations** and **burnin**: For recording the assignments, it is necessary that the likelihood of the model is already stabilised.  cisTopic counts with the function `logLikelihoodByIter` to check whether this parameters should be changed. The number of iterations affect the speed of the algorithm. Note that the burnin will be substracted from the number of iterations.
 
-**NOTE:** For large data sets it may not be feasible to keep all models simultaneously in memory. An alternative is to run the models and
-only save their likelihoods (see *selectModel*), and the model with the highest likelihood. If after checking the likelihood plot another
-model is preferred, the function can be re-run only for that number of topics.
+**NOTE:** For large data sets it may not be feasible to keep all models simultaneously in memory. An alternative is to run the models and only save their likelihoods and the model with the highest likelihood (see the argument *returnType* in *runModels*). If after checking the likelihood plot another model is preferred, the function can be re-run only for that number of topics.
 
 In this tutorial, we will test models with 2, 5, 10 to 15, 20 and 25 topics [Reference running time for the example data set (100 cells; ~110,000 regions): 9 minutes].
 
@@ -129,15 +125,15 @@ cisTopicObject <- runModels(cisTopicObject, topic=c(2, 5, 10, 15, 20, 25), seed=
 The log likelihood can be used to estimate the plausibility of a model parameter value, given the observed data.
 `selectModel` will select the model with the highest log likelihood (`P(D|T)`) at the last iteration.
 
-```{r, eval = FALSE}
+```{r}
 cisTopicObject <- selectModel(cisTopicObject)
 ```
 
-This plot shows that a model with 10 topics is suitable. If two or more models have comparable log likelihoods, we recommend to pick the one with the lower log likelihood (i.e. lower complexity). By default, this function selects the model with the highest likelihood, but the user can select a certain topic with the `select` parameter in this function. In cases were the topic selection is not clear, the user can rerun the models using a different seed to select the best number of topics. We will continue with the model with 10 topics.
+This plot shows that a model with 10 topics is suitable. If two or more models have comparable log likelihoods, we recommend to pick the one with the lower number of topics (i.e. lower complexity). By default, this function selects the model with the highest likelihood, but the user can select a certain topic with the `select` parameter in this function. In cases were the topic selection is not clear, the user can rerun the models using a different seed to select the best number of topics. We will continue with the model with 10 topics.
 
-Another way of visualizing the likelihood is to plot the changes in the likelihood through the different iterations. It is important to check that the likelihood of the models is stabilised in the recording iterations, and the area under these curves can also be useful for model selection.
+Another way of visualizing the likelihood of the models is to plot their changes through the different iterations. It is important to check that the likelihood of the models is stabilised in the recording iterations, and the area under these curves can also be useful for model selection.
 
-```{r, eval = FALSE}
+```{r}
 logLikelihoodByIter(cisTopicObject)
 ```
 
@@ -159,21 +155,21 @@ cisTopicObject <- runPCA(cisTopicObject)
 
 Once calculations are done, cisTopic offers a unified visualization function (`plotCellStates`), which allows to visualize tSNE, diffussion maps, principal components and biplots (in 2/3D), colored by metadata and/or topic enrichment. 
 
-```{r, fig.show='hold', fig.align='center', eval = FALSE}
+```{r, fig.show='hold', fig.align='center'}
 plotCellStates(cisTopicObject, method='tSNE', topic_contr='Zscore', topics='all', colorBy=c('LineType', 'cellLine'))
 ```
 
-```{r, fig.show='hold', fig.align='center', eval = FALSE}
+```{r, fig.show='hold', fig.align='center'}
 plotCellStates(cisTopicObject, method='Biplot', topic_contr='Zscore', topics = c(4,7,8), colorBy=c('LineType', 'cellLine'))
 ```
 
 We can also generate a heatmap based on the cell-cisTopic distributions.
 
-```{r, eval = FALSE}
+```{r}
 cellTopicHeatmap(cisTopicObject, colorBy=c('LineType', 'cellLine'))
 ```
 
-### B. Analisis of the regulatory topics
+### B. Analysis of the regulatory topics
 
 #### - Getting and visualising topics
 
@@ -200,7 +196,7 @@ probability threshold must be provided by the user.
 
 **NOTE**: If 'GammaFit' is used for the topic binarization, we recommend to scale the scores between 0 and 1 (see `getRegionsScores`). 
 
-```{r, eval = FALSE}
+```{r}
 cisTopicObject <- binarizecisTopics(cisTopicObject, thrP=0.975, plot=FALSE)
 ```
 
@@ -214,9 +210,9 @@ getBedFiles(cisTopicObject, path='output/cisTopics_asBed')
 
 One way to start exploring the nature of the topics is to check their overlap (i.e. the regions included in the topics) with predefined epigenomic signatures/datasets. For example, regions from ChIP-seq can point towards enrichment of binding sites of a given TF, regions from FAIRE- or ATAC-seq to regions generally open in a given cell type or tissue, etc.
 
-For this analysis, we need to identify which regions from the topics overlap with the signature (in this case, the whole distribution is used instead of relying only on the top regions per topic). This is achieved with an adaptation of the recovery curve approach taken by AUCell [Aibar et al., 2017]. First, epigenomic regions are intersected and mapped to regions in the dataset (by default, with at leadt 40% overlap). The corresponding overlapping sets (which are stored in `object@signatures`) are used as input, together with the region rankings per topic. Note that we can give specific labels each signature. If a region is present in the signature, the curve will increase one step in the y-axis. The area under this curve is used as a measurement for enrichment (see `signaturesHeatmap`) [Reference running time: 2 minutes].
+For this analysis, we need to identify which regions from the topics overlap with the signature (in this case, the whole distribution is used instead of relying only on the top regions per topic). This is achieved with an adaptation of the recovery curve approach taken by AUCell [Aibar et al., 2017]. First, epigenomic regions are intersected and mapped to regions in the dataset (by default, with at least 40% overlap). The corresponding overlapping sets (which are stored in `object@signatures`) are used as input, together with the region rankings per topic. Note that we can give specific labels each signature. If a region is present in the signature, the curve will increase one step in the y-axis. The area under this curve is used as a measurement for enrichment (see `signaturesHeatmap`) [Reference running time: 2 minutes].
 
-```{r, eval = FALSE}
+```{r}
 path_to_signatures <- 'FAIRE_signatures/'
 FAIRE_signatures <- paste(path_to_signatures, list.files(path_to_signatures), sep='')
 
@@ -228,13 +224,13 @@ cisTopicObject <- getSignaturesRegions(cisTopicObject, FAIRE_signatures, labels=
 
 We can visualize how these regions are enriched within each topic with `signaturesHeatmap`. With this function, we obtain a heatmap showing the row normalised AUC scores.
 
-```{r, eval = FALSE}
+```{r}
 signaturesHeatmap(cisTopicObject)
 ```
 
 Another example, using ChIP-seq data [Reference running time: 20 seconds]. Note that when adding a new set of signatures, previous signatures will be removed:
 
-```{r, eval = FALSE}
+```{r}
 path_to_signatures <- 'ChIP-seq_signatures/'
 ChIP_Seq_signatures <- paste(path_to_signatures, list.files(path_to_signatures), sep='')
 labels  <- c('TFAP2A', 'SOX10', 'MITF')
@@ -253,7 +249,7 @@ cisTopicObject <- annotateRegions(cisTopicObject, txdb=TxDb.Hsapiens.UCSC.hg19.k
 
 As we saw before, we can use the region type annotations as region sets/signatures to check whether a topic is more enriched in a certain type of region.
 
-```{r, eval = FALSE}
+```{r}
 signaturesHeatmap(cisTopicObject, selected.signatures = "annotation") 
 ```
 
@@ -264,12 +260,12 @@ cisTopicObject <- GREAT(cisTopicObject, genome='hg19', fold_enrichment=2, geneHi
 ```
 
 We can visualize the enrichment results within a topic:
-```{r, eval = FALSE}
+```{r}
 ontologyDotPlot(cisTopicObject, top=5, topics=4, var.y='name', order.by='Binom_Adjp_BH')
 ```
 
 We can also compare rGREAT results between topics:
-```{r, eval = FALSE}
+```{r}
 ontologyDotPlot(cisTopicObject, top=5, topics=c(4,7), var.y='name', order.by='Binom_Adjp_BH')
 ```
 
@@ -300,18 +296,18 @@ cisTopicObject <- topicsRcisTarget(cisTopicObject, genome='hg19', pathToFeather,
 
 Once RcisTarget is run, interactive motif enrichment tables can be explored (e.g. per topic):
 
-```{r, eval = FALSE}
+```{r}
 Topic4_motif_enr <- cisTopicObject@binarized.RcisTarget[[4]]
 DT::datatable(Topic4_motif_enr[,-c("enrichedRegions", "TF_lowConf"), with=FALSE], escape = FALSE, filter="top", options=list(pageLength=5))
 ```
 
-```{r, eval = FALSE}
+```{r}
 Topic7_motif_enr <- cisTopicObject@binarized.RcisTarget[[7]]
 DT::datatable(Topic7_motif_enr[,-c("enrichedRegions", "TF_lowConf"), with=FALSE], escape = FALSE, filter="top", options=list(pageLength=5))
 ```
 
 We can also see the all the motifs in all topics:
-```{r, eval = FALSE}
+```{r}
 All_motif_enr <- data.table::rbindlist(cisTopicObject@binarized.RcisTarget)
 DT::datatable(All_motif_enr[,-c("enrichedRegions", "TF_lowConf"), with=FALSE], escape = FALSE, filter="top", options=list(pageLength=5))
 ```

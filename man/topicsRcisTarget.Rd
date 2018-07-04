@@ -13,6 +13,8 @@ topicsRcisTarget(object, genome = "hg19", pathToFeather,
 
 \item{genome}{Genome to which the data was aligned (hg19 or mm9)}
 
+\item{reduced_database}{Whether the reduced version of the database is being used or not (by default, it is set to false).}
+
 \item{...}{See RcisTarget}
 
 \item{motifRankings}{Feather database corresponding to the genome}
@@ -24,7 +26,7 @@ Motif enrichment table is stored in object@binarized.RcisTarget
 Run RcisTarget in the binarized topics
 }
 \examples{
-path <- "/media/seq-srv-06/lcb/cbravo/feather_databases/hg19-regions-1M-9species.all_regions.mc9nr.feather"
+path <- "hg19-regions-1M-9species.all_regions.mc9nr.feather"
 motifRankings <- importRankings(path)
 cisTopicObject <- topicRcisTarget(cisTopicObject, featherdatabase)
 cisTopicObject

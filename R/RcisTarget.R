@@ -95,11 +95,12 @@ scoredRegionsToCtx <- function(
 #' @param object Initialized cisTopic object, after the object@@binarized.regions.to.Rct has been filled.
 #' @param genome Genome to which the data was aligned (hg19 or mm9)
 #' @param motifRankings Feather database corresponding to the genome
+#' @param reduced_database Whether the reduced version of the database is being used or not (by default, it is set to false).
 #' @param ... See RcisTarget
 #'
 #' @return Motif enrichment table is stored in object@@binarized.RcisTarget
 #' @examples
-#' path <- "/media/seq-srv-06/lcb/cbravo/feather_databases/hg19-regions-1M-9species.all_regions.mc9nr.feather"
+#' path <- "hg19-regions-1M-9species.all_regions.mc9nr.feather"
 #' motifRankings <- importRankings(path)
 #' cisTopicObject <- topicRcisTarget(cisTopicObject, featherdatabase)
 #' cisTopicObject
@@ -142,9 +143,9 @@ topicsRcisTarget <- function(
     topicsList <- llply(1:length(topicsList), function(i) topicsList[[i]][which(topicsList[[i]] %in% ctxregions)])
     names(topicsList) <- names(object@binarized.regions.to.Rct)
   }
-
-  columnsinRanking <- feather_metadata(pathToFeather)[[2]][2]
-
+  
+    columnsinRanking <- feather_metadata(pathToFeather)[[2]][2]
+  
   if (length(topicsList) < nCores){
     print(paste('The number of cores (', nCores, ') is higher than the number of topics (', topic,').', sep=''))
   }
@@ -167,7 +168,7 @@ topicsRcisTarget <- function(
     stopCluster(cl)
   }
   else{
-    cisTopic.cisTarget <- suppressWarnings(llply(1:length(topicList), function (i) cisTarget(topicsList[[i]],
+    cisTopic.cisTarget <- suppressWarnings(llply(1:length(topicsList), function (i) cisTarget(topicsList[[i]],
                                                                                              motifRankings,
                                                                                              motifAnnot = motifAnnot,
                                                                                              nesThreshold = nesThreshold,
@@ -266,7 +267,7 @@ getCistromes <- function(
 # Return cistromes based on i-cisTarget regions.
 .onecisTopicGetCtxCistromes <- function(
   motifEnrichmentTable,
-  annotation='Direct'
+  annotation='TF_highConf'
   ){
   if (annotation == 'TF_highConf'){
     motifEnrichment.asIncidList <- apply(motifEnrichmentTable, 1, function(oneMotifRow) {
@@ -283,7 +284,7 @@ getCistromes <- function(
       frame
     })
   }
-  if (annotation == 'Both'){
+  else {
     motifEnrichment.asIncidList_direct <- apply(motifEnrichmentTable, 1, function(oneMotifRow) {
       peaks <- strsplit(oneMotifRow["enrichedRegions"], ";")[[1]]
       TFs <- strsplit(oneMotifRow["TF_highConf"], "; ")[[1]]
@@ -343,9 +344,15 @@ getCistromes <- function(
   cistromes <- sapply(split(cistromeTargetsInfo_splitByAnnot[["TRUE"]], cistromeTargetsInfo_splitByAnnot[["TRUE"]][,"TF"]), function(x) sort(as.character(unlist(x[,"region"]))))
   if (annotation == 'Both'){
     cistromes_extended <- sapply(split(cistromeTargetsInfo_splitByAnnot[["FALSE"]],cistromeTargetsInfo_splitByAnnot[["FALSE"]][,"TF"]), function(x) unname(x[,"region"]))
-    cistromes_extended <- sapply(names(cistromes_extended), function(tf) sort(unique(c(cistromes[[tf]], cistromes_extended[[tf]]))))
+    cistromes_extended[which(names(cistromes_extended) %in% names(cistromes))] <- lapply(names(cistromes_extended)[which(names(cistromes_extended) %in% names(cistromes))], function(tf) sort(unique(c(cistromes[[tf]], cistromes_extended[[tf]]))))
     names(cistromes_extended) <- paste(names(cistromes_extended), "_extended", sep="")
-    cistromes <- c(cistromes, cistromes_extended)
+    
+    if (class(cistromes) == 'matrix'){
+      cistromes_extended[[colnames(cistromes)]] <- as.vector(cistromes)
+      cistromes <- cistromes_extended
+    } else {
+      cistromes <- c(cistromes, cistromes_extended)
+    }
   }
   names(cistromes) <- paste(names(cistromes), " (",lengths(cistromes), "r)", sep="")
   return(cistromes)
