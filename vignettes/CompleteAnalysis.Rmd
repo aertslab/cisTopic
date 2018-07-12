@@ -50,7 +50,7 @@ cisTopic consists of 4 main steps: (1) generation of a binary accessibility matr
 
 If you do not want to run some of the steps in the tutorial, you can load the precomputed cisTopic object:
 
-```{r}
+```{r, eval = FALSE}
 cisTopicObject <- readRDS('cisTopicObject_melanoma.Rds')
 ```
 
@@ -61,7 +61,7 @@ Some steps in this tutorial might take a few minutes to run, as reference we men
 
 First, load cisTopic:
 
-```{r}
+```{r, eval = FALSE}
 suppressMessages(library(cisTopic))
 ```
 
@@ -125,7 +125,7 @@ cisTopicObject <- runModels(cisTopicObject, topic=c(2, 5, 10, 15, 20, 25), seed=
 The log likelihood can be used to estimate the plausibility of a model parameter value, given the observed data.
 `selectModel` will select the model with the highest log likelihood (`P(D|T)`) at the last iteration.
 
-```{r}
+```{r, eval = FALSE}
 cisTopicObject <- selectModel(cisTopicObject)
 ```
 
@@ -133,7 +133,7 @@ This plot shows that a model with 10 topics is suitable. If two or more models h
 
 Another way of visualizing the likelihood of the models is to plot their changes through the different iterations. It is important to check that the likelihood of the models is stabilised in the recording iterations, and the area under these curves can also be useful for model selection.
 
-```{r}
+```{r, eval = FALSE}
 logLikelihoodByIter(cisTopicObject)
 ```
 
@@ -155,17 +155,17 @@ cisTopicObject <- runPCA(cisTopicObject)
 
 Once calculations are done, cisTopic offers a unified visualization function (`plotCellStates`), which allows to visualize tSNE, diffussion maps, principal components and biplots (in 2/3D), colored by metadata and/or topic enrichment. 
 
-```{r, fig.show='hold', fig.align='center'}
+```{r, eval=FALSE, fig.show='hold', fig.align='center'}
 plotCellStates(cisTopicObject, method='tSNE', topic_contr='Zscore', topics='all', colorBy=c('LineType', 'cellLine'))
 ```
 
-```{r, fig.show='hold', fig.align='center'}
+```{r, eval=FALSE, fig.show='hold', fig.align='center'}
 plotCellStates(cisTopicObject, method='Biplot', topic_contr='Zscore', topics = c(4,7,8), colorBy=c('LineType', 'cellLine'))
 ```
 
 We can also generate a heatmap based on the cell-cisTopic distributions.
 
-```{r}
+```{r, eval = FALSE}
 cellTopicHeatmap(cisTopicObject, colorBy=c('LineType', 'cellLine'))
 ```
 
@@ -196,7 +196,7 @@ probability threshold must be provided by the user.
 
 **NOTE**: If 'GammaFit' is used for the topic binarization, we recommend to scale the scores between 0 and 1 (see `getRegionsScores`). 
 
-```{r}
+```{r, eval = FALSE}
 cisTopicObject <- binarizecisTopics(cisTopicObject, thrP=0.975, plot=FALSE)
 ```
 
@@ -212,7 +212,7 @@ One way to start exploring the nature of the topics is to check their overlap (i
 
 For this analysis, we need to identify which regions from the topics overlap with the signature (in this case, the whole distribution is used instead of relying only on the top regions per topic). This is achieved with an adaptation of the recovery curve approach taken by AUCell [Aibar et al., 2017]. First, epigenomic regions are intersected and mapped to regions in the dataset (by default, with at least 40% overlap). The corresponding overlapping sets (which are stored in `object@signatures`) are used as input, together with the region rankings per topic. Note that we can give specific labels each signature. If a region is present in the signature, the curve will increase one step in the y-axis. The area under this curve is used as a measurement for enrichment (see `signaturesHeatmap`) [Reference running time: 2 minutes].
 
-```{r}
+```{r, eval = FALSE}
 path_to_signatures <- 'FAIRE_signatures/'
 FAIRE_signatures <- paste(path_to_signatures, list.files(path_to_signatures), sep='')
 
@@ -224,13 +224,13 @@ cisTopicObject <- getSignaturesRegions(cisTopicObject, FAIRE_signatures, labels=
 
 We can visualize how these regions are enriched within each topic with `signaturesHeatmap`. With this function, we obtain a heatmap showing the row normalised AUC scores.
 
-```{r}
+```{r, eval = FALSE}
 signaturesHeatmap(cisTopicObject)
 ```
 
 Another example, using ChIP-seq data [Reference running time: 20 seconds]. Note that when adding a new set of signatures, previous signatures will be removed:
 
-```{r}
+```{r, eval = FALSE}
 path_to_signatures <- 'ChIP-seq_signatures/'
 ChIP_Seq_signatures <- paste(path_to_signatures, list.files(path_to_signatures), sep='')
 labels  <- c('TFAP2A', 'SOX10', 'MITF')
@@ -249,7 +249,7 @@ cisTopicObject <- annotateRegions(cisTopicObject, txdb=TxDb.Hsapiens.UCSC.hg19.k
 
 As we saw before, we can use the region type annotations as region sets/signatures to check whether a topic is more enriched in a certain type of region.
 
-```{r}
+```{r, eval = FALSE}
 signaturesHeatmap(cisTopicObject, selected.signatures = "annotation") 
 ```
 
@@ -260,12 +260,12 @@ cisTopicObject <- GREAT(cisTopicObject, genome='hg19', fold_enrichment=2, geneHi
 ```
 
 We can visualize the enrichment results within a topic:
-```{r}
+```{r, eval = FALSE}
 ontologyDotPlot(cisTopicObject, top=5, topics=4, var.y='name', order.by='Binom_Adjp_BH')
 ```
 
 We can also compare rGREAT results between topics:
-```{r}
+```{r, eval = FALSE}
 ontologyDotPlot(cisTopicObject, top=5, topics=c(4,7), var.y='name', order.by='Binom_Adjp_BH')
 ```
 
@@ -296,18 +296,18 @@ cisTopicObject <- topicsRcisTarget(cisTopicObject, genome='hg19', pathToFeather,
 
 Once RcisTarget is run, interactive motif enrichment tables can be explored (e.g. per topic):
 
-```{r}
+```{r, eval = FALSE}
 Topic4_motif_enr <- cisTopicObject@binarized.RcisTarget[[4]]
 DT::datatable(Topic4_motif_enr[,-c("enrichedRegions", "TF_lowConf"), with=FALSE], escape = FALSE, filter="top", options=list(pageLength=5))
 ```
 
-```{r}
+```{r, eval = FALSE}
 Topic7_motif_enr <- cisTopicObject@binarized.RcisTarget[[7]]
 DT::datatable(Topic7_motif_enr[,-c("enrichedRegions", "TF_lowConf"), with=FALSE], escape = FALSE, filter="top", options=list(pageLength=5))
 ```
 
 We can also see the all the motifs in all topics:
-```{r}
+```{r, eval = FALSE}
 All_motif_enr <- data.table::rbindlist(cisTopicObject@binarized.RcisTarget)
 DT::datatable(All_motif_enr[,-c("enrichedRegions", "TF_lowConf"), with=FALSE], escape = FALSE, filter="top", options=list(pageLength=5))
 ```

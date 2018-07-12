@@ -35,6 +35,7 @@ annotateRegions <- function(
 #'
 #' Run rGREAT in the binarized cisTopics
 #' @param object Initialized cisTopic object, after object@@binarized.cisTopics has been filled.
+#' @param genome Genome to which the data was aligned (see rGREAT for options).
 #' @param fold_enrichment Minimum binomial fold enrichment to keep term.
 #' @param geneHits Minimum number of genes associated to keep term.
 #' @param sign Maximum adjusted p-value to keep term.

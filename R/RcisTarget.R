@@ -2,7 +2,7 @@
 #'
 #' Convert binarized cisTopics to the corresponding cisTarget coordinates
 #' @param object Initialized cisTopic object, after the object@@binarized.cisTopics has been filled.
-#' @param genome Genome to which the data has been mapped. The available genomes are hg19, dm3 and dm6.
+#' @param genome Genome to which the data has been mapped. The available genomes are hg19, dm3, dm6 and mm9.
 #' @param ... See \code{findOverlap} from GenomicRanges
 #'
 #' @return Returns the cisTarget regions that correspond to the binarized topics in object@@binarized.regions.to.Rct
@@ -27,6 +27,12 @@ binarizedcisTopicsToCtx <- function(
   else if (genome == 'dm3'){
     data(dm3_CtxRegions)
     CtxRegions <- makeGRangesFromDataFrame(dm3_CtxRegions, keep.extra.columns = TRUE)
+  }
+  else if (genome == 'mm9'){
+    data(mm9_CtxRegions)
+    CtxLabel <- paste('mm9_r70__', rownames(mm9_CtxRegions), sep='')
+    mm9_CtxRegions$CtxLabel <- CtxLabel
+    CtxRegions <- makeGRangesFromDataFrame(mm9_CtxRegions, keep.extra.columns = TRUE)
   }
 
   object.binarized.regions.to.Rct <- llply(1:length(object@binarized.cisTopics), function(i) .getCtxRegions(object@region.ranges[rownames(object@binarized.cisTopics[[i]]),], CtxRegions, minOverlap = minOverlap, ...))
@@ -53,7 +59,7 @@ binarizedcisTopicsToCtx <- function(
 #'
 #' Map regions to the most overlapping cisTarget region
 #' @param object Initialized cisTopic object, after the object@@binarized.cisTopics has been filled.
-#' @param genome to which the data has been mapped. The available genomes are hg19, dm3 and dm6.
+#' @param genome to which the data has been mapped. The available genomes are hg19, dm3, dm6 and mm9.
 #' @param ... See \code{findOverlap} from GenomicRanges
 #'
 #' @return Returns the region scores per topic in object@@region.data
@@ -93,7 +99,8 @@ scoredRegionsToCtx <- function(
 #'
 #' Run RcisTarget in the binarized topics
 #' @param object Initialized cisTopic object, after the object@@binarized.regions.to.Rct has been filled.
-#' @param genome Genome to which the data was aligned (hg19 or mm9)
+#' @param pathToFeather Path to the feather database to use. Note that this database has to match the genome used for mapping.
+#' @param org Genome to which the data was aligned (hs, mm or dmel).
 #' @param motifRankings Feather database corresponding to the genome
 #' @param reduced_database Whether the reduced version of the database is being used or not (by default, it is set to false).
 #' @param ... See RcisTarget
@@ -122,12 +129,16 @@ topicsRcisTarget <- function(
   nCores = 1,
   ...
 ){
-  if (genome == 'hg19'){
+  if (org == 'hs'){
     data(motifAnnotations_hgnc)
     motifAnnot <- motifAnnotations_hgnc
   }
-  else if (genome == 'mm9'){
+  else if (org == 'mm'){
     data(motifAnnotations_mgi)
+    motifAnnot <- motifAnnotations_mgi
+  }
+  else if (org == 'dmel'){
+    data(motifAnnotations_dmel)
     motifAnnot <- motifAnnotations_mgi
   }
 

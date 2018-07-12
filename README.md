@@ -1,6 +1,6 @@
 ### News
 
-15-6-2018: Vignette on simulated single cell epigenomes added.
+12-7-2018: Updates for mm9, dm3 and dm6 motif enrichment.
 
 # cisTopic: Probabilistic modelling of cis-regulatory topics from single cell epigenomics data
 

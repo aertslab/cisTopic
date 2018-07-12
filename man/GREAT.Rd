@@ -10,6 +10,8 @@ GREAT(object, genome = "hg19", fold_enrichment = 2, geneHits = 1,
 \arguments{
 \item{object}{Initialized cisTopic object, after object@binarized.cisTopics has been filled.}
 
+\item{genome}{Genome to which the data was aligned (see rGREAT for options).}
+
 \item{fold_enrichment}{Minimum binomial fold enrichment to keep term.}
 
 \item{geneHits}{Minimum number of genes associated to keep term.}
