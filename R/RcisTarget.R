@@ -85,6 +85,10 @@ scoredRegionsToCtx <- function(
     data(dm3_CtxRegions)
     CtxRegions <- makeGRangesFromDataFrame(dm3_CtxRegions, keep.extra.columns = TRUE)
   }
+  else if (genome == 'mm9'){
+    data(mm9_CtxRegions)
+    CtxRegions <- makeGRangesFromDataFrame(mm9_CtxRegions, keep.extra.columns = TRUE)
+  }
 
   coordinates <- object@region.ranges
   selectedRegions <- .getOverlapRegionsFromCoordinates(coordinates, CtxRegions, minOverlap=minOverlap, overlapping = FALSE, ...)
@@ -120,7 +124,7 @@ scoredRegionsToCtx <- function(
 
 topicsRcisTarget <- function(
   object,
-  genome = 'hg19',
+  org = 'hg19',
   pathToFeather,
   reduced_database = FALSE,
   nesThreshold = 3,
