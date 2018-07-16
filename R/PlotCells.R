@@ -370,9 +370,9 @@ plotCellStates <- function(
   ...
 ){
   par.opts <- par()
-  levels <- sort(unique(variable))
+  levels <- as.vector(sort(unique(variable)))
   if(is.null(colVars[[main]])) {
-    colVars[[main]] <- setNames(rainbow(length(unique(variable)), s=0.5), unique(variable))
+    colVars[[main]] <- setNames(rainbow(length(unique(variable)), s=0.5), levels)
   }
   cellColor <- setNames(colVars[[main]][variable], names)
 
