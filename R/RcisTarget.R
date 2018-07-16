@@ -143,11 +143,11 @@ topicsRcisTarget <- function(
   }
   else if (genome == 'dm3'){
     data(motifAnnotations_dmel)
-    motifAnnot <- motifAnnotations_mgi
+    motifAnnot <- motifAnnotations_dmel
   }
   else if (genome == 'dm6'){
     data(motifAnnotations_dmel)
-    motifAnnot <- motifAnnotations_mgi
+    motifAnnot <- motifAnnotations_dmel
   }
 
   topicsList <- object@binarized.regions.to.Rct
