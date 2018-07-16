@@ -4,14 +4,14 @@
 \alias{topicsRcisTarget}
 \title{topicsRcisTarget}
 \usage{
-topicsRcisTarget(object, org = "hg19", pathToFeather,
+topicsRcisTarget(object, genome = "hg19", pathToFeather,
   reduced_database = FALSE, nesThreshold = 3, rocthr = 0.005,
   maxRank = 20000, nCores = 1, ...)
 }
 \arguments{
 \item{object}{Initialized cisTopic object, after the object@binarized.regions.to.Rct has been filled.}
 
-\item{org}{Genome to which the data was aligned (hs, mm or dmel).}
+\item{genome}{Genome to which the data was aligned (hg19, mm9, dm3 or dm6).}
 
 \item{pathToFeather}{Path to the feather database to use. Note that this database has to match the genome used for mapping.}
 

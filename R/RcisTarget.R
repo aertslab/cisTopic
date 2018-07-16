@@ -104,7 +104,7 @@ scoredRegionsToCtx <- function(
 #' Run RcisTarget in the binarized topics
 #' @param object Initialized cisTopic object, after the object@@binarized.regions.to.Rct has been filled.
 #' @param pathToFeather Path to the feather database to use. Note that this database has to match the genome used for mapping.
-#' @param org Genome to which the data was aligned (hs, mm or dmel).
+#' @param genome Genome to which the data was aligned (hg19, mm9, dm3 or dm6).
 #' @param motifRankings Feather database corresponding to the genome
 #' @param reduced_database Whether the reduced version of the database is being used or not (by default, it is set to false).
 #' @param ... See RcisTarget
@@ -124,7 +124,7 @@ scoredRegionsToCtx <- function(
 
 topicsRcisTarget <- function(
   object,
-  org = 'hg19',
+  genome = 'hg19',
   pathToFeather,
   reduced_database = FALSE,
   nesThreshold = 3,
@@ -133,15 +133,19 @@ topicsRcisTarget <- function(
   nCores = 1,
   ...
 ){
-  if (org == 'hs'){
+  if (genome == 'hg19'){
     data(motifAnnotations_hgnc)
     motifAnnot <- motifAnnotations_hgnc
   }
-  else if (org == 'mm'){
+  else if (genome == 'mm9'){
     data(motifAnnotations_mgi)
     motifAnnot <- motifAnnotations_mgi
   }
-  else if (org == 'dmel'){
+  else if (genome == 'dm3'){
+    data(motifAnnotations_dmel)
+    motifAnnot <- motifAnnotations_mgi
+  }
+  else if (genome == 'dm6'){
     data(motifAnnotations_dmel)
     motifAnnot <- motifAnnotations_mgi
   }
