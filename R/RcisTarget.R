@@ -3,6 +3,8 @@
 #' Convert binarized cisTopics to the corresponding cisTarget coordinates
 #' @param object Initialized cisTopic object, after the object@@binarized.cisTopics has been filled.
 #' @param genome Genome to which the data has been mapped. The available genomes are hg19, dm3, dm6 and mm9.
+#' @param liftOver GRangesList object containing the original coordinates (in the same format as
+#' object@@region.names) in the data set as slot names and the corresponding mapping regions as a GRanges object in the slot.
 #' @param ... See \code{findOverlap} from GenomicRanges
 #'
 #' @return Returns the cisTarget regions that correspond to the binarized topics in object@@binarized.regions.to.Rct
@@ -13,6 +15,7 @@
 binarizedcisTopicsToCtx <- function(
   object,
   genome = 'hg19',
+  liftOver = NULL,
   minOverlap = 0.4,
   ...
 ){
@@ -35,7 +38,11 @@ binarizedcisTopicsToCtx <- function(
     CtxRegions <- makeGRangesFromDataFrame(mm9_CtxRegions, keep.extra.columns = TRUE)
   }
 
-  object.binarized.regions.to.Rct <- llply(1:length(object@binarized.cisTopics), function(i) .getCtxRegions(object@region.ranges[rownames(object@binarized.cisTopics[[i]]),], CtxRegions, minOverlap = minOverlap, ...))
+  if (is.null(liftOver)){
+    object.binarized.regions.to.Rct <- llply(1:length(object@binarized.cisTopics), function(i) .getCtxRegions(object@region.ranges[rownames(object@binarized.cisTopics[[i]]),], CtxRegions, minOverlap = minOverlap, ...))
+  } else {
+    object.binarized.regions.to.Rct <- llply(1:length(object@binarized.cisTopics), function(i) .getCtxRegions(unlist(liftOver[rownames(object@binarized.cisTopics[[i]])], recursive = TRUE, use.names = TRUE), CtxRegions, minOverlap = minOverlap, ...))
+  }
   names(object.binarized.regions.to.Rct) <- names(object@binarized.cisTopics)
   object@binarized.regions.to.Rct <- object.binarized.regions.to.Rct
   return(object)
@@ -60,6 +67,8 @@ binarizedcisTopicsToCtx <- function(
 #' Map regions to the most overlapping cisTarget region
 #' @param object Initialized cisTopic object, after the object@@binarized.cisTopics has been filled.
 #' @param genome to which the data has been mapped. The available genomes are hg19, dm3, dm6 and mm9.
+#' @param liftOver GRangesList object containing the original coordinates (in the same format as
+#' object@@region.names) in the data set as slot names and the corresponding mapping regions as a GRanges object in the slot.
 #' @param ... See \code{findOverlap} from GenomicRanges
 #'
 #' @return Returns the region scores per topic in object@@region.data
@@ -69,6 +78,7 @@ binarizedcisTopicsToCtx <- function(
 
 scoredRegionsToCtx <- function(
   object,
+  liftOver = NULL, 
   genome = 'hg19',
   minOverlap = 0.4,
   ...
@@ -90,7 +100,12 @@ scoredRegionsToCtx <- function(
     CtxRegions <- makeGRangesFromDataFrame(mm9_CtxRegions, keep.extra.columns = TRUE)
   }
 
-  coordinates <- object@region.ranges
+  if (is.null(liftOver)){
+    coordinates <- object@region.ranges
+  } else {
+    coordinates <- unlist(liftOver, recursive = TRUE, use.names = TRUE)
+  }
+
   selectedRegions <- .getOverlapRegionsFromCoordinates(coordinates, CtxRegions, minOverlap=minOverlap, overlapping = FALSE, ...)
   selectedCtxLabels <- as.vector(CtxRegions[as.vector(selectedRegions[,2])]@elementMetadata[,"CtxLabel"])
   names(selectedCtxLabels) <- as.vector(selectedRegions[,1])

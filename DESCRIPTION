@@ -12,7 +12,7 @@ License: GPL-3
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 6.0.1
-Depends: Rsubread, GenomicRanges, stats, lda, doSNOW, parallel, plyr,
+Depends: Rsubread, GenomicRanges, stats, Matrix, lda, doSNOW, parallel, plyr,
         Rtsne, destiny, fastcluster, NMF (>= 0.23.6), DT, fitdistrplus,
         RcisTarget (>= 1.0.2), rGREAT, ChIPseeker, ggplot2, data.table,
         feather, AUCell (>= 1.2.4), rtracklayer, scatterplot3d

@@ -4,13 +4,16 @@
 \alias{GREAT}
 \title{GREAT}
 \usage{
-GREAT(object, genome = "hg19", fold_enrichment = 2, geneHits = 1,
-  sign = 0.05, request_interval = 20, ...)
+GREAT(object, genome = "hg19", liftOver = NULL, fold_enrichment = 2,
+  geneHits = 1, sign = 0.05, request_interval = 20, ...)
 }
 \arguments{
 \item{object}{Initialized cisTopic object, after object@binarized.cisTopics has been filled.}
 
 \item{genome}{Genome to which the data was aligned (see rGREAT for options).}
+
+\item{liftOver}{GRangesList object containing the original coordinates (in the same format as
+object@region.names) in the data set as slot names and the corresponding mapping regions as a GRanges object in the slot.}
 
 \item{fold_enrichment}{Minimum binomial fold enrichment to keep term.}
 
@@ -29,7 +32,7 @@ Non-empty GREAT results per topic are return as a list to object@binarized.rGREA
 Run rGREAT in the binarized cisTopics
 }
 \details{
-This function works with regions annotated to hg19, hg18, mm10, mm9 and danRer7.
+This function works with regions annotated to hg19, hg18, mm10, mm9 and danRer7. For other genomes, a liftOver step to one of the available genomes is required.
 }
 \examples{
 object <- GREAT(object, request_interval = 10)

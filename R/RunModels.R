@@ -27,6 +27,7 @@
 #' @importFrom lda lda.collapsed.gibbs.sampler
 #' @importFrom parallel makeCluster
 #' @import doSNOW
+#' @import Matrix
 #' @importFrom plyr llply
 #' @export
 #'
@@ -55,21 +56,21 @@ runModels <- function(
   
   # Take binary count matrix
   object.binary.count.matrix <- object@binary.count.matrix
-
-  # Prepare data
-  cellList <- lapply(seq_len(ncol(object.binary.count.matrix)), function(i) rbind(as.integer(seq(0,nrow(object.binary.count.matrix)-1,1)), as.integer(object.binary.count.matrix[,i])))
-  names(cellList) <- colnames(object.binary.count.matrix)
-  cellList_nozeros <- lapply(cellList, function(x) {x[,x[2,]!=0]})
-  cellList <- lapply(cellList_nozeros, function(x) {colnames(x) <- rownames(object.binary.count.matrix)[x[1,]+1];x})
-  regionList <- rownames(object.binary.count.matrix)
-
+  cellnames <- colnames(object.binary.count.matrix)
+  regionnames <- rownames(object.binary.count.matrix)
   
-
+  # Prepare data
+  cellList <- lapply(seq_len(ncol(object.binary.count.matrix)), function(i) rbind(as.integer(as(object.binary.count.matrix[,i], "sparseVector")@i-1), as.integer(as(object.binary.count.matrix[,i], "sparseVector")@x)))
+  rm(object.binary.count.matrix)
+  names(cellList) <- cellnames
+  cellList <- lapply(cellList, function(x) {colnames(x) <- regionnames[x[1,]+1];x})
+  regionList <- regionnames
+  
   if (length(topic) > 1){
     if (length(topic) < nCores){
       print(paste('The number of cores (', nCores, ') is higher than the number of models (', length(topic),').', sep=''))
     }
-
+    
     if (nCores > 1){
       # Run models with SNOW
       cl <- makeCluster(nCores, type = "SOCK")
@@ -79,41 +80,43 @@ runModels <- function(
       opts <- list(preschedule=TRUE)
       clusterSetRNGStream(cl, seed)
       if (alphaByTopic==TRUE){
-        models <- suppressWarnings(llply(.data=topic, .fun=function(t) lda.collapsed.gibbs.sampler(cellList, t, regionList, num.iterations=iterations, alpha=alpha/t, eta=beta, compute.log.likelihood = TRUE, burnin=burnin, ...) , .parallel = TRUE, .paropts = list(.options.snow=opts), .inform=FALSE))
+        models <- suppressWarnings(llply(.data=topic, .fun=function(t) lda.collapsed.gibbs.sampler(cellList, t, regionList, num.iterations=iterations, alpha=alpha/t, eta=beta, compute.log.likelihood = TRUE, burnin=burnin, ...)[-1] , .parallel = TRUE, .paropts = list(.options.snow=opts), .inform=FALSE))
       }
       else{
-        models <- suppressWarnings(llply(.data=topic, .fun=function(t) lda.collapsed.gibbs.sampler(cellList, t, regionList, num.iterations=iterations, alpha=alpha, eta=beta, compute.log.likelihood = TRUE, burnin=burnin, ...) , .parallel = TRUE, .paropts = list(.options.snow=opts), .inform=FALSE))
+        models <- suppressWarnings(llply(.data=topic, .fun=function(t) lda.collapsed.gibbs.sampler(cellList, t, regionList, num.iterations=iterations, alpha=alpha, eta=beta, compute.log.likelihood = TRUE, burnin=burnin, ...)[-1] , .parallel = TRUE, .paropts = list(.options.snow=opts), .inform=FALSE))
       }
+      stopCluster(cl)
     }
     else{
       if (alphaByTopic==TRUE){
-        models <- suppressWarnings(llply(.data=topic, .fun=function(t) lda.collapsed.gibbs.sampler(cellList, t, regionList, num.iterations=iterations, alpha=alpha/t, eta=beta, compute.log.likelihood = TRUE, burnin=burnin, ...), .progress = progress_text(char = ".")))
+        models <- suppressWarnings(llply(.data=topic, .fun=function(t) lda.collapsed.gibbs.sampler(cellList, t, regionList, num.iterations=iterations, alpha=alpha/t, eta=beta, compute.log.likelihood = TRUE, burnin=burnin, ...)[-1], .progress = progress_text(char = ".")))
       }
       else{
-        models <- suppressWarnings(llply(.data=topic, .fun=function(t) lda.collapsed.gibbs.sampler(cellList, t, regionList, num.iterations=iterations, alpha=alpha, eta=beta, compute.log.likelihood = TRUE, burnin=burnin, ...), .progress = progress_text(char = ".")))
+        models <- suppressWarnings(llply(.data=topic, .fun=function(t) lda.collapsed.gibbs.sampler(cellList, t, regionList, num.iterations=iterations, alpha=alpha, eta=beta, compute.log.likelihood = TRUE, burnin=burnin, ...)[-1], .progress = progress_text(char = ".")))
       }
     }
-    stopCluster(cl)
-  }
 
+  }
+  
   else{
+    set.seed(seed)
     if (alphaByTopic==TRUE){
-      models <- llply(lda.collapsed.gibbs.sampler(cellList, topic, regionList, num.iterations=iterations, alpha=alpha/topic, eta=beta, compute.log.likelihood = TRUE, burnin=burnin, ...), .progress = progress_text(char = "."))
+      models <- llply(lda.collapsed.gibbs.sampler(cellList, topic, regionList, num.iterations=iterations, alpha=alpha/topic, eta=beta, compute.log.likelihood = TRUE, burnin=burnin, ...)[-1], .progress = progress_text(char = "."))
     }
     else{
-      models <- llply(lda.collapsed.gibbs.sampler(cellList, topic, regionList, num.iterations=iterations, alpha=alpha, eta=beta, compute.log.likelihood = TRUE, burnin=burnin, ...), .progress = progress_text(char = "."))
+      models <- llply(lda.collapsed.gibbs.sampler(cellList, topic, regionList, num.iterations=iterations, alpha=alpha, eta=beta, compute.log.likelihood = TRUE, burnin=burnin, ...)[-1], .progress = progress_text(char = "."))
     }
   }
-
+  
   if(returnType=='allModels'){
     object@models <- models
   }
   if(returnType=='selectedModel') {
     object@selected.model <- selectModel(models)
   }
-
+  
   object@calc.params[['runModels']] <- c(as.list(environment(), all = TRUE)[names(formals("runModels"))[-1]], list(...))
-
+  
   return(object)
 }
 

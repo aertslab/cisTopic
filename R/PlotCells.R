@@ -461,7 +461,7 @@ cellTopicHeatmap <- function(
 
   for (variable in colorBy){
     if(is.null(colVars[[variable]])) {
-      colVars[[variable]] <- setNames(rainbow(length(unique(object.cell.data[,variable])), s=0.5), unique(object.cell.data[,variable]))
+      colVars[[variable]] <- setNames(rainbow(length(unique(object.cell.data[,variable])), s=0.5), as.vector(sort(unique(object.cell.data[,variable]))))
       cellColor <- setNames(colVars[[variable]][object.cell.data[,variable]], object@cell.names)
     }
   }

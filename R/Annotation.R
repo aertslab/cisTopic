@@ -36,6 +36,8 @@ annotateRegions <- function(
 #' Run rGREAT in the binarized cisTopics
 #' @param object Initialized cisTopic object, after object@@binarized.cisTopics has been filled.
 #' @param genome Genome to which the data was aligned (see rGREAT for options).
+#' @param liftOver GRangesList object containing the original coordinates (in the same format as
+#' object@@region.names) in the data set as slot names and the corresponding mapping regions as a GRanges object in the slot.
 #' @param fold_enrichment Minimum binomial fold enrichment to keep term.
 #' @param geneHits Minimum number of genes associated to keep term.
 #' @param sign Maximum adjusted p-value to keep term.
@@ -44,7 +46,7 @@ annotateRegions <- function(
 #'
 #' @return Non-empty GREAT results per topic are return as a list to object@@binarized.rGREAT
 #'
-#' @details This function works with regions annotated to hg19, hg18, mm10, mm9 and danRer7.
+#' @details This function works with regions annotated to hg19, hg18, mm10, mm9 and danRer7. For other genomes, a liftOver step to one of the available genomes is required.
 #'
 #' @import rGREAT
 #'
@@ -56,13 +58,18 @@ annotateRegions <- function(
 GREAT <- function(
   object,
   genome='hg19',
+  liftOver=NULL,
   fold_enrichment=2,
   geneHits=1,
   sign=0.05,
   request_interval=20,
   ...
   ){
-  object.binarized.rGREAT <- llply(1:length(object@binarized.cisTopics), function(i) .doGREAT(object@region.ranges[rownames(object@binarized.cisTopics[[i]])], genome, fold_enrichment, geneHits, sign, request_interval, ...))
+  if (is.null(liftOver)){
+    object.binarized.rGREAT <- llply(1:length(object@binarized.cisTopics), function(i) .doGREAT(object@region.ranges[rownames(object@binarized.cisTopics[[i]])], genome, fold_enrichment, geneHits, sign, request_interval, ...))
+  } else {
+    object.binarized.rGREAT <- llply(1:length(object@binarized.cisTopics), function(i) .doGREAT(unlist(liftOver[rownames(object@binarized.cisTopics[[i]])], recursive = TRUE, use.names = TRUE), genome, fold_enrichment, geneHits, sign, request_interval, ...))
+  }
   names(object.binarized.rGREAT) <- names(object@binarized.cisTopics)
   object@binarized.rGREAT <- object.binarized.rGREAT
   return(object)

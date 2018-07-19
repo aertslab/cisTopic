@@ -197,6 +197,7 @@ createcisTopicObjectFromMeth <- function(
 #' cisTopic_mel <- createcisTopicObject(count.matrix = count.matrix)
 #' cisTopic_mel
 #'
+
 createcisTopicObject <- function(
   count.matrix,
   project.name = "cisTopicProject",
@@ -209,59 +210,74 @@ createcisTopicObject <- function(
   cisTopic.version <- packageVersion("cisTopic")
   object <- new(
     Class = "cisTopic",
-    count.matrix = count.matrix,
     is.acc = is.acc,
     project.name = project.name,
     version = cisTopic.version
   )
-
+  
   # Binarize and filter matrix
-  object.count.matrix <- object@count.matrix
-  object.binary.count.matrix <- 1*(object.count.matrix >= is.acc)
+  object.binary.count.matrix <- 1*(count.matrix >= is.acc)
   num.acc.cells <- rowSums(object.binary.count.matrix)
   num.acc.regions <- colSums(object.binary.count.matrix)
   cells.use <- which(num.acc.regions >= min.regions)
   regions.use <- which(num.acc.cells >= min.cells)
-
-  object.count.matrix <- object.count.matrix[regions.use, cells.use]
-  if (keepCountsMatrix == TRUE){
-    object@count.matrix <- object.count.matrix
-  }
-  object.binary.count.matrix <- object.binary.count.matrix[regions.use, cells.use]
-  object@binary.count.matrix <- object.binary.count.matrix
-
+  
+  count.matrix <- count.matrix[regions.use, cells.use]
+  
+  # Take values from the count matrix
+  
   # Set cell names
-  object@cell.names <- colnames(object.count.matrix)
-
+  object@cell.names <- colnames(count.matrix)
+  
   # Set region names
-  object@region.names <- rownames(object.count.matrix)
-
+  object@region.names <- rownames(count.matrix)
+  
   # Set region ranges
-  seqnames <- sapply(strsplit(rownames(object.count.matrix), split = ":"), "[", 1)
-  coord <- sapply(strsplit(rownames(object.count.matrix), split = ":"), "[", 2)
+  seqnames <- sapply(strsplit(rownames(count.matrix), split = ":"), "[", 1)
+  coord <- sapply(strsplit(rownames(count.matrix), split = ":"), "[", 2)
   start <- sapply(strsplit(coord, split = "-"), "[", 1)
   end <- sapply(strsplit(coord, split = "-"), "[", 2)
   bed_coord <- cbind(seqnames, start, end)
-  rownames(bed_coord) <- rownames(object.count.matrix)
+  rownames(bed_coord) <- rownames(count.matrix)
   object@region.ranges <- makeGRangesFromDataFrame(as.data.frame(bed_coord))
-
+  
+  # Cell data
+  nCounts_celldata <- colSums(count.matrix)
+  
+  # Region data
+  nCounts_regiondata <- rowSums(count.matrix)
+  
+  
+  if (keepCountsMatrix == TRUE){
+    object@count.matrix <- count.matrix
+  } 
+  
+  rm(count.matrix)
+  
+  object.binary.count.matrix <- object.binary.count.matrix[regions.use, cells.use]
+  
   # Set cells data
-  nCounts <- colSums(object.count.matrix)
+  nCounts <- nCounts_celldata
+  rm(nCounts_celldata)
   nAcc <- colSums(object.binary.count.matrix)
   object.cell.data <- cbind(nCounts, nAcc)
-  rownames(object.cell.data) <- colnames(object.count.matrix)
+  rownames(object.cell.data) <- object@cell.names
   object@cell.data <- as.data.frame(object.cell.data)
-
+  
   # Set regions data
-  nCounts <- rowSums(object.count.matrix)
+  nCounts <- nCounts_regiondata
+  rm(nCounts_regiondata)
   nCells <- rowSums(object.binary.count.matrix)
   width <- abs(as.numeric(end)-as.numeric(start))
   object.region.data <- cbind(seqnames, start, end, width, nCounts, nCells)
-  rownames(object.region.data) <- rownames(object.count.matrix)
+  rownames(object.region.data) <- object@region.names
   object@region.data <- as.data.frame(object.region.data)
-
+  
+  object@binary.count.matrix <- object.binary.count.matrix
+  rm(object.binary.count.matrix)
+  
   object@calc.params[['createcisTopicObject']] <- list(min.cells = min.cells, min.regions = min.regions, is.acc = is.acc)
-
+  
   return(object)
 }
 
