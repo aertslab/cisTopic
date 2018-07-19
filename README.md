@@ -1,9 +1,11 @@
 ### News
 
-19-7-2018: Vignette on cisTopic in a big data set (Lake et al., 2018)
-19-7-2018: Update for liftOver
-19-7-2018: Update for big data management
-12-7-2018: Updates for mm9, dm3 and dm6 motif enrichment.
+<ul>
+<li>19-7-2018: Vignette on cisTopic in a big data set (Lake et al., 2018).</li>
+<li>19-7-2018: Update for liftOver.</li>
+<li>19-7-2018: Update for big data management.</li>
+<li>12-7-2018: Updates for mm9, dm3 and dm6 motif enrichment.</li>
+</ul>
 
 # cisTopic: Probabilistic modelling of cis-regulatory topics from single cell epigenomics data
 
