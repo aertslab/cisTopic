@@ -470,5 +470,5 @@ cellTopicHeatmap <- function(
   NMF::aheatmap(topic.mat, scale="none", revC=TRUE, main='cisTopic contributions per cell', sub='Column normalized topic contribution',
                 Colv=dd.cells, annCol=object.cell.data[object@cell.names, colorBy, drop=FALSE],
                 annColor=colVars, labCol=NA,
-                color = colorPal(20))
+                color = colorPal(20), ...)
 }
