@@ -113,7 +113,7 @@ getSignaturesRegions <- function(
 #' @param col.low Color to use for lowest signature enrichment
 #' @param col.mid Color to use for medium signature enrichment
 #' @param col.high Color to use for high signature enrichment
-#' @param ... See \code{AUCell_calcAUC} from AUCell
+#' @param ... See \code{aheatmao} from NMF
 #'
 #' @return Heatmap showing the enrichment per topic per signature
 #'
@@ -160,6 +160,6 @@ signaturesHeatmap <- function(
   colorPal <- grDevices::colorRampPalette(c("dodgerblue", "floralwhite", "brown1"))
 
   nmf.options(grid.patch=TRUE)
-  NMF::aheatmap(enrichMatrix, scale="none", revC=TRUE, main='Signatures heatmap', sub='Row normalized AUC scores', Colv=dd.col, color = colorPal(20))
+  NMF::aheatmap(enrichMatrix, scale="none", revC=TRUE, main='Signatures heatmap', sub='Row normalized AUC scores', Colv=dd.col, color = colorPal(20), fontsize=10, ...)
 }
 

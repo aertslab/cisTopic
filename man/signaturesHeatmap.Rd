@@ -29,7 +29,7 @@ For this, the function AnnotateRegions must be run first.}
 
 \item{col.high}{Color to use for high signature enrichment}
 
-\item{...}{See \code{AUCell_calcAUC} from AUCell}
+\item{...}{See \code{aheatmao} from NMF}
 }
 \value{
 Heatmap showing the enrichment per topic per signature
