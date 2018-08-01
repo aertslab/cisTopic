@@ -7,7 +7,7 @@
 plotCellStates(object, method = "tSNE", colorBy = NULL, dim = 2,
   intervals = 10, topic_contr = "Zscore", topics = "all",
   col.low = "dodgerblue", col.mid = "floralwhite", col.high = "brown1",
-  labels = 3, colVars = list(), ...)
+  labels = 3, colVars = list(), plot_ly = FALSE, ...)
 }
 \arguments{
 \item{object}{Initialized cisTopic object, after the object@selected.model has been filled.}
@@ -30,7 +30,9 @@ plotCellStates(object, method = "tSNE", colorBy = NULL, dim = 2,
 
 \item{col.high}{Color to use for high topic enrichment}
 
-\item{labels}{Labels for the Zscore in the continuous variables plots.}
+\item{labels}{Labels for the Zscore in the continuous variables plots}
+
+\item{plot_ly}{Whether plot_ly should be used for the plots}
 
 \item{colsVar}{List specifying the colors to use for each label in each colouring level for cell metadata}
 }

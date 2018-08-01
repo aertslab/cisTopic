@@ -20,7 +20,7 @@ Suggests: TxDb.Dmelanogaster.UCSC.dm6.ensGene,
         TxDb.Dmelanogaster.UCSC.dm3.ensGene,
         TxDb.Hsapiens.UCSC.hg19.knownGene,
         TxDb.Hsapiens.UCSC.hg38.knownGene, org.Dm.eg.db, org.Hs.eg.db,
-        knitr, rmarkdown
+        knitr, rmarkdown, plotly
 VignetteBuilder: knitr
 NeedsCompilation: no
 Packaged: 2018-07-12 16:23:10 UTC; u0117456

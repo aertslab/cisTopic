@@ -207,8 +207,9 @@ runPCA <- function(
 #' @param col.low Color to use for lowest topic enrichment
 #' @param col.mid Color to use for medium topic enrichment
 #' @param col.high Color to use for high topic enrichment
-#' @param labels Labels for the Zscore in the continuous variables plots.
+#' @param labels Labels for the Zscore in the continuous variables plots
 #' @param colsVar List specifying the colors to use for each label in each colouring level for cell metadata
+#' @param plot_ly Whether plot_ly should be used for the plots
 #'
 #' @return Plots cell states based on the dimensionality reduction method selected, coloured by the given metadata (one plot per feature).
 #'
@@ -228,6 +229,7 @@ plotCellStates <- function(
   col.high = "brown1",
   labels=3,
   colVars=list(),
+  plot_ly=FALSE,
   ...
 ){
   if (method == 'tSNE'){
@@ -262,23 +264,23 @@ plotCellStates <- function(
     if(is.numeric(variable)){
       colorPal <- grDevices::colorRampPalette(c("darkgreen", "yellow","red"))
       if (method != 'Biplot'){
-        .plotContinuous(coordinates, variable, object@cell.names, colorPal, main=var, intervals=intervals, dim=dim)
+        .plotContinuous(coordinates, variable, object@cell.names, colorPal, main=var, intervals=intervals, dim=dim, plot_ly=plot_ly)
       }
       else{
         coordinates <- .rescaleVector(coordinates[,c(1:2)])
         var.coord <- .rescaleVector(object@dr[['PCA']]$var.coord[,c(1:2)])
-        .plotContinuous(coordinates, variable, object@cell.names, colorPal, main=var, intervals=intervals, dim=2, var.coord=var.coord)
+        .plotContinuous(coordinates, variable, object@cell.names, colorPal, main=var, intervals=intervals, dim=2, var.coord=var.coord, plot_ly=plot_ly)
       }
 
     }
     else{
       if (method != 'Biplot'){
-        .plotFactor(coordinates, variable, object@cell.names, main=var, dim=dim, colVars=colVars)
+        .plotFactor(coordinates, variable, object@cell.names, main=var, dim=dim, colVars=colVars, plot_ly=plot_ly)
       }
       else{
         coordinates <- .rescaleVector(coordinates[,c(1:2)])
         var.coord <- .rescaleVector(object@dr[['PCA']]$var.coord[,c(1:2)])
-        .plotFactor(coordinates, variable, object@cell.names, main=var, dim=2, var.coord=var.coord, colVars=colVars)
+        .plotFactor(coordinates, variable, object@cell.names, main=var, dim=2, var.coord=var.coord, colVars=colVars, plot_ly=plot_ly)
       }
     }
   }
@@ -293,19 +295,19 @@ plotCellStates <- function(
     }
     rownames(topic.mat) <- paste('Topic', 1:nrow(topic.mat))
    
-    if(topics != 'all'){
+    if(topics[1] != 'all'){
       topic.mat <- topic.mat[topics,,drop=FALSE]
-    }
+    } 
     
     colorPal <- grDevices::colorRampPalette(c(col.low, col.mid, col.high))
     for (i in 1:nrow(topic.mat)){
       if(method != 'Biplot'){
-        .plotContinuous(coordinates, topic.mat[i,], object@cell.names, colorPal, main=rownames(topic.mat)[i], intervals=intervals, dim=dim, labels=labels)
+        .plotContinuous(coordinates, topic.mat[i,], object@cell.names, colorPal, main=rownames(topic.mat)[i], intervals=intervals, dim=dim, labels=labels, plot_ly=plot_ly)
       }
       else{
         coordinates <- .rescaleVector(coordinates[,c(1:2)])
         var.coord <- .rescaleVector(object@dr[['PCA']]$var.coord[,c(1:2)])
-        .plotContinuous(coordinates, topic.mat[i,], object@cell.names, colorPal, main=rownames(topic.mat)[i], intervals=intervals, dim=2, var.coord = var.coord, labels=labels)
+        .plotContinuous(coordinates, topic.mat[i,], object@cell.names, colorPal, main=rownames(topic.mat)[i], intervals=intervals, dim=2, var.coord = var.coord, labels=labels, plot_ly=plot_ly)
       }
     }
   }
@@ -324,6 +326,7 @@ plotCellStates <- function(
   dim=2,
   var.coord=NULL,
   labels=3,
+  plot_ly=FALSE,
   ...
 ){
   par.opts <- par()
@@ -346,17 +349,40 @@ plotCellStates <- function(
     text(var.coord, labels=rownames(var.coord), cex = 0.75, adj=1, font=2)
   }
   else{
-    if (dim == 2){plot(coordinates, col=cellColor[rownames(coordinates)], pch=16, xlab=colnames(coordinates)[1], ylab=colnames(coordinates)[2])}
-    if (dim == 3) {scatterplot3d(coordinates[,1], coordinates[,2], coordinates[,3], color=cellColor[rownames(coordinates)], pch=16, xlab=colnames(coordinates)[1], ylab=colnames(coordinates)[2], zlab = colnames(coordinates)[3], main=main)}
+    if (dim == 2){
+      if (plot_ly == FALSE){
+        plot(coordinates, col=cellColor[rownames(coordinates)], pch=16, xlab=colnames(coordinates)[1], ylab=colnames(coordinates)[2])
+      } else {
+        p <- plot_ly(x = coordinates[,1], y = coordinates[,2], color = variable, colors=adjustcolor(colorPal(intervals), alpha=.8)) %>%
+          add_markers() %>%
+          layout(scene = list(xaxis = list(title = colnames(coordinates)[1]),
+                              yaxis = list(title = colnames(coordinates)[2])))
+        print(p)
+      }
+    }
+    if (dim == 3) {
+      if (plot_ly == FALSE){
+        scatterplot3d(coordinates[,1], coordinates[,2], coordinates[,3], color=cellColor[rownames(coordinates)], pch=16, xlab=colnames(coordinates)[1], ylab=colnames(coordinates)[2], zlab = colnames(coordinates)[3], main=main)
+      } else {
+        p <- plot_ly(x = coordinates[,1], y = coordinates[,2], z = coordinates[,3], color = variable, colors=adjustcolor(colorPal(intervals), alpha=.8)) %>%
+          add_markers() %>%
+          layout(scene = list(xaxis = list(title = colnames(coordinates)[1]),
+                              yaxis = list(title = colnames(coordinates)[2]),
+                              zaxis = list(title = colnames(coordinates)[3])))
+        print(p)
+      }
+    }
   }
 
-  legend_image <- as.raster(matrix(rev(colorPal(intervals)), ncol=1))
-  plot(c(0,2),c(0,1),type = 'n', axes = F,xlab = '', ylab = '', main = main)
-  labels.name <- seq(from = min(variable), to = max(variable), length.out = labels)
-  labels.name <- round(labels.name, 2)
-  text(x=1.5, y = seq(0,1,l=labels), cex=1, labels = labels.name)
-  rasterImage(legend_image, 0, 0, 1, 1)
-  suppressWarnings(par(par.opts))
+  if (plot_ly == FALSE){
+    legend_image <- as.raster(matrix(rev(colorPal(intervals)), ncol=1))
+    plot(c(0,2),c(0,1),type = 'n', axes = F,xlab = '', ylab = '', main = main)
+    labels.name <- seq(from = min(variable), to = max(variable), length.out = labels)
+    labels.name <- round(labels.name, 2)
+    text(x=1.5, y = seq(0,1,l=labels), cex=1, labels = labels.name)
+    rasterImage(legend_image, 0, 0, 1, 1)
+    suppressWarnings(par(par.opts))
+  }
 }
 
 .plotFactor <- function(
@@ -367,6 +393,7 @@ plotCellStates <- function(
   dim=2,
   var.coord=NULL,
   colVars=list(),
+  plot_ly = FALSE,
   ...
 ){
   par.opts <- par()
@@ -393,14 +420,37 @@ plotCellStates <- function(
     # Add labels
     text(var.coord, labels=rownames(var.coord), cex = 0.75, adj=1, font=2)
   }
-  else {
-    if (dim == 2){plot(coordinates, col=cellColor[rownames(coordinates)], pch=16, xlab=colnames(coordinates)[1], ylab=colnames(coordinates)[2])}
-    if (dim == 3) {scatterplot3d(coordinates[,1], coordinates[,2], coordinates[,3], color=cellColor[rownames(coordinates)], pch=16, xlab=colnames(coordinates)[1], ylab=colnames(coordinates)[2], zlab = colnames(coordinates)[3])}
+  else{
+    if (dim == 2){
+      if (plot_ly == FALSE){
+        plot(coordinates, col=cellColor[rownames(coordinates)], pch=16, xlab=colnames(coordinates)[1], ylab=colnames(coordinates)[2])
+      } else {
+        p <- plot_ly(x = coordinates[,1], y = coordinates[,2], color = variable, colors= unique(colVars[[main]][variable])) %>%
+          add_markers() %>%
+          layout(scene = list(xaxis = list(title = colnames(coordinates)[1]),
+                              yaxis = list(title = colnames(coordinates)[2])))
+        print(p)
+      }
+    }
+    if (dim == 3) {
+      if (plot_ly == FALSE){
+        scatterplot3d(coordinates[,1], coordinates[,2], coordinates[,3], color=cellColor[rownames(coordinates)], pch=16, xlab=colnames(coordinates)[1], ylab=colnames(coordinates)[2], zlab = colnames(coordinates)[3], main=main)
+      } else {
+        p <- plot_ly(x = coordinates[,1], y = coordinates[,2], z = coordinates[,3], color = variable, colors = unique(colVars[[main]][variable])) %>%
+          add_markers() %>%
+          layout(scene = list(xaxis = list(title = colnames(coordinates)[1]),
+                              yaxis = list(title = colnames(coordinates)[2]),
+                              zaxis = list(title = colnames(coordinates)[3])))
+        print(p)
+      }
+    }
   }
 
-  plot(c(0,2),c(0,1),type = 'n', axes = F,xlab = '', ylab = '', main = main)
-  legend(x=0, y=1, legend=names(colVars[[main]]), pch=16, col=colVars[[main]], bty='n', x.intersp = 0.2)
-  suppressWarnings(par(par.opts))
+  if (plot_ly == FALSE){
+    plot(c(0,2),c(0,1),type = 'n', axes = F,xlab = '', ylab = '', main = main)
+    legend(x=0, y=1, legend=names(colVars[[main]]), pch=16, col=colVars[[main]], bty='n', x.intersp = 0.2)
+    suppressWarnings(par(par.opts)) 
+  }
 }
 
 .rescaleVector<- function(coordinates){
