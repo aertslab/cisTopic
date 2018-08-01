@@ -355,8 +355,9 @@ plotCellStates <- function(
       } else {
         p <- plot_ly(x = coordinates[,1], y = coordinates[,2], color = variable, colors=adjustcolor(colorPal(intervals), alpha=.8)) %>%
           add_markers() %>%
-          layout(scene = list(xaxis = list(title = colnames(coordinates)[1]),
-                              yaxis = list(title = colnames(coordinates)[2])))
+          layout(title = main,
+                 scene = list(xaxis = list(title = colnames(coordinates)[1]),
+                 yaxis = list(title = colnames(coordinates)[2])))
         print(p)
       }
     }
@@ -366,9 +367,10 @@ plotCellStates <- function(
       } else {
         p <- plot_ly(x = coordinates[,1], y = coordinates[,2], z = coordinates[,3], color = variable, colors=adjustcolor(colorPal(intervals), alpha=.8)) %>%
           add_markers() %>%
-          layout(scene = list(xaxis = list(title = colnames(coordinates)[1]),
-                              yaxis = list(title = colnames(coordinates)[2]),
-                              zaxis = list(title = colnames(coordinates)[3])))
+          layout(title = main,
+                 scene = list(xaxis = list(title = colnames(coordinates)[1]),
+                 yaxis = list(title = colnames(coordinates)[2]),
+                 zaxis = list(title = colnames(coordinates)[3])))
         print(p)
       }
     }
@@ -427,8 +429,9 @@ plotCellStates <- function(
       } else {
         p <- plot_ly(x = coordinates[,1], y = coordinates[,2], color = variable, colors= unique(colVars[[main]][variable])) %>%
           add_markers() %>%
-          layout(scene = list(xaxis = list(title = colnames(coordinates)[1]),
-                              yaxis = list(title = colnames(coordinates)[2])))
+          layout(title = main,
+                 scene = list(xaxis = list(title = colnames(coordinates)[1]),
+                 yaxis = list(title = colnames(coordinates)[2])))
         print(p)
       }
     }
@@ -438,9 +441,10 @@ plotCellStates <- function(
       } else {
         p <- plot_ly(x = coordinates[,1], y = coordinates[,2], z = coordinates[,3], color = variable, colors = unique(colVars[[main]][variable])) %>%
           add_markers() %>%
-          layout(scene = list(xaxis = list(title = colnames(coordinates)[1]),
-                              yaxis = list(title = colnames(coordinates)[2]),
-                              zaxis = list(title = colnames(coordinates)[3])))
+          layout(title = main,
+                 scene = list(xaxis = list(title = colnames(coordinates)[1]),
+                 yaxis = list(title = colnames(coordinates)[2]),
+                 zaxis = list(title = colnames(coordinates)[3])))
         print(p)
       }
     }
