@@ -9,7 +9,8 @@ createcisTopicObject(count.matrix, project.name = "cisTopicProject",
   ...)
 }
 \arguments{
-\item{count.matrix}{Count matrix containing cells as rows and regions as columns. The row names must be the coordinates in position format (e.g. chr1:110-610).}
+\item{count.matrix}{Count matrix containing cells as rows and regions as columns. The row names must be the coordinates in position format (e.g. chr1:110-610).
+We recommend to use as input sparse matrices.}
 
 \item{project.name}{Project name (string).}
 
