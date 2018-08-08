@@ -59,7 +59,7 @@ createcisTopicObjectFromBAM <- function(
   }
 
   print('Creating cisTopic object...')
-  count.matrix <- count.data$counts
+  count.matrix <- Matrix(count.data$counts, sparse=TRUE)
   cell.data <- t(count.data$stat)
   column_names <- cell.data[1,]
   row_names <- rownames(cell.data)[-1]
@@ -122,7 +122,7 @@ createcisTopicObjectFromMeth <- function(
   regions_granges <- makeGRangesFromDataFrame(as.data.frame(regions_frame))
 
   # Prepare beta matrix, cell data and region data
-  beta.matrix <- matrix(0, nrow(regions_frame), length(methfiles))
+  beta.matrix <- matrix(0, nrow(regions_frame), length(methfiles), sparse=TRUE)
   rownames(beta.matrix) <- rownames(regions_frame)
   colnames(beta.matrix) <- methfiles
 
@@ -175,6 +175,7 @@ createcisTopicObjectFromMeth <- function(
 #'
 #' Initializes the cisTopic object from a counts matrix
 #' @param count.matrix Count matrix containing cells as rows and regions as columns. The row names must be the coordinates in position format (e.g. chr1:110-610).
+#' We recommend to use as input sparse matrices.
 #' @param project.name Project name (string).
 #' @param min.cells Minimal number of cells in which the region has to be accessible. By default, all regions accessible in at least one cell are kept.
 #' @param min.regions Minimal number of regions that have to be accessible within a cell to be kept. By default, all cells with at least one region accessible are kept.
@@ -216,9 +217,9 @@ createcisTopicObject <- function(
   )
   
   # Binarize and filter matrix
-  object.binary.count.matrix <- 1*(count.matrix >= is.acc)
-  num.acc.cells <- rowSums(object.binary.count.matrix)
-  num.acc.regions <- colSums(object.binary.count.matrix)
+  object.binary.count.matrix <- Matrix(1*(count.matrix >= is.acc), sparse=TRUE)
+  num.acc.cells <- Matrix::rowSums(object.binary.count.matrix)
+  num.acc.regions <- Matrix::colSums(object.binary.count.matrix)
   cells.use <- which(num.acc.regions >= min.regions)
   regions.use <- which(num.acc.cells >= min.cells)
   
@@ -242,10 +243,10 @@ createcisTopicObject <- function(
   object@region.ranges <- makeGRangesFromDataFrame(as.data.frame(bed_coord))
   
   # Cell data
-  nCounts_celldata <- colSums(count.matrix)
+  nCounts_celldata <- Matrix::colSums(count.matrix)
   
   # Region data
-  nCounts_regiondata <- rowSums(count.matrix)
+  nCounts_regiondata <- Matrix::rowSums(count.matrix)
   
   
   if (keepCountsMatrix == TRUE){
@@ -319,7 +320,7 @@ addCellMetadata <- function(
     if (sum(rownames(cell.data) %in% rownames(object.cell.data)) < nrow(object.cell.data)){
       stop('Are all the cells included in the new metadata?')
     }
-    cell.data <- cell.data[rownames(object.cell.data),]
+    cell.data <- cell.data[rownames(object.cell.data),,drop=FALSE]
     column_names<- c(colnames(object.cell.data), colnames(cell.data))
     object.cell.data <- cbind(object.cell.data, cell.data)
     colnames(object.cell.data) <- column_names
