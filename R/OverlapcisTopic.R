@@ -118,7 +118,6 @@ getSignaturesRegions <- function(
 #' @return Heatmap showing the enrichment per topic per signature
 #'
 #' @import AUCell
-#' @importFrom NMF aheatmap
 #' @export
 
 signaturesHeatmap <- function(

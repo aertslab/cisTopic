@@ -12,7 +12,6 @@
 #' of assignments in the cell in the last iteration plus alpha and predictive distribution calculates the probability of the seeing
 #' the regions per cell.
 #'
-#' @importFrom Rtsne Rtsne
 #' @importFrom lda predictive.distribution
 #' @export
 
@@ -68,7 +67,6 @@ runtSNE <- function(
 #' of assignments in the cell in the last iteration plus alpha and predictive distribution calculates the probability of the seeing
 #' the regions per cell.
 #'
-#' @importFrom destiny DiffusionMap
 #' @importFrom lda predictive.distribution
 #' @export
 
@@ -213,7 +211,6 @@ runPCA <- function(
 #'
 #' @return Plots cell states based on the dimensionality reduction method selected, coloured by the given metadata (one plot per feature).
 #'
-#' @import scatterplot3d
 #' @export
 
 plotCellStates <- function(

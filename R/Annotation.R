@@ -9,7 +9,6 @@
 #' @return Peak annotation is added as new columns to object@@region.data
 #'
 #' @details See \code{SignaturesHeatmap} for estimating the region types per topic.
-#' @importFrom ChIPseeker annotatePeak
 #' @export
 
 annotateRegions <- function(
@@ -48,7 +47,6 @@ annotateRegions <- function(
 #'
 #' @details This function works with regions annotated to hg19, hg18, mm10, mm9 and danRer7. For other genomes, a liftOver step to one of the available genomes is required.
 #'
-#' @import rGREAT
 #'
 #' @examples
 #' object <- GREAT(object, request_interval = 10)

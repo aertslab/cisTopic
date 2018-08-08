@@ -16,7 +16,6 @@
 #' @return Returns a cisTopic object with the counts data stored in object@@count.matrix.
 #' object@@binary.count.matrix, object@@cell.names, object@@cell.data (including counting statistics), object@@regions.ranges, object@@regions.data are also initialized.
 #'
-#' @importFrom Rsubread featureCounts
 #' @export
 #'
 #' @examples
