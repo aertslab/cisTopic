@@ -168,7 +168,6 @@ getBedFiles <- function(
 #' @param object Initialized cisTopic object, after running getRegionScores
 #' @param path Path to save bigwig files
 #'
-#' @importFrom rtracklayer export.bw
 #' @export
 
 getBigwigFiles <- function(
@@ -193,6 +192,6 @@ getBigwigFiles <- function(
   column <- paste('Topic', topic, sep='')
   elementMetadata(coord)[['score']] <- scores[,column]
   con <- paste(path, '/Topic_', topic, '.bw', sep='')
-  export.bw(coord, con)
+  rtracklayer::export.bw(coord, con)
 }
 
