@@ -16,7 +16,7 @@ biocViews:
 Imports: GenomicRanges, stats, Matrix, lda, doSNOW, parallel, plyr,
         AUCell (>= 1.2.4), DT, fitdistrplus,
         RcisTarget (>= 1.0.2), ggplot2, data.table,
-        feather, Rtsne
+        feather, Rtsne, GenomeInfoDb (>= 1.15.2)
 Depends: R (>= 3.4)
 Suggests: Rsubread, rtracklayer, rGREAT, ChIPseeker, scatterplot3d, plotly, destiny,
         NMF (>= 0.23.6), fastcluster, TxDb.Dmelanogaster.UCSC.dm6.ensGene,
