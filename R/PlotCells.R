@@ -476,8 +476,6 @@ plotCellStates <- function(
 #'
 #' @return Heatmap clustering cells based on their cell-cisTopic distributions.
 #'
-#' @importFrom fastcluster hclust.vector
-#' @importFrom NMF aheatmap
 #' @export
 
 cellTopicHeatmap <- function(
