@@ -12,12 +12,15 @@ License: GPL-3
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 6.0.1
-Depends:  GenomicRanges, stats, Matrix, lda, doSNOW, parallel, plyr,
+biocViews:
+Imports: GenomicRanges, stats, Matrix, lda, doSNOW, parallel, plyr,
         fastcluster, DT, fitdistrplus,
         RcisTarget (>= 1.0.2), ggplot2, data.table,
         feather, AUCell (>= 1.2.4), rtracklayer
-Suggests: Rsubread, Rtsne, destiny, rGREAT, ChIPseeker,  
-        scatterplot3d, NMF (>= 0.23.6), TxDb.Dmelanogaster.UCSC.dm6.ensGene,
+Depends: R (>= 3.4)
+Suggests: Rsubread, Rtsne, destiny,
+        rGREAT, ChIPseeker, scatterplot3d, NMF (>= 0.23.6),
+        TxDb.Dmelanogaster.UCSC.dm6.ensGene,
         TxDb.Dmelanogaster.UCSC.dm3.ensGene,
         TxDb.Hsapiens.UCSC.hg19.knownGene,
         TxDb.Hsapiens.UCSC.hg38.knownGene, org.Dm.eg.db, org.Hs.eg.db,
