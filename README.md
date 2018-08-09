@@ -20,6 +20,16 @@ devtools::install_github("aertslab/cisTopic")
 library(cisTopic)
 ```
 
+## Dependencies (for R < 3.5)
+
+For cisTopic to be installed in previous R versions (e.g. 3.4), the following packages
+have to be installed manually before installing cisTopic:
+
+```r
+devtools::install_github("aertslab/AUCell")
+devtools::install_github("aertslab/RcisTarget")
+```
+
 ## Databases
 
 RcisTarget feather databases are available [here](https://resources.aertslab.org/cistarget/).

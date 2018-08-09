@@ -14,17 +14,16 @@ LazyData: true
 RoxygenNote: 6.0.1
 biocViews:
 Imports: GenomicRanges, stats, Matrix, lda, doSNOW, parallel, plyr,
-        fastcluster, DT, fitdistrplus,
+        AUCell (>= 1.2.4), DT, fitdistrplus,
         RcisTarget (>= 1.0.2), ggplot2, data.table,
-        feather, rtracklayer
+        feather, rtracklayer, Rtsne, destiny
 Depends: R (>= 3.4)
-Suggests: Rsubread, Rtsne, destiny,
-        rGREAT, ChIPseeker, scatterplot3d, NMF (>= 0.23.6),
-        AUCell (>= 1.2.4), TxDb.Dmelanogaster.UCSC.dm6.ensGene,
+Suggests: Rsubread, rGREAT, ChIPseeker, scatterplot3d, plotly,
+        NMF (>= 0.23.6), fastcluster, TxDb.Dmelanogaster.UCSC.dm6.ensGene,
         TxDb.Dmelanogaster.UCSC.dm3.ensGene,
         TxDb.Hsapiens.UCSC.hg19.knownGene,
         TxDb.Hsapiens.UCSC.hg38.knownGene, org.Dm.eg.db, org.Hs.eg.db,
-        knitr, rmarkdown, plotly
+        knitr, rmarkdown
 VignetteBuilder: knitr
 NeedsCompilation: no
 Packaged: 2018-07-12 16:23:10 UTC; u0117456
