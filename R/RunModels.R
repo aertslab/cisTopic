@@ -186,7 +186,7 @@ selectModel <- function(
       object@binary.count.matrix <- NULL
     }
     if (keepModels != TRUE){
-      object@models <- NULL
+      object@models <- list()
     }
 
     return(object)
