@@ -188,7 +188,6 @@ selectModel <- function(
     if (keepModels != TRUE){
       object@models <- list()
     }
-
     return(object)
   }
   else if (is.list(object)){
