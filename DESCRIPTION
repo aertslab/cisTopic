@@ -11,13 +11,13 @@ Description: The sparse nature of single cell epigenomics data can be overruled 
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
-biocViews: 
 RoxygenNote: 6.0.1
+Depends: R (>= 3.4)
+biocViews: GenomicRanges
 Imports: GenomicRanges, stats, Matrix, lda, doSNOW, parallel, plyr,
         AUCell (>= 1.2.4), DT, fitdistrplus,
         RcisTarget (>= 1.0.2), ggplot2, data.table,
         feather, Rtsne
-Depends: R (>= 3.4)
 Suggests: Rsubread, rtracklayer, rGREAT, ChIPseeker, scatterplot3d, plotly, destiny,
         NMF (>= 0.23.6), fastcluster, TxDb.Dmelanogaster.UCSC.dm6.ensGene,
         TxDb.Dmelanogaster.UCSC.dm3.ensGene,

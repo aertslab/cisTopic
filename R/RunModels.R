@@ -25,7 +25,7 @@
 #'
 #' @details The selected parameters are adapted from Griffiths & Steyvers (2004).
 #' @importFrom lda lda.collapsed.gibbs.sampler
-#' @importFrom parallel makeCluster
+#' @import parallel
 #' @import doSNOW
 #' @import Matrix
 #' @importFrom plyr llply
@@ -60,8 +60,10 @@ runModels <- function(
   regionnames <- rownames(object.binary.count.matrix)
   
   # Prepare data
-  cellList <- lapply(seq_len(ncol(object.binary.count.matrix)), function(i) rbind(as.integer(as(object.binary.count.matrix[,i], "sparseVector")@i-1), as.integer(as(object.binary.count.matrix[,i], "sparseVector")@x)))
+  print('Formatting data...')
+  cellList <- split(as.integer(object.binary.count.matrix@i), rep(seq_along(object.binary.count.matrix@p+1), times=diff(c(object.binary.count.matrix@p+1, length(object.binary.count.matrix@i) + 1))))
   rm(object.binary.count.matrix)
+  cellList <- lapply(cellList, function(x) {x <- rbind(x, rep(as.integer(1), length(x)))}) 
   names(cellList) <- cellnames
   cellList <- lapply(cellList, function(x) {colnames(x) <- regionnames[x[1,]+1];x})
   regionList <- regionnames
@@ -73,6 +75,7 @@ runModels <- function(
     
     if (nCores > 1){
       # Run models with SNOW
+      print('Exporting data...')
       cl <- makeCluster(nCores, type = "SOCK")
       registerDoSNOW(cl)
       clusterEvalQ(cl, library(lda))
@@ -80,18 +83,22 @@ runModels <- function(
       opts <- list(preschedule=TRUE)
       clusterSetRNGStream(cl, seed)
       if (alphaByTopic==TRUE){
+        print('Running models...')
         models <- suppressWarnings(llply(.data=topic, .fun=function(t) lda.collapsed.gibbs.sampler(cellList, t, regionList, num.iterations=iterations, alpha=alpha/t, eta=beta, compute.log.likelihood = TRUE, burnin=burnin, ...)[-1] , .parallel = TRUE, .paropts = list(.options.snow=opts), .inform=FALSE))
       }
       else{
+        print('Running models...')
         models <- suppressWarnings(llply(.data=topic, .fun=function(t) lda.collapsed.gibbs.sampler(cellList, t, regionList, num.iterations=iterations, alpha=alpha, eta=beta, compute.log.likelihood = TRUE, burnin=burnin, ...)[-1] , .parallel = TRUE, .paropts = list(.options.snow=opts), .inform=FALSE))
       }
       stopCluster(cl)
     }
     else{
       if (alphaByTopic==TRUE){
+        print('Running models...')
         models <- suppressWarnings(llply(.data=topic, .fun=function(t) lda.collapsed.gibbs.sampler(cellList, t, regionList, num.iterations=iterations, alpha=alpha/t, eta=beta, compute.log.likelihood = TRUE, burnin=burnin, ...)[-1], .progress = progress_text(char = ".")))
       }
       else{
+        print('Running models...')
         models <- suppressWarnings(llply(.data=topic, .fun=function(t) lda.collapsed.gibbs.sampler(cellList, t, regionList, num.iterations=iterations, alpha=alpha, eta=beta, compute.log.likelihood = TRUE, burnin=burnin, ...)[-1], .progress = progress_text(char = ".")))
       }
     }
@@ -101,9 +108,11 @@ runModels <- function(
   else{
     set.seed(seed)
     if (alphaByTopic==TRUE){
+      print('Running models...')
       models <- llply(lda.collapsed.gibbs.sampler(cellList, topic, regionList, num.iterations=iterations, alpha=alpha/topic, eta=beta, compute.log.likelihood = TRUE, burnin=burnin, ...)[-1], .progress = progress_text(char = "."))
     }
     else{
+      print('Running models...')
       models <- llply(lda.collapsed.gibbs.sampler(cellList, topic, regionList, num.iterations=iterations, alpha=alpha, eta=beta, compute.log.likelihood = TRUE, burnin=burnin, ...)[-1], .progress = progress_text(char = "."))
     }
   }

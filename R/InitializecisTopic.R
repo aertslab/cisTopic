@@ -259,7 +259,7 @@ createcisTopicObject <- function(
   # Set cells data
   nCounts <- nCounts_celldata
   rm(nCounts_celldata)
-  nAcc <- colSums(object.binary.count.matrix)
+  nAcc <- Matrix::colSums(object.binary.count.matrix)
   object.cell.data <- cbind(nCounts, nAcc)
   rownames(object.cell.data) <- object@cell.names
   object@cell.data <- as.data.frame(object.cell.data)
@@ -267,7 +267,7 @@ createcisTopicObject <- function(
   # Set regions data
   nCounts <- nCounts_regiondata
   rm(nCounts_regiondata)
-  nCells <- rowSums(object.binary.count.matrix)
+  nCells <- Matrix::rowSums(object.binary.count.matrix)
   width <- abs(as.numeric(end)-as.numeric(start))
   object.region.data <- cbind(seqnames, start, end, width, nCounts, nCells)
   rownames(object.region.data) <- object@region.names
