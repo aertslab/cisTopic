@@ -85,6 +85,7 @@ getSignaturesRegions <- function(
   return(regionsSignature)
 }
 
+#' @import GenomicRanges
 .getOverlapRegionsFromCoordinates <- function(
   coordinates,
   regions,
