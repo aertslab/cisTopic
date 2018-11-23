@@ -13,8 +13,7 @@
 #' regions <- c('regions_1.bed', 'regions_2.bed', 'regions_3.bed')
 #' cisTopicObject <- getSignaturesRegions(cisTopicObject, regions)
 #' cisTopicObject
-#' @importFrom GenomicRanges findOverlaps
-#' @importFrom GenomicRanges pintersect
+#' @import GenomicRanges
 #' @export
 
 getSignaturesRegions <- function(
