@@ -14,7 +14,8 @@
 #' cisTopicObject <- getSignaturesRegions(cisTopicObject, regions)
 #' cisTopicObject
 #' @import GenomicRanges
-#' @import S4Vectors
+#' @importFrom S4Vectors queryHits
+#' @importFrom  S4Vectors subjectHits
 #' @export
 
 getSignaturesRegions <- function(
