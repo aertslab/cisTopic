@@ -342,6 +342,7 @@ addCellMetadata <- function(
     if (sum(rownames(cell.data) %in% rownames(object.cell.data)) < nrow(object.cell.data)){
       stop('Are all the cells included in the new metadata?')
     }
+    cell.data <- as.data.frame(cell.data)
     cell.data <- cell.data[rownames(object.cell.data),,drop=FALSE]
     cell.data <- droplevels(cell.data)
     if (sum(colnames(object.cell.data) %in% colnames(cell.data)) > 0){
@@ -394,7 +395,7 @@ addRegionMetadata <- function(
     if (sum(rownames(region.data) %in% rownames(object.region.data)) < nrow(object.region.data)){
       stop('Are all the regions included in the new metadata?')
     }
-    
+    region.data <- as.data.frame(region.data)
     region.data <- region.data[rownames(object.region.data),,drop=FALSE]
     region.data <- droplevels(region.data)
     if (sum(colnames(object.region.data) %in% colnames(region.data)) > 0){
