@@ -98,9 +98,9 @@ binarizecisTopics  <- function(
     }
 
     for (i in 1:ncol(scores)){
-      distr <- fitdist(scores[,i],"gamma", method="mme")
+      distr <- suppressWarnings(fitdist(scores[,i],"gamma", method="mme"))
       cutoff <- as.numeric(unlist(quantile(distr, probs = thrP))[1])
-      if (plot == TRUE){
+      if (plot){
         hist(scores[,i], breaks=100, prob=TRUE, main=colnames(scores)[i], col=adjustcolor( "dodgerblue", alpha.f = 0.8), xlab='Score')
         curve(dgamma(x, rate = as.numeric(unlist(distr[1]$estimate[2])), shape = as.numeric(unlist(distr[1]$estimate[1]))), add=TRUE, col="magenta", lwd=2)
         abline(v=cutoff, lty=3, lwd=2, col='grey')

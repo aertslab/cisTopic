@@ -319,7 +319,7 @@ makeBackgroundFeather <- function(
 #'
 #' @importFrom parallel makeCluster
 #' @import doSNOW
-#' @import data.table
+#' @importFrom data.table rbindlist
 #' @importFrom plyr llply
 #' @export
 
