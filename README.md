@@ -12,6 +12,15 @@
 
 cisTopic is an R-package to simultaneously identify cell states and cis-regulatory topics from single cell epigenomics data.
 
+## Dependencies
+
+The following packages have to be installed manually before installing cisTopic:
+
+```r
+install.packages("https://bioconductor.org/packages/release/bioc/src/contrib/AUCell_1.4.0.tar.gz", repos=NULL)
+install.packages("https://bioconductor.org/packages/release/bioc/src/contrib/RcisTarget_1.2.0.tar.gz", repos=NULL)
+```
+
 ## Installation
 
 For installling and load cisTopic, run:
@@ -19,16 +28,6 @@ For installling and load cisTopic, run:
 ```r
 devtools::install_github("aertslab/cisTopic")
 library(cisTopic)
-```
-
-## Dependencies (for R < 3.5)
-
-For cisTopic to be installed in previous R versions (e.g. 3.4), the following packages
-have to be installed manually before installing cisTopic:
-
-```r
-devtools::install_github("aertslab/AUCell")
-devtools::install_github("aertslab/RcisTarget")
 ```
 
 ## Databases

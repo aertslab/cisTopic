@@ -141,7 +141,6 @@ GREAT <- function(
 #' @return Dot plot with the topics, terms and the selected enrichments to visualize
 #'
 #'
-#' @import ggplot2
 #' @import plyr
 #' @importFrom data.table rbindlist
 #'
