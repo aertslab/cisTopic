@@ -14,7 +14,8 @@
 #' functional when the number of topics and the size of the data set allows it.
 #' @slot log.lik Data frame containing the log likelihood of the models built.
 #' @slot selected.model List with the information regards the model selected. The model is represented as an object of the class cisTopicModel.
-#' @slot dr Dimensionality reduction outputs, named by technique: 'tSNE', 'DiffussionMap', 'PCA', 'Biplot'.
+#' @slot dr Dimensionality reduction outputs, which can be applied on 'cell' or 'region'. Within each slot ('cell' or 'regions'), there are
+#' sub-slots named by technique: 'Umap', 'tSNE', 'DiffussionMap', 'PCA', 'Biplot'.
 #' @slot calc.params Named list to store all calculation-related parameter choices.
 #' @slot cell.names Vector with the names of all the single cells (column names of the counts/accessibility matrix).
 #' @slot cell.data Data frame that contains the meta-information about each cell, starting with number of counts detected in the defined regions (nCounts), and accessible

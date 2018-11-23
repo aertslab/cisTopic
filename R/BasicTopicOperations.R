@@ -2,18 +2,31 @@
 #'
 #' Get region scores per topic
 #' @param object Initialized cisTopic object, after the object@@selected.model has been filled.
-#' @param method Select the normalization method to use for calculating the region score: 'Zscore' or 'probability'.
+#' @param method  Select the method for processing the region assignments: 'Z-score','Probability' or 'NormTop'.
 #' @param rescale Whether feature scaling should be performed within the topics. By default, it is set to true.
 #'
-#' @return Returns the region scores per topic in object@@region.data
+#' @return Returns the region scores per topic in object@@region.data.
+#' 
+#' @details 'Z-score' computes the Z-score for each topic assingment per cell/region. 'Probability' divides the topic assignments by the total number
+#' of assignments in the cell/region in the last iteration plus alpha. If using 'NormTop', regions are given an score defined by: \eqn{\beta_{w, k} (\log
+#' \beta_{w,k} - 1 / K \sum_{k'} \log \beta_{w,k'})}.
 #'
 #' @export
 
 getRegionsScores <- function(
   object,
-  method='Zscore',
+  method='Z-score',
   scaled=TRUE)
 {
+  # Check info
+  if (is.null(object@selected.model)){
+    stop('Please, run selectModel() first.')
+  }
+  
+  if (!method %in% c('NormTop', 'Z-score', 'Probability')){
+    stop('Please, select method: "NormTop", "Z-score" or "Probability"')
+  }
+  
   # Restart data frame
   indexes <- grep('Scores_Topic', colnames(object@region.data))
   if (length(indexes) > 0){
@@ -21,15 +34,7 @@ getRegionsScores <- function(
   }
   
   # Get scores
-  topic.mat <- object@selected.model$topics
-  if (method == 'Zscore'){
-    normalizedTopics <- topic.mat/(rowSums(topic.mat) + 1e-05)
-    scores <- apply(normalizedTopics, 2, function(x) x * (log(x + 1e-05) - sum(log(x + 1e-05))/length(x)))
-  }
-  else {
-    beta <- object@calc.params[['RunModels']]$beta
-    scores <- (topic.mat + beta)/rowSums(topic.mat + beta)
-  }
+  scores <- .modelMatSelection(object, 'region', method, all.regions=TRUE)
 
   # Scale
   if (scaled == TRUE) {
@@ -75,9 +80,19 @@ binarizecisTopics  <- function(
   # Get scores
   scores <- .getScores(object)
   object.binarized.cisTopics <- list()
+  
+  # Graphical parameters
+  par.opts <- par()
 
   # Check input
   if (method == 'GammaFit'){
+    
+    if(! "fitdistrplus" %in% installed.packages()){
+      stop('Please, install fitdistrplus: \n install.packages("fitdistrplus")')
+    } else {
+      require(fitdistrplus)
+    }
+    
     if (is.null(thrP)){
       stop('If GammaFit is selected as method, a probability threshold for cutoff in the distribution must be provided.')
     }
@@ -86,8 +101,6 @@ binarizecisTopics  <- function(
       distr <- fitdist(scores[,i],"gamma", method="mme")
       cutoff <- as.numeric(unlist(quantile(distr, probs = thrP))[1])
       if (plot == TRUE){
-        par(mfrow=c(1,1))
-        par(las=1)
         hist(scores[,i], breaks=100, prob=TRUE, main=colnames(scores)[i], col=adjustcolor( "dodgerblue", alpha.f = 0.8), xlab='Score')
         curve(dgamma(x, rate = as.numeric(unlist(distr[1]$estimate[2])), shape = as.numeric(unlist(distr[1]$estimate[1]))), add=TRUE, col="magenta", lwd=2)
         abline(v=cutoff, lty=3, lwd=2, col='grey')
@@ -127,7 +140,8 @@ binarizecisTopics  <- function(
   par(mfrow=c(1,1))
   par(las=2)
   barplot(sapply(object.binarized.cisTopics, nrow), col=adjustcolor( "dodgerblue", alpha.f = 0.8), main='Number of regions selected per topic')
-
+  
+  suppressWarnings(par(par.opts))
   return(object)
 }
 
@@ -137,6 +151,12 @@ binarizecisTopics  <- function(
   object
 ){
   scores <- object@region.data[, grep('Scores_Topic', colnames(object@region.data))]
+  
+  # Check info
+  if (ncol(scores) < 1){
+    stop('Please, run getRegionsScores() first.')
+  }
+  
   colnames(scores) <- paste('Topic', 1:ncol(scores), sep='')
   return(scores)
 }
@@ -154,6 +174,11 @@ getBedFiles <- function(
   object,
   path
 ){
+  # Check info
+  if (length(object@binarized.cisTopics) < 1){
+    stop('Please, run binarizecisTopics() first.')
+  }
+  
   dir.create(path, showWarnings = FALSE)
   object.binarized.cisTopics <- object@binarized.cisTopics
   coordinates <- object@region.data[ , c('seqnames', 'start', 'end')]

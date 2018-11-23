@@ -11,11 +11,13 @@
 #' to FALSE.
 #' @param paired Whether data should be treated as paired end or not. If it is FALSE, we count a read if its 5' end falls within
 #' the region, if false, fragments will be counted instead of individual reads.
-#' @param ... See featureCounts function from Rsubread.
+#' @param ... See \code{featureCounts} function from Rsubread.
 #'
 #' @return Returns a cisTopic object with the counts data stored in object@@count.matrix.
 #' object@@binary.count.matrix, object@@cell.names, object@@cell.data (including counting statistics), object@@regions.ranges, object@@regions.data are also initialized.
 #'
+#' @import Matrix
+#' 
 #' @export
 #'
 #' @examples
@@ -23,6 +25,7 @@
 #' regions <- 'example.bed'
 #' cisTopicObject <- createcisTopicObjectFromBAM(bamfiles, regions)
 #' cisTopicObject
+
 createcisTopicObjectFromBAM <- function(
   bamfiles,
   regions,
@@ -34,6 +37,24 @@ createcisTopicObjectFromBAM <- function(
   paired = FALSE,
   ...
 ) {
+  # Check dependencies
+  if(! "Rsubread" %in% installed.packages()){
+    if (Sys.info()['sysname'] != 'Windows'){
+      stop('Please, install Rsubread: \n source("https://bioconductor.org/biocLite.R") \n biocLite("Rsubread")')
+    }
+    else{
+      stop('The Rsubread package is not available for Windows. See our FAQ webpages for possible alternatives at: ')
+    }
+  } else {
+    suppressMessages(require(Rsubread))
+  }
+  
+  if(! "Matrix" %in% installed.packages()){
+    stop('Please, install Matrix: \n install.packages("Matrix")')
+  } else {
+    suppressMessages(require(Matrix))
+  }
+  
   # Prepare annotation
   regions_frame <- read.table(regions)
   if (ncol(regions_frame) >= 5){
@@ -49,33 +70,32 @@ createcisTopicObjectFromBAM <- function(
   colnames(regions_frame) <- c('GeneID', 'Chr', 'Start', 'End', 'Strand')
 
   # Count reads
-  if (paired == FALSE){
-    count.data <- featureCounts(bamfiles, annot.ext=regions_frame, read2pos=5, isPairedEnd=FALSE, ...)
-  } else if (paired == TRUE){
-    count.data <- featureCounts(bamfiles, annot.ext=regions_frame, isPairedEnd=TRUE, ...)
-  } else {
-    stop('Paired has to be either TRUE or FALSE.')
-  }
+  count.data <- Rsubread::featureCounts(bamfiles, annot.ext=regions_frame, read2pos=5, isPairedEnd=paired, ...)
 
+  # Prepare cell data
   print('Creating cisTopic object...')
   count.matrix <- Matrix(count.data$counts, sparse=TRUE)
   cell.data <- t(count.data$stat)
-  column_names <- cell.data[1,]
-  row_names <- rownames(cell.data)[-1]
+  colnames(cell.data) <- cell.data[1,]
   cell.data <- cell.data[-1,]
-  cell.data[, 1:ncol(cell.data)] <- sapply(cell.data[, 1:ncol(cell.data)], as.numeric)
-  colnames(cell.data) <- column_names
+  cell.data <- cell.data[,c('Assigned', 'Unassigned_NoFeatures')]
+  row_names <- rownames(cell.data)
+  cell.data <- apply(cell.data, 2, function(x) as.numeric(as.character(x)))
   rownames(cell.data) <- row_names
 
-  Total_reads <- as.numeric(cell.data[,'Assigned']) + as.numeric(cell.data[,'Unassigned_NoFeatures'])
-  cell.data <- cbind(Total_reads, cell.data[,c('Assigned', 'Unassigned_NoFeatures')])
+  Total_reads <- cell.data[,'Assigned'] + cell.data[,'Unassigned_NoFeatures']
+  pct_ReadsInPeaks <- cell.data[,'Assigned']/Total_reads
+  cell.data <- cbind(Total_reads, pct_ReadsInPeaks, cell.data)
+  
 
+  
   object <- createcisTopicObject(count.matrix = count.matrix, 
                                  project.name = project.name,
                                  min.cells = min.cells,
                                  min.regions = min.regions,
                                  is.acc = is.acc,
                                  keepCountsMatrix=keepCountsMatrix)
+  
   object <- addCellMetadata(object, cell.data = as.data.frame(cell.data))
   return(object)
 }
@@ -105,6 +125,7 @@ createcisTopicObjectFromBAM <- function(
 #' regions <- 'example.bed'
 #' cisTopicObject <- createcisTopicObjectFromBAM(methfiles, regions)
 #' cisTopicObject
+
 createcisTopicObjectFromMeth <- function(
   methfiles,
   regions,
@@ -261,17 +282,19 @@ createcisTopicObject <- function(
   rm(nCounts_celldata)
   nAcc <- Matrix::colSums(object.binary.count.matrix)
   object.cell.data <- cbind(nCounts, nAcc)
+  object.cell.data <- apply(object.cell.data, 2, function(x) as.numeric(as.character(x)))
   rownames(object.cell.data) <- object@cell.names
   object@cell.data <- as.data.frame(object.cell.data)
   
   # Set regions data
   nCounts <- nCounts_regiondata
   rm(nCounts_regiondata)
-  nCells <- Matrix::rowSums(object.binary.count.matrix)
+  nCells <- as.numeric(Matrix::rowSums(object.binary.count.matrix))
   width <- abs(as.numeric(end)-as.numeric(start))
   object.region.data <- cbind(seqnames, start, end, width, nCounts, nCells)
   rownames(object.region.data) <- object@region.names
   object@region.data <- as.data.frame(object.region.data)
+  object@region.data[,2:ncol(object@region.data)] <- apply(object@region.data[,2:ncol(object@region.data)], 2, function(x) as.numeric(as.character(x)))
   
   object@binary.count.matrix <- object.binary.count.matrix
   rm(object.binary.count.matrix)
@@ -320,6 +343,10 @@ addCellMetadata <- function(
       stop('Are all the cells included in the new metadata?')
     }
     cell.data <- cell.data[rownames(object.cell.data),,drop=FALSE]
+    cell.data <- droplevels(cell.data)
+    if (sum(colnames(object.cell.data) %in% colnames(cell.data)) > 0){
+      object.cell.data <- object.cell.data[,-which(colnames(object.cell.data) %in% colnames(cell.data))]
+    }
     column_names<- c(colnames(object.cell.data), colnames(cell.data))
     object.cell.data <- cbind(object.cell.data, cell.data)
     colnames(object.cell.data) <- column_names
@@ -367,7 +394,12 @@ addRegionMetadata <- function(
     if (sum(rownames(region.data) %in% rownames(object.region.data)) < nrow(object.region.data)){
       stop('Are all the regions included in the new metadata?')
     }
-    region.data <- region.data[rownames(object.region.data),]
+    
+    region.data <- region.data[rownames(object.region.data),,drop=FALSE]
+    region.data <- droplevels(region.data)
+    if (sum(colnames(object.region.data) %in% colnames(region.data)) > 0){
+      object.region.data <- object.region.data[,-which(colnames(object.region.data) %in% colnames(region.data))]
+    }
     column_names <- c(colnames(object.region.data), colnames(region.data))
     object.region.data <- cbind(object.region.data, region.data)
     colnames(object.region.data) <- column_names
@@ -411,16 +443,20 @@ renameCells <- function(
     colnames(object@binary.count.matrix) <- names
   }
   
-  if (!is.null(object@dr[['tSNE']])){
-    rownames(object@dr[['tSNE']]) <- names
+  if (!is.null(object@dr[['cell']][['tSNE']])){
+    rownames(object@dr[['cell']][['tSNE']]) <- names
   }
   
-  if (!is.null(object@dr[['DiffusionMap']])){
-    rownames(object@dr[['DiffusionMap']]) <- names
+  if (!is.null(object@dr[['cell']][['Umap']])){
+    rownames(object@dr[['cell']][['Umap']]) <- names
   }
   
-  if (!is.null(object@dr[['PCA']])){
-    rownames(object@dr[['PCA']]$ind.coord) <- names
+  if (!is.null(object@dr[['cell']][['DiffusionMap']])){
+    rownames(object@dr[['cell']][['DiffusionMap']]) <- names
+  }
+  
+  if (!is.null(object@dr[['cell']][['PCA']])){
+    rownames(object@dr[['cell']][['PCA']]$ind.coord) <- names
   }
 
   return(object)

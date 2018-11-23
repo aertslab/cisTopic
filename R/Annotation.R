@@ -17,6 +17,13 @@ annotateRegions <- function(
   annoDb,
   ...
 ){
+  # Check depedencies
+  if(! "ChIPseeker" %in% installed.packages()){
+    stop('Please, install ChIPseeker: \n source("https://bioconductor.org/biocLite.R") \nbiocLite("ChIPseeker")')
+  } else {
+    require(ChIPseeker)
+  }
+  
   regions <- object@region.ranges
   elementMetadata(regions)[["regionNames"]] <- names(regions)
   object.region.data <- object@region.data
@@ -51,6 +58,7 @@ annotateRegions <- function(
 #' @examples
 #' object <- GREAT(object, request_interval = 10)
 #'
+#' @importFrom plyr llply
 #' @export
 
 GREAT <- function(
@@ -63,6 +71,18 @@ GREAT <- function(
   request_interval=20,
   ...
   ){
+  # Check info
+  if (length(object@binarized.cisTopics) < 1){
+    stop('Please, run binarizecisTopics() first.')
+  }
+  
+  # Check dependencies
+  if(! "rGREAT" %in% installed.packages()){
+    stop('Please, install rGREAT: \n source("https://bioconductor.org/biocLite.R") \nbiocLite("rGREAT")')
+  } else {
+    require(rGREAT)
+  }
+  
   if (is.null(liftOver)){
     object.binarized.rGREAT <- llply(1:length(object@binarized.cisTopics), function(i) .doGREAT(object@region.ranges[rownames(object@binarized.cisTopics[[i]])], genome, fold_enrichment, geneHits, sign, request_interval, ...))
   } else {
@@ -122,6 +142,7 @@ GREAT <- function(
 #'
 #'
 #' @import ggplot2
+#' @import plyr
 #' @importFrom data.table rbindlist
 #'
 #'
@@ -143,6 +164,19 @@ ontologyDotPlot <- function(
   max.size=10
 )
 {
+  # Check dependencies
+  if(! "data.table" %in% installed.packages()){
+    stop('Please, install data.table: \n install.packages("data.table")')
+  } else {
+    require(data.table)
+  }
+  
+  if(! "ggplot2" %in% installed.packages()){
+    stop('Please, install data.table: \n install.packages("ggplot2")')
+  } else {
+    require(ggplot2)
+  }
+  
   if(order.by %in% c('Binom_Raw_PValue', 'Binom_Adjp_BH', 'Hyper_Raw_PValue', 'Hyper_Adjp_BH')){
     decreasing <- FALSE
   }

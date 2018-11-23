@@ -30,7 +30,8 @@ functional when the number of topics and the size of the data set allows it.}
 
 \item{\code{selected.model}}{List with the information regards the model selected. The model is represented as an object of the class cisTopicModel.}
 
-\item{\code{dr}}{Dimensionality reduction outputs, named by technique: 'tSNE', 'DiffussionMap', 'PCA', 'Biplot'.}
+\item{\code{dr}}{Dimensionality reduction outputs, which can be applied on 'cell' or 'region'. Within each slot ('cell' or 'regions'), there are
+sub-slots named by technique: 'Umap', 'tSNE', 'DiffussionMap', 'PCA', 'Biplot'.}
 
 \item{\code{calc.params}}{Named list to store all calculation-related parameter choices.}
 

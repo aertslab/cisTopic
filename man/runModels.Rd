@@ -4,14 +4,15 @@
 \alias{runModels}
 \title{Run Latent Dirichlet Allocation in a cisTopic object}
 \usage{
-runModels(object, topic = 25, nCores = 1, seed = 123, iterations = 500,
-  burnin = 250, alpha = 50, alphaByTopic = TRUE, beta = 0.1,
-  returnType = "allModels", ...)
+runModels(object, topic = c(2, 10, 20, 30, 40, 50), nCores = 1,
+  seed = 123, iterations = 500, burnin = 250, alpha = 50,
+  alphaByTopic = TRUE, beta = 0.1, returnType = "allModels",
+  addModels = TRUE, ...)
 }
 \arguments{
 \item{object}{Initialized cisTopic object.}
 
-\item{topic}{Integer or vector of integers indicating the number of topics in the model/s (by default it is 25). We recommend to try several values
+\item{topic}{Integer or vector of integers indicating the number of topics in the model/s (by default it is a vector with 2, 10, 20, 30, 40 and 50 topics). We recommend to try several values
 if possible, and select the best model based on the highest likelihood.}
 
 \item{nCores}{Number of cores to use. By default it is 1, but if several models with distinct number of topics are being tested; it is
@@ -36,6 +37,8 @@ a list with all the fitted models (as lists) to object@models, while 'selectedMo
 object@selected.model, and a dataframe with the log likelihood of the other models to object@log.lik. By default, this function will return all models for allowing posterior selection; however, note that if the number
 of models and the size of the data is considerably big, returning all models may be memory expensive.}
 
+\item{addModels}{Whether models should be added if there is a pre-existing list of models or should be overwritten by new models. If TRUE, parameters are setted to match the existing models.}
+
 \item{...}{See \code{lda.collapsed.gibbs.sampler} from the package lda.}
 }
 \value{
@@ -51,6 +54,6 @@ The selected parameters are adapted from Griffiths & Steyvers (2004).
 \examples{
 bamfiles <- c('example_1.bam', 'example_2.bam', 'example_3.bam')
 regions <- 'example.bed'
-cisTopicObject <- CreatecisTopicObjectfromBAM(bamfiles, regions)
-cisTopicObject <- RunModel(cisTopicObject)
+cisTopicObject <- createcisTopicObjectfromBAM(bamfiles, regions)
+cisTopicObject <- runModels(cisTopicObject)
 }

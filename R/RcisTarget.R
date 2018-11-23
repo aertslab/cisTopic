@@ -2,7 +2,8 @@
 #'
 #' Convert binarized cisTopics to the corresponding cisTarget coordinates
 #' @param object Initialized cisTopic object, after the object@@binarized.cisTopics has been filled.
-#' @param genome Genome to which the data has been mapped. The available genomes are hg19, dm3, dm6 and mm9.
+#' @param genome Genome to which the data has been mapped. If you are using liftOver, provide the genome to which
+#' you data has been lift-overed. The available genomes are hg19, dm3, dm6 and mm9.
 #' @param liftOver GRangesList object containing the original coordinates (in the same format as
 #' object@@region.names) in the data set as slot names and the corresponding mapping regions as a GRanges object in the slot.
 #' @param ... See \code{findOverlap} from GenomicRanges
@@ -14,11 +15,16 @@
 
 binarizedcisTopicsToCtx <- function(
   object,
-  genome = 'hg19',
+  genome,
   liftOver = NULL,
   minOverlap = 0.4,
   ...
 ){
+  # Check input
+  if(length(object@binarized.cisTopics) < 1){
+    stop('Please, run binarizecisTopics() first.')
+  }
+  
   if (genome == 'hg19'){
     data(hg19_CtxRegions)
     CtxRegions <- makeGRangesFromDataFrame(hg19_CtxRegions, keep.extra.columns = TRUE)
@@ -33,9 +39,12 @@ binarizedcisTopicsToCtx <- function(
   }
   else if (genome == 'mm9'){
     data(mm9_CtxRegions)
-    CtxLabel <- paste('mm9_r70__', rownames(mm9_CtxRegions), sep='')
+    CtxLabel <- paste0('mm9_r70__', mm9_CtxRegions$seqnames, ':', mm9_CtxRegions$start+1, '-', mm9_CtxRegions$end)
     mm9_CtxRegions$CtxLabel <- CtxLabel
     CtxRegions <- makeGRangesFromDataFrame(mm9_CtxRegions, keep.extra.columns = TRUE)
+  }
+  else{
+    stop('The genome required is not available! Try using the liftover option.')
   }
 
   if (is.null(liftOver)){
@@ -66,7 +75,7 @@ binarizedcisTopicsToCtx <- function(
 #'
 #' Map regions to the most overlapping cisTarget region
 #' @param object Initialized cisTopic object, after the object@@binarized.cisTopics has been filled.
-#' @param genome to which the data has been mapped. The available genomes are hg19, dm3, dm6 and mm9.
+#' @param genome Genome to which the data has been mapped. The available genomes are hg19, dm3, dm6 and mm9.
 #' @param liftOver GRangesList object containing the original coordinates (in the same format as
 #' object@@region.names) in the data set as slot names and the corresponding mapping regions as a GRanges object in the slot.
 #' @param ... See \code{findOverlap} from GenomicRanges
@@ -78,8 +87,8 @@ binarizedcisTopicsToCtx <- function(
 
 scoredRegionsToCtx <- function(
   object,
+  genome,
   liftOver = NULL, 
-  genome = 'hg19',
   minOverlap = 0.4,
   ...
 ){
@@ -97,6 +106,8 @@ scoredRegionsToCtx <- function(
   }
   else if (genome == 'mm9'){
     data(mm9_CtxRegions)
+    CtxLabel <- paste0('mm9_r70__', mm9_CtxRegions$seqnames, ':', mm9_CtxRegions$start+1, '-', mm9_CtxRegions$end)
+    mm9_CtxRegions$CtxLabel <- CtxLabel
     CtxRegions <- makeGRangesFromDataFrame(mm9_CtxRegions, keep.extra.columns = TRUE)
   }
 
@@ -119,16 +130,15 @@ scoredRegionsToCtx <- function(
 #' Run RcisTarget in the binarized topics
 #' @param object Initialized cisTopic object, after the object@@binarized.regions.to.Rct has been filled.
 #' @param pathToFeather Path to the feather database to use. Note that this database has to match the genome used for mapping.
-#' @param genome Genome to which the data was aligned (hg19, mm9, dm3 or dm6).
+#' @param genome Genome to which the data was aligned or liftovered (hg19, mm9, dm3 or dm6).
 #' @param motifRankings Feather database corresponding to the genome
-#' @param reduced_database Whether the reduced version of the database is being used or not (by default, it is set to false).
+#' @param reduced_database Whether a reduced version of the database (e.g. background database) is being used or not (by default, it is set to false).
 #' @param ... See RcisTarget
 #'
 #' @return Motif enrichment table is stored in object@@binarized.RcisTarget
 #' @examples
-#' path <- "hg19-regions-1M-9species.all_regions.mc9nr.feather"
-#' motifRankings <- importRankings(path)
-#' cisTopicObject <- topicRcisTarget(cisTopicObject, featherdatabase)
+#' pathToFeather <- "hg19-regions-1M-9species.all_regions.mc9nr.feather"
+#' cisTopicObject <- topicRcisTarget(cisTopicObject, genome='hg19', pathToFeather)
 #' cisTopicObject
 #' @import RcisTarget
 #' @importFrom parallel makeCluster
@@ -139,7 +149,7 @@ scoredRegionsToCtx <- function(
 
 topicsRcisTarget <- function(
   object,
-  genome = 'hg19',
+  genome,
   pathToFeather,
   reduced_database = FALSE,
   nesThreshold = 3,
@@ -148,6 +158,18 @@ topicsRcisTarget <- function(
   nCores = 1,
   ...
 ){
+  # Check input
+  if(length(object@binarized.regions.to.Rct) < 1){
+    stop('Please, run binarizedcisTopicsToCtx() first.')
+  }
+  
+  # Check dependencies
+  if(! "RcisTarget" %in% installed.packages()){
+    stop('Please, install RcisTaregt: \n install_github("aertslab/RcisTarget")')
+  } else {
+    require(RcisTarget)
+  }
+  
   if (genome == 'hg19'){
     data(motifAnnotations_hgnc)
     motifAnnot <- motifAnnotations_hgnc
@@ -163,6 +185,8 @@ topicsRcisTarget <- function(
   else if (genome == 'dm6'){
     data(motifAnnotations_dmel)
     motifAnnot <- motifAnnotations_dmel
+  } else {
+    stop('The genome required is not available! Try using the liftover option.')
   }
 
   topicsList <- object@binarized.regions.to.Rct
@@ -224,30 +248,94 @@ topicsRcisTarget <- function(
   return(object)
 }
 
+#' makeBackgroundFeather
+#'
+#' Create a background cisTarget ranking out of the genome-wide cisTarget regions based on given regions.
+#' @param pathToFeather Path to the feather database to use. Note that this database has to match the genome used for mapping.
+#' @param subsetRegions Subset of regions to be re-ranked (optional).
+#' @param subsetMotifs Subset of motifs to be used from the database (optional).
+#' @param pathToSave Path to save background database.
+#' @param ... See RcisTarget
+#'
+#' @return A file containing the feather database.
+#' 
+#' @details The created database can be used as input for \code{topicsRcisTarget()}; using reduced_database = TRUE. Subsetting by 
+#' regions and motifs is optional, but at least one of them as to be filled.
+#' @examples
+#' pathToFeather <- "hg19-regions-1M-9species.all_regions.mc9nr.feather"
+#' subsetRegion <- cisTopicObject@@region.data$CtxLabels
+#' pathToSave <- "hg19-regions-subsetMelanoma.feather"
+#' makeBackgroundFeather(pathToFeather, subsetRegion, pathToSave)
+#' @import feather
+#' @export
+
+makeBackgroundFeather <- function(
+  pathToFeather,
+  subsetRegions = NULL,
+  subsetMotifs = NULL,
+  pathToSave,
+  ...
+){
+  # Check dependencies
+  if(! "tibble" %in% installed.packages()){
+    stop('Please, install tibble: \n install.packages("tibble")')
+  }
+  
+  
+  if (is.null(subsetRegions) & is.null(subsetMotifs)){
+    stop('Please, introduce regions and/or motifs to subset for.')
+  }
+  
+  motifRankings <- feather(pathToFeather)
+  motifRankings <- motifRankings[which(motifRankings$features %in% subsetMotifs), c(1, which(colnames(motifRankings) %in% subsetRegions))]
+  reRankedMotifRankings <- tibble::as_tibble(t(apply(motifRankings[,2:ncol(motifRankings)], 1, function(x) as.integer(rank(x)))))
+  colnames(reRankedMotifRankings) <- colnames(motifRankings)[-1]
+  reRankedMotifRankings <- tibble::add_column(reRankedMotifRankings, features=motifRankings$features, .before=1)
+  write_feather(reRankedMotifRankings, pathToSave)
+}
+
+
+
 #' getCistromes
 #'
 #' Get cistromes formed based on motif enrichment with RcisTarget
 #' @param object Initialized cisTopic object, after object@@binarized.RcisTarget and object@@region.data$CtxLabels have been filled.
-#' @param annotation Annotations to be used ('TF_highConf', 'Both'). By default, only the high confidence annotation is used.
+#' @param annotation Annotations to be used ('TF_highConf', 'Both'). By default, only the both high confidence and indirect annotation is used.
+#' @param gene.cistrome Whether the cistromes with gene linked gene symbols have to be formed (based on the closest gene). It requires to 
+#' run first annotateRegions().
+#' @param region.cistrome Whether the cistromes with regions in the data set linked to the ctx regions have to be formed (based on maximum overlap). It requires to 
+#' run first scoredRegionstoCtx().
+#' @param nCores Number of cores to be used (by default 1).
 #' @param ... Ignored
 #'
-#' @return Motif enrichment table is stored in object@@binarized.RcisTarget
+#' @return Cistromes are stored as ctx regions (object@@cistromes.ctx), regions (object@@cistromes.regions) and if specified, as gene symbols
+#' (object@@cistromes.genes). Cistromes containing extended in their name are formed by both the high confidence and indirect annotation; otherwise,
+#' only by the high confidence features.
+#' 
 #' @examples
 #'
-#' cisTopicObject <- getCistromes(cisTopicObject, annotation = 'Both')
+#' cisTopicObject <- getCistromes(cisTopicObject, annotation = 'Both', gene.cistrome=FALSE, nCores=1)
 #' cisTopicObject
 #'
 #' @importFrom parallel makeCluster
 #' @import doSNOW
+#' @import data.table
 #' @importFrom plyr llply
 #' @export
 
 getCistromes <- function(
   object,
   annotation = 'Both',
+  gene.cistrome = FALSE,
+  region.cistrome=TRUE,
   nCores = 1,
   ...
 ){
+  # Check input
+  if(length(object@binarized.RcisTarget) < 1){
+    stop('Please, run topicsRcisTarget() first.')
+  }
+  
   object.binarized.RcisTarget <- object@binarized.RcisTarget
   if(nCores > 1){
     cl <- makeCluster(nCores, type = "SOCK")
@@ -266,32 +354,46 @@ getCistromes <- function(
   }
 
   object@cistromes.ctx <- object.cistromes.ctx
-  object.cistromes.regions <- object.cistromes.ctx
-
-  for (i in 1:length(object.binarized.RcisTarget)){
-    for (j in 1:length(object.cistromes.ctx[[i]])){
-      object.cistromes.regions[[i]][[j]] <- as.vector(unlist(object.cistromes.ctx[[i]][[j]]))
-      object.cistromes.regions[[i]][[j]] <- unique(as.vector(unlist(rownames(object@region.data[which(object@region.data$CtxLabels %in% object.cistromes.ctx[[i]][[j]]),]))))
-      object.cistromes.regions[[i]][[j]] <- object.cistromes.regions[[i]][[j]][!is.na(object.cistromes.regions[[i]][[j]])]
+  
+  if(region.cistrome){
+    object.cistromes.regions <- object.cistromes.ctx
+    
+    for (i in 1:length(object.binarized.RcisTarget)){
+      for (j in 1:length(object.cistromes.ctx[[i]])){
+        object.cistromes.regions[[i]][[j]] <- as.vector(unlist(object.cistromes.ctx[[i]][[j]]))
+        object.cistromes.regions[[i]][[j]] <- unique(as.vector(unlist(rownames(object@region.data[which(object@region.data$CtxLabels %in% object.cistromes.ctx[[i]][[j]]),]))))
+        object.cistromes.regions[[i]][[j]] <- object.cistromes.regions[[i]][[j]][!is.na(object.cistromes.regions[[i]][[j]])]
+      }
+      names(object.cistromes.regions[[i]]) <- sapply(strsplit(names(object.cistromes.regions[[i]]), split = " (",  fixed = TRUE), "[", 1)
+      names(object.cistromes.regions[[i]]) <- paste(names(object.cistromes.regions[[i]]), " (",lengths(object.cistromes.regions[[i]]), "p)", sep="")
     }
-    names(object.cistromes.regions[[i]]) <- sapply(strsplit(names(object.cistromes.regions[[i]]), split = " (",  fixed = TRUE), "[", 1)
-    names(object.cistromes.regions[[i]]) <- paste(names(object.cistromes.regions[[i]]), " (",lengths(object.cistromes.regions[[i]]), "p)", sep="")
+    
+    object@cistromes.regions <- object.cistromes.regions
+  } 
+  else{
+    print('Region cistromes have not been computed. Please, run scoredRegionstoCtx() first.')
   }
-
-  object@cistromes.regions <- object.cistromes.regions
-  object.cistromes.genes <- object.cistromes.regions
-
-  for (i in 1:length(object.binarized.RcisTarget)){
-    for (j in 1:length(object.cistromes.regions[[i]])){
-      object.cistromes.genes[[i]][[j]] <- as.vector(unlist(object.cistromes.regions[[i]][[j]]))
-      object.cistromes.genes[[i]][[j]] <- unique(as.vector(unlist(object@region.data[object.cistromes.regions[[i]][[j]], 'SYMBOL'])))
-      object.cistromes.genes[[i]][[j]] <- object.cistromes.genes[[i]][[j]][!is.na(object.cistromes.genes[[i]][[j]])]
+  
+  if (gene.cistrome){
+    if ('SYMBOL' %in% colnames(object@region.data)){
+      object.cistromes.genes <- object.cistromes.regions
+      
+      for (i in 1:length(object.binarized.RcisTarget)){
+        for (j in 1:length(object.cistromes.regions[[i]])){
+          object.cistromes.genes[[i]][[j]] <- as.vector(unlist(object.cistromes.regions[[i]][[j]]))
+          object.cistromes.genes[[i]][[j]] <- unique(as.vector(unlist(object@region.data[object.cistromes.regions[[i]][[j]], 'SYMBOL'])))
+          object.cistromes.genes[[i]][[j]] <- object.cistromes.genes[[i]][[j]][!is.na(object.cistromes.genes[[i]][[j]])]
+        }
+        names(object.cistromes.genes[[i]]) <- sapply(strsplit(names(object.cistromes.genes[[i]]), split = " (",  fixed = TRUE), "[", 1)
+        names(object.cistromes.genes[[i]]) <- paste(names(object.cistromes.genes[[i]]), " (",lengths(object.cistromes.genes[[i]]), "g)", sep="")
+      }
+      
+      object@cistromes.genes <- object.cistromes.genes
     }
-    names(object.cistromes.genes[[i]]) <- sapply(strsplit(names(object.cistromes.genes[[i]]), split = " (",  fixed = TRUE), "[", 1)
-    names(object.cistromes.genes[[i]]) <- paste(names(object.cistromes.genes[[i]]), " (",lengths(object.cistromes.genes[[i]]), "g)", sep="")
+    else{
+      print('Gene cistromes have not been computed. Please, run annotateRegions() first.')
+    }
   }
-
-  object@cistromes.genes <- object.cistromes.genes
   return(object)
 }
 
@@ -305,7 +407,7 @@ getCistromes <- function(
   ){
   if (annotation == 'TF_highConf'){
     motifEnrichment.asIncidList <- apply(motifEnrichmentTable, 1, function(oneMotifRow) {
-      regions <- strsplit(oneMotifRow["enrichedRegions"], ";")[[1]]
+      peaks <- strsplit(oneMotifRow["enrichedRegions"], ";")[[1]]
       TFs <- strsplit(oneMotifRow["TF_highConf"], "; ")[[1]]
       oneMotifRow <- data.frame(rbind(oneMotifRow), stringsAsFactors=FALSE)
       oneMotifRow <-  data.frame(oneMotifRow[rep(1, length(TFs)),c("NES", "motif")],  TFs, stringsAsFactors = FALSE)
@@ -391,3 +493,68 @@ getCistromes <- function(
   names(cistromes) <- paste(names(cistromes), " (",lengths(cistromes), "r)", sep="")
   return(cistromes)
 }
+
+#' getCistromeEnrichment
+#'
+#' Determine topic-specific cistrome enrichment in the cells. If specified, cistrome enrichment can be plotted.
+#' @param object Initialized cisTopic object, after object@@cistromes.regions have been filled (see \code{getCistromes()}).
+#' @param topic Topic number of the cistrome.
+#' @param TFname Name of the transcription factor linked to the cistrome.
+#' @param annotation Annotations to be used ('TF_highConf', 'Both'). By default, only the high confidence annotation is used.
+#' @param aucellRankings Precomputed aucellRankings using \code{cisTopic_buildRankings()}. These rankings are not stored in the cisTopicObject due to their size.
+#' @param nCores Number of cores to be used for AUCell
+#' @param aucMaxRank Threshold to calculate the AUC
+#' @param plot Whether enrichment plot should be done. If yes, parameters for plotFeatures will not be ignored.
+#' @param ... See \code{plotFeatures()}.
+#'
+#' @return AUC enrichment values for the signature are stored as a column in object@@cell.data. If specified, cells coloured by
+#' their AUC enrichment values will be plotted.
+#' @examples
+#'
+#' cisTopicObject <- getCistromeEnrichment(cisTopicObject, annotation = 'Both', nCores=1)
+#' cisTopicObject
+#'
+#' @import AUCell
+#' @export
+
+getCistromeEnrichment <- function(
+  object,
+  topic,
+  TFname,
+  annotation = 'TF_highConf',
+  aucellRankings,
+  nCores = 1,
+  aucMaxRank = 0.03*nrow(aucellRankings),
+  plot=TRUE,
+  ...
+){
+  topicCistromes <- cisTopicObject@cistromes.regions[[topic]]
+  
+  if (is.null(grep(TFname, names(topicCistromes)))){
+    stop(paste0('The specified cistrome cannot be found. Please, check whether there is a cistrome for ', TFname, ' in topic ', topic, ' with ', annotation, '.'))
+  }
+  else{
+    cistromeNames <- names(topicCistromes)[grep(TFname, names(topicCistromes))]
+    if (annotation == 'TF_highConf'){
+      cistromeNames <- cistromeNames[grep(paste0(TFname,' '), cistromeNames)]
+    }
+    else if (annotation == 'Both'){
+      cistromeNames <- cistromeNames[grep(paste0(TFname,'_'), cistromeNames)]
+    }
+  }
+  
+  cistrome <- topicCistromes[cistromeNames]
+  
+  modulesAUC <- AUCell_calcAUC(cistrome, aucellRankings, nCores=nCores, aucMaxRank=aucMaxRank)
+  enrichMatrix <- t(getAUC(modulesAUC))
+  rownames(enrichMatrix) <- object@cell.names
+  colnames(enrichMatrix) <- paste0('Topic', topic, '_', colnames(enrichMatrix))
+  object <- addCellMetadata(object, as.data.frame(enrichMatrix))
+  
+  if (plot){
+    plotFeatures(object, target='cell', colorBy=colnames(enrichMatrix))
+  }
+  
+  return(object)
+}
+  

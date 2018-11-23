@@ -1,6 +1,7 @@
 ### News
 
 <ul>
+<li>23-11-2018:  cisTopic v0.2.0: Umap dimensionality reduciton, new plotting functions, region clustering, predictive distribution and enrichment of region sets (e.g. ChIP-seq signatures, topic-specific cistromes) in cells. 
 <li>19-7-2018: Vignette on cisTopic in a big data set (Lake et al., 2018).</li>
 <li>19-7-2018: Update for liftOver.</li>
 <li>19-7-2018: Update for big data management.</li>

@@ -7,7 +7,7 @@
 signaturesHeatmap(object, topics = "all", selected.signatures = "all",
   nCores = 4, aucMaxRank = 0.03 * nrow(aucellRankings),
   col.low = "dodgerblue", col.mid = "floralwhite", col.high = "brown1",
-  ...)
+  scale = TRUE, ...)
 }
 \arguments{
 \item{object}{Initialized cisTopic object, after regions scores have been calculated with getRegionScores and object@signatures
@@ -17,7 +17,7 @@ is filled.}
 
 \item{selected.signatures}{By default all signatures will be used, but signatures can be selected based on index or name.
 Alternatively, 'annotation' can be selected to use as signatures the region type labels (e.g. promoter, distal intergenic, ...)
-For this, the function AnnotateRegions must be run first.}
+For this, the function annotateRegions() must be run first.}
 
 \item{nCores}{Number of cores to be used for AUCell}
 
@@ -29,7 +29,9 @@ For this, the function AnnotateRegions must be run first.}
 
 \item{col.high}{Color to use for high signature enrichment}
 
-\item{...}{See \code{aheatmao} from NMF}
+\item{scale}{Whether AUC enrichment should be normalized}
+
+\item{...}{See \code{Heatmap} from ComplexHeatmap}
 }
 \value{
 Heatmap showing the enrichment per topic per signature

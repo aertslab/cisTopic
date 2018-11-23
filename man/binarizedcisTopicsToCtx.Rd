@@ -4,13 +4,14 @@
 \alias{binarizedcisTopicsToCtx}
 \title{binarizedcisTopicsToCtx}
 \usage{
-binarizedcisTopicsToCtx(object, genome = "hg19", liftOver = NULL,
-  minOverlap = 0.4, ...)
+binarizedcisTopicsToCtx(object, genome, liftOver = NULL, minOverlap = 0.4,
+  ...)
 }
 \arguments{
 \item{object}{Initialized cisTopic object, after the object@binarized.cisTopics has been filled.}
 
-\item{genome}{Genome to which the data has been mapped. The available genomes are hg19, dm3, dm6 and mm9.}
+\item{genome}{Genome to which the data has been mapped. If you are using liftOver, provide the genome to which
+you data has been lift-overed. The available genomes are hg19, dm3, dm6 and mm9.}
 
 \item{liftOver}{GRangesList object containing the original coordinates (in the same format as
 object@region.names) in the data set as slot names and the corresponding mapping regions as a GRanges object in the slot.}

@@ -5,7 +5,7 @@
 #' @param signature Path to bed file or data frame containing signature regions (or a vector)
 #' @param labels A character vector with the names to be given to the signatures (in the same order as the signature paths or named)
 #' @param minOverlap Minimum overlap between the regions to consider them as overlapping regions
-#' @param ... See findOverlaps from GenomicRanges
+#' @param ... See \code{findOverlaps} from GenomicRanges
 #'
 #' @return The regions from the dataset that overlap with the signature are returned as a slot to object@@signatures
 #'
@@ -24,18 +24,38 @@ getSignaturesRegions <- function(
   minOverlap=0.4,
   ...
 ){
-  regionsSignatures <- llply(signatures, function(signature) .getSignatureRegions(object, signature, ...))
-  if (is.null(regionsSignatures)){
-    names(regionsSignatures) <- as.character(signatures)
-  }
-  else{
-    if (!is.null(names(labels))){
-      labels <- as.vector(labels[as.character(signatures)])
+  if (length(object@signatures) > 0){
+    if(sum(labels %in% names(object@signatures) > 0)){
+      error <- labels[which(labels %in% names(object@signatures))]
+      error <- paste(error, collapse=', ')
+      stop('There is at least a signature with the same label:', error ,'. Please, rename it.')
     }
-    names(regionsSignatures) <- labels
   }
   
-  object@signatures <- regionsSignatures
+  regionsSignatures <- llply(signatures, function(signature) .getSignatureRegions(object, signature, ...))
+  
+  names(regionsSignatures) <- labels
+  
+  if (length(object@signatures) < 1){
+    object@signatures <- regionsSignatures
+  } else {
+    object@signatures <- c(object@signatures, regionsSignatures)
+  }
+  
+  n.ids <- sapply(regionsSignatures,length)
+  regions <-  object@region.names
+  idx <- lapply(1:length(regionsSignatures), function (i) match(regionsSignatures[[i]], regions))
+  vals <- unlist(idx)
+  mat <- as.matrix(sparseMatrix(vals, rep(seq_along(n.ids), n.ids)))
+  mat <- apply(mat, 2, function(x) as.factor(x))
+  colnames(mat) <- names(regionsSignatures)
+  if(nrow(mat) < length(regions)){
+    number.rows <- length(regions) - nrow(mat)
+    add <- matrix(FALSE, number.rows, length(regionsSignatures))
+    mat <- rbind(mat, add)
+  }
+  rownames(mat) <- regions
+  object <- addRegionMetadata(object, as.data.frame(mat))
   return(object)
 }
 
@@ -48,7 +68,7 @@ getSignaturesRegions <- function(
   minOverlap=0.4,
   ...
 ){
-  if (file.exists(signature)){
+  if (!is.data.frame(signature)){
     regions <- read.table(signature)
     colnames(regions)[1:3] <- c('seqnames', 'start', 'end')
     regions <- makeGRangesFromDataFrame(regions)
@@ -107,13 +127,14 @@ getSignaturesRegions <- function(
 #' @param topics By default all topics will be used, but topics can be selected based on index.
 #' @param selected.signatures By default all signatures will be used, but signatures can be selected based on index or name.
 #' Alternatively, 'annotation' can be selected to use as signatures the region type labels (e.g. promoter, distal intergenic, ...)
-#' For this, the function AnnotateRegions must be run first.
+#' For this, the function annotateRegions() must be run first.
 #' @param nCores Number of cores to be used for AUCell
 #' @param aucMaxRank Threshold to calculate the AUC
 #' @param col.low Color to use for lowest signature enrichment
 #' @param col.mid Color to use for medium signature enrichment
 #' @param col.high Color to use for high signature enrichment
-#' @param ... See \code{aheatmao} from NMF
+#' @param scale Whether AUC enrichment should be normalized
+#' @param ... See \code{Heatmap} from ComplexHeatmap
 #'
 #' @return Heatmap showing the enrichment per topic per signature
 #'
@@ -129,18 +150,46 @@ signaturesHeatmap <- function(
   col.low = "dodgerblue",
   col.mid = "floralwhite",
   col.high = "brown1",
+  scale=TRUE,
   ...){
+  
+  # Check info
+  if(length(cisTopicObject@signatures) < 1){
+    stop('Please, run getSignaturesRegions() first.')
+  }
+  
+  # Check dependencies
+  if(! "fastcluster" %in% installed.packages()){
+    stop('Please, install fastcluster: \n install.packages("fastcluster")')
+  } else {
+    require(fastcluster)
+  }
+  
+  if(! "ComplexHeatmap" %in% installed.packages()){
+    stop('Please, install ComplexHeatmap: source("https://bioconductor.org/biocLite.R") \nbiocLite("ComplexHeatmap")')
+  } else {
+    require(ComplexHeatmap)
+  }
 
   # Get scores
   scores <- .getScores(object)
-  if (selected.signatures != 'annotation'){
+  if (selected.signatures[1] != 'annotation'){
     signatures <- object@signatures
-    if(selected.signatures != 'all'){
+    if (is.null(signatures)){
+      stop('Please run getSignaturesRegions() first.')
+    }
+    if(selected.signatures[1] != 'all'){
+      if (sum(selected.signatures %in% names(signatures)) != length(selected.signatures)){
+        stop('Check whether the selected signatures have been stored in object@signatures.')
+      }
       signatures <- signatures[selected.signatures]
     }
   }
   else{
-    signatures <- split(object@region.data, object@region.data$annotation)
+    signatures <- split(object@region.data, object@region.data$annotation)    
+    if (is.null(signatures)){
+      stop('Please run annotateRegions() first.')
+    }
     signatures <- lapply(signatures, function(x) rownames(x))
   }
 
@@ -149,16 +198,94 @@ signaturesHeatmap <- function(
   }
 
   aucellRankings <- AUCell_buildRankings(as.matrix(scores), nCores=nCores, plotStats=FALSE, verbose = FALSE)
-  modulesAUC <- AUCell_calcAUC(signatures, aucellRankings, nCores=nCores, aucMaxRank=aucMaxRank)
+  modulesAUC <- AUCell_calcAUC(signatures, aucellRankings, nCores=nCores, aucMaxRank=aucMaxRank, verbose=FALSE)
   enrichMatrix <- getAUC(modulesAUC)
-  enrichMatrix <- t(scale(t(enrichMatrix)))
+  
+  if (scale){
+    enrichMatrix <- t(scale(t(enrichMatrix)))
+    name_heatmap <- 'Normalised AUC score'
+  } else {
+    name_heatmap <- 'AUC score'
+  }
+  
 
-  cl.topics <- hclust.vector(t(enrichMatrix), method="ward", metric="euclidean")
+  cl.topics <- fastcluster::hclust.vector(t(enrichMatrix), method="ward", metric="euclidean")
   dd.col <- as.dendrogram(cl.topics)
 
-  colorPal <- grDevices::colorRampPalette(c("dodgerblue", "floralwhite", "brown1"))
+  colorPal <- grDevices::colorRampPalette(c(col.low, col.mid, col.high))
 
-  nmf.options(grid.patch=TRUE)
-  NMF::aheatmap(enrichMatrix, scale="none", revC=TRUE, main='Signatures heatmap', sub='Row normalized AUC scores', Colv=dd.col, color = colorPal(20), fontsize=10, ...)
+  heatmap <- ComplexHeatmap::Heatmap(data.matrix(enrichMatrix), col=colorPal(20), cluster_columns=dd.col,
+                                     show_column_names=TRUE, show_row_names = TRUE, 
+                                     heatmap_legend_param = list(legend_direction = "horizontal", legend_width = unit(5, "cm"), title_position='topcenter'),
+                                     name = name_heatmap, column_title_gp = gpar(fontface = 'bold'), ...)
+  ComplexHeatmap::draw(heatmap, heatmap_legend_side = "bottom")
 }
 
+#' signatureCellEnrichment
+#'
+#' Determine signatures enrichment in the cells. If specified, signature enrichment can be plotted.
+#' @param object Initialized cisTopic object, after object@@cistromes.regions have been filled (see \code{getCistromes()}).
+#' @param selected.signatures By default all signatures will be used, but signatures can be selected based on index or name.
+#' Alternatively, 'annotation' can be selected to use as signatures the region type labels (e.g. promoter, distal intergenic, ...)
+#' For this, the function annotateRegions() must be run first.
+#' @param aucellRankings Precomputed aucellRankings using \code{cisTopic_buildRankings()}. These rankings are not stored in the cisTopicObject due to their size.
+#' @param nCores Number of cores to be used for AUCell
+#' @param aucMaxRank Threshold to calculate the AUC
+#' @param plot Whether enrichment plot should be done. If yes, parameters for plotFeatures will not be ignored.
+#' @param ... See \code{plotFeatures()}.
+#'
+#' @return AUC enrichment values for the signature are stored as a column in object@@cell.data. If specified, cells coloured by
+#' their AUC enrichment values will be plotted.
+#' @examples
+#'
+#' cisTopicObject <- getCistromeEnrichment(cisTopicObject, annotation = 'Both', nCores=1)
+#' cisTopicObject
+#'
+#' @import AUCell
+#' @export
+
+signatureCellEnrichment <- function(
+  object,
+  aucellRankings,
+  selected.signatures='all',
+  nCores = 1,
+  aucMaxRank = 0.03*nrow(aucellRankings),
+  plot=TRUE,
+  ...
+){
+  # Check info
+  if(length(cisTopicObject@signatures) < 1){
+    stop('Please, run getSignaturesRegions() first.')
+  }
+  
+  if (selected.signatures != 'annotation'){
+    signatures <- object@signatures
+    if (is.null(signatures)){
+      stop('Please run getSignaturesRegions() first.')
+    }
+    if(selected.signatures != 'all'){
+      if (sum(selected.signatures %in% names(signatures)) != length(selected.signatures)){
+        stop('Check whether the selected signatures have been stored in object@signatures.')
+      }
+      signatures <- signatures[selected.signatures]
+    }
+  }
+  else{
+    signatures <- split(object@region.data, object@region.data$annotation)    
+    if (is.null(signatures)){
+      stop('Please run annotateRegions() first.')
+    }
+    signatures <- lapply(signatures, function(x) rownames(x))
+  }
+  
+  modulesAUC <- AUCell_calcAUC(signatures, aucellRankings, nCores=nCores, aucMaxRank=aucMaxRank)
+  enrichMatrix <- t(getAUC(modulesAUC))
+  rownames(enrichMatrix) <- object@cell.names
+  object <- addCellMetadata(object, as.data.frame(enrichMatrix))
+  
+  if (plot){
+    plotFeatures(object, target='cell', colorBy=colnames(enrichMatrix), ...)
+  }
+  
+  return(object)
+}

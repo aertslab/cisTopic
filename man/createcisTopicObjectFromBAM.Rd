@@ -27,7 +27,7 @@ to FALSE.}
 \item{paired}{Whether data should be treated as paired end or not. If it is FALSE, we count a read if its 5' end falls within
 the region, if false, fragments will be counted instead of individual reads.}
 
-\item{...}{See featureCounts function from Rsubread.}
+\item{...}{See \code{featureCounts} function from Rsubread.}
 }
 \value{
 Returns a cisTopic object with the counts data stored in object@count.matrix.

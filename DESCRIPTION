@@ -2,7 +2,7 @@ Package: cisTopic
 Type: Package
 Title: cisTopic: Probabilistic modelling of cis-regulatory topics from
         single cell epigenomics data
-Version: 0.1.0
+Version: 0.2.0
 Author: Carmen Bravo González-Blas
 Maintainer: Carmen Bravo González-Blas <carmen.bravogonzalezblas@kuleuven.vib.be>
 Description: The sparse nature of single cell epigenomics data can be overruled using probabilistic modelling methods such as Latent Dirichlet
@@ -13,17 +13,17 @@ Encoding: UTF-8
 LazyData: true
 RoxygenNote: 6.0.1
 Depends: R (>= 3.4)
-biocViews: GenomicRanges
-Imports: GenomicRanges, stats, Matrix, lda, doSNOW, parallel, plyr,
+biocViews: GenomicRanges, rtracklayer
+Imports: stats, Matrix, lda, doSNOW, parallel, plyr,
         AUCell (>= 1.2.4), DT, fitdistrplus,
         RcisTarget (>= 1.0.2), ggplot2, data.table,
-        feather, Rtsne
-Suggests: Rsubread, rtracklayer, rGREAT, ChIPseeker, scatterplot3d, plotly, destiny,
-        NMF (>= 0.23.6), fastcluster, TxDb.Dmelanogaster.UCSC.dm6.ensGene,
+        feather, rtracklayer
+Suggests: Rsubread, rGREAT, ChIPseeker, scatterplot3d, plotly, destiny, Rtsne, umap,
+        ComplexHeatmap, fastcluster, TxDb.Dmelanogaster.UCSC.dm6.ensGene,
         TxDb.Dmelanogaster.UCSC.dm3.ensGene,
         TxDb.Hsapiens.UCSC.hg19.knownGene,
         TxDb.Hsapiens.UCSC.hg38.knownGene, org.Dm.eg.db, org.Hs.eg.db,
-        knitr, rmarkdown
+        knitr, rmarkdown, BiocStyle, tibble
 VignetteBuilder: knitr
 NeedsCompilation: no
 Packaged: 2018-07-12 16:23:10 UTC; u0117456

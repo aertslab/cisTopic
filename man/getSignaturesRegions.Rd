@@ -13,7 +13,7 @@ getSignaturesRegions(object, signatures, labels, minOverlap = 0.4, ...)
 
 \item{minOverlap}{Minimum overlap between the regions to consider them as overlapping regions}
 
-\item{...}{See findOverlaps from GenomicRanges}
+\item{...}{See \code{findOverlaps} from GenomicRanges}
 
 \item{signature}{Path to bed file or data frame containing signature regions (or a vector)}
 }

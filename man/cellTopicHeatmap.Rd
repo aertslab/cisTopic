@@ -4,14 +4,14 @@
 \alias{cellTopicHeatmap}
 \title{Cell-cisTopic distribution heatmap}
 \usage{
-cellTopicHeatmap(object, method = "Zscore", colorBy = NULL,
-  colVars = list(), col.low = "dodgerblue", col.mid = "floralwhite",
-  col.high = "brown1", ...)
+cellTopicHeatmap(object, method = "Z-score", colorBy = NULL,
+  colVars = NULL, col.low = "floralwhite", col.mid = "pink",
+  col.high = "red", select.cells = NULL, ...)
 }
 \arguments{
 \item{object}{Initialized cisTopic object, after the object@selected.model has been filled.}
 
-\item{method}{Select the normalization method to use for plotting: 'Zscore' or 'probability'.}
+\item{method}{Select the normalization method to use for plotting: 'Z-score' or 'Probability'.}
 
 \item{colorBy}{Select the cell metadata used to colour the plots with. By default, all categorical features are used.}
 
@@ -23,11 +23,17 @@ cellTopicHeatmap(object, method = "Zscore", colorBy = NULL,
 
 \item{col.high}{Color to use for high topic enrichment}
 
-\item{...}{See \code{aheatmap} from NMF}
+\item{select.cells}{If a subset of cells want to be used for making the heatmap, selected cell names can be provided (as a vector).}
+
+\item{...}{See \code{Heatmap} from ComplexHeatmap}
 }
 \value{
 Heatmap clustering cells based on their cell-cisTopic distributions.
 }
 \description{
 Plot cell states based on dimensionality reduction over cell-cisTopic distributions
+}
+\details{
+'Z-score' computes the Z-score for each topic assingment per cell/region and 'Probability' divides the topic assignments by the total number
+of assignments in the cell/region in the last iteration plus alpha.
 }

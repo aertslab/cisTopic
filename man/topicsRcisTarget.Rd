@@ -4,18 +4,17 @@
 \alias{topicsRcisTarget}
 \title{topicsRcisTarget}
 \usage{
-topicsRcisTarget(object, genome = "hg19", pathToFeather,
-  reduced_database = FALSE, nesThreshold = 3, rocthr = 0.005,
-  maxRank = 20000, nCores = 1, ...)
+topicsRcisTarget(object, genome, pathToFeather, reduced_database = FALSE,
+  nesThreshold = 3, rocthr = 0.005, maxRank = 20000, nCores = 1, ...)
 }
 \arguments{
 \item{object}{Initialized cisTopic object, after the object@binarized.regions.to.Rct has been filled.}
 
-\item{genome}{Genome to which the data was aligned (hg19, mm9, dm3 or dm6).}
+\item{genome}{Genome to which the data was aligned or liftovered (hg19, mm9, dm3 or dm6).}
 
 \item{pathToFeather}{Path to the feather database to use. Note that this database has to match the genome used for mapping.}
 
-\item{reduced_database}{Whether the reduced version of the database is being used or not (by default, it is set to false).}
+\item{reduced_database}{Whether a reduced version of the database (e.g. background database) is being used or not (by default, it is set to false).}
 
 \item{...}{See RcisTarget}
 
@@ -28,8 +27,7 @@ Motif enrichment table is stored in object@binarized.RcisTarget
 Run RcisTarget in the binarized topics
 }
 \examples{
-path <- "hg19-regions-1M-9species.all_regions.mc9nr.feather"
-motifRankings <- importRankings(path)
-cisTopicObject <- topicRcisTarget(cisTopicObject, featherdatabase)
+pathToFeather <- "hg19-regions-1M-9species.all_regions.mc9nr.feather"
+cisTopicObject <- topicRcisTarget(cisTopicObject, genome='hg19', pathToFeather)
 cisTopicObject
 }

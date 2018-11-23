@@ -2,27 +2,37 @@
 % Please edit documentation in R/PlotCells.R
 \name{runtSNE}
 \alias{runtSNE}
-\title{Run tSNE on the cell-cisTopic distributions}
+\title{Run tSNE on the cell-cisTopic/region-cisTopic distributions}
 \usage{
-runtSNE(object, method = "Zscore", seed = 123, ...)
+runtSNE(object, target, method = "Z-score", seed = 123, ...)
 }
 \arguments{
 \item{object}{Initialized cisTopic object, after the object@selected.model has been filled.}
 
-\item{method}{Select the method for processing the cell assignments: 'Zscore',  'probability', 'predictive.distribution'.}
+\item{target}{Whether dimensionality reduction should be applied on cells ('cell') or regions (region). Note that for speed and clarity
+reasons, dimesionality reduction on regions will only be done using the regions assigned to topics with high confidence 
+(see binarizecisTopics()).}
+
+\item{method}{Select the method for processing the cell assignments: 'Z-score' and 'Probability'. In the case of regions, 
+an additional method, 'NormTop' is available (see getRegionScores()).}
 
 \item{seed}{Integer for making the results reproducible.}
 
-\item{...}{See Rtsne from the package Rtsne.}
+\item{...}{See \code{Rtsne} from the package Rtsne.}
 }
 \value{
-Returns a cisTopic object with the tSNE coordinates stored in object@dr$tSNE.
+Returns a cisTopic object with the tSNE coordinates stored in object@dr in object@dr$cell$tSNE or object@dr$region$tSNE 
+depending on the target.
 }
 \description{
-Run tSNE on the cell-cisTopic distributions.
+Run tSNE on the cell-cisTopic/region-cisTopic distributions.
 }
 \details{
-Zscore computes the Z-score for each topic assingment per cell, probability divides the topic assignments by the total number
-of assignments in the cell in the last iteration plus alpha and predictive distribution calculates the probability of the seeing
-the regions per cell.
+'Z-score' computes the Z-score for each topic assingment per cell/region. 'Probability' divides the topic assignments by the total number
+of assignments in the cell/region in the last iteration plus alpha. If using 'NormTop', regions are given an score defined by: \eqn{\beta_{w, k} (\log
+\beta_{w,k} - 1 / K \sum_{k'} \log \beta_{w,k'})}.
+}
+\examples{
+cisTopicObject <- runtSNE(cisTopicobject, target='cell', method='Z-score')
+cisTopicObject
 }

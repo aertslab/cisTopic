@@ -1,116 +1,184 @@
-#' Run tSNE on the cell-cisTopic distributions
+#' Run tSNE on the cell-cisTopic/region-cisTopic distributions
 #'
-#' Run tSNE on the cell-cisTopic distributions.
+#' Run tSNE on the cell-cisTopic/region-cisTopic distributions.
 #' @param object Initialized cisTopic object, after the object@@selected.model has been filled.
-#' @param method Select the method for processing the cell assignments: 'Zscore',  'probability', 'predictive.distribution'.
+#' @param target Whether dimensionality reduction should be applied on cells ('cell') or regions (region). Note that for speed and clarity
+#' reasons, dimesionality reduction on regions will only be done using the regions assigned to topics with high confidence 
+#' (see binarizecisTopics()).
+#' @param method Select the method for processing the cell assignments: 'Z-score' and 'Probability'. In the case of regions, 
+#' an additional method, 'NormTop' is available (see getRegionScores()).
 #' @param seed Integer for making the results reproducible.
-#' @param ... See Rtsne from the package Rtsne.
+#' @param ... See \code{Rtsne} from the package Rtsne.
 #'
-#' @return Returns a cisTopic object with the tSNE coordinates stored in object@@dr$tSNE.
+#' @return Returns a cisTopic object with the tSNE coordinates stored in object@@dr in object@@dr$cell$tSNE or object@@dr$region$tSNE 
+#' depending on the target.
 #'
-#' @details Zscore computes the Z-score for each topic assingment per cell, probability divides the topic assignments by the total number
-#' of assignments in the cell in the last iteration plus alpha and predictive distribution calculates the probability of the seeing
-#' the regions per cell.
+#' @details 'Z-score' computes the Z-score for each topic assingment per cell/region. 'Probability' divides the topic assignments by the total number
+#' of assignments in the cell/region in the last iteration plus alpha. If using 'NormTop', regions are given an score defined by: \eqn{\beta_{w, k} (\log
+#' \beta_{w,k} - 1 / K \sum_{k'} \log \beta_{w,k'})}.
 #'
-#' @importFrom lda predictive.distribution
+#' 
 #' @export
+#' 
+#' @examples
+#' cisTopicObject <- runtSNE(cisTopicobject, target='cell', method='Z-score')
+#' cisTopicObject
 
 runtSNE <- function(
   object,
-  method='Zscore',
+  target,
+  method='Z-score',
   seed=123,
   ...
 ){
-  if (method == 'Zscore'){
-    modelMat <- scale(object@selected.model$document_expects, center=TRUE, scale=TRUE)
+  
+  # Check info
+  if (length(object@selected.model) < 1){
+    stop('Please, run selectModel() first.')
   }
-
-  if (method == 'probability'){
-    alpha <- 50/length(cisTopicObject@selected.model$topic_sums)
-    modelMat <- apply(object@selected.model$document_sums, 2, function(x) {(x + alpha)/sum(x + alpha)})
+  
+  # Check dependencies
+  if(! "Rtsne" %in% installed.packages()){
+    stop('Please, install Rtsne: \n install.packages("Rtsne")')
+  } else {
+    require(Rtsne)
   }
-
-  if (method == 'predictive.distribution'){
-    if (is.null(object@selected.model$predictive.distribution)){
-      object <- predictiveDistribution(object)
-    }
-    modelMat <- object@selected.model$predictive.distribution
-  }
+  
+  modelMat <- .modelMatSelection(object, target, method)
 
   set.seed(seed)
-  tSNE <- Rtsne(t(modelMat), ...)
-  rownames(tSNE$Y) <- object@cell.names
-  if (ncol(tSNE$Y) == 2){
-    colnames(tSNE$Y) <- c("tsne1", "tsne2")
-  }
-  else if (ncol(tSNE$Y) == 3){
-    colnames(tSNE$Y) <- c("tsne1", "tsne2", "tsne3")
-  }
+  tSNE <- Rtsne::Rtsne(t(modelMat), ...)
+  rownames(tSNE$Y) <- colnames(modelMat)
+  colnames(tSNE$Y) <- paste0('tSNE', 1:ncol(tSNE$Y))
 
-  object@dr[['tSNE']] <- tSNE$Y
-  object@calc.params[['tSNE']] <- c(as.list(environment(), all = TRUE)[names(formals("runtSNE"))[c(2,3)]], list(...))
+  object@dr[[target]][['tSNE']] <- tSNE$Y
+  object@calc.params[[target]][['tSNE']] <- c(as.list(environment(), all = TRUE)[names(formals("runtSNE"))[c(2,3)]], list(...))
   return(object)
 }
 
 
+#' Run umap on the cell-cisTopic/region-cisTopic distributions
+#'
+#' Run umap on the cell-cisTopic/region-cisTopic distributions.
+#' @param object Initialized cisTopic object, after the object@@selected.model has been filled.
+#' @param target Whether dimensionality reduction should be applied on cells ('cell') or regions (region). Note that for speed and clarity
+#' reasons, dimesionality reduction on regions will only be done using the regions assigned to topics with high confidence 
+#' (see binarizecisTopics()).
+#' @param method Select the method for processing the cell assignments: 'Z-score' and 'Probability'. In the case of regions, 
+#' an additional method, 'NormTop' is available (see getRegionScores()).
+#' @param seed Integer for making the results reproducible.
+#' @param ... See \code{umap} from the package umap.
+#'
+#' @return Returns a cisTopic object with the umap coordinates stored in object@@dr in object@@dr$cell$umap or object@@dr$region$umap 
+#' depending on the target.
+#'
+#' @details 'Z-score' computes the Z-score for each topic assingment per cell/region. 'Probability' divides the topic assignments by the total number
+#' of assignments in the cell/region in the last iteration plus alpha. If using 'NormTop', regions are given an score defined by: \eqn{\beta_{w, k} (\log
+#' \beta_{w,k} - 1 / K \sum_{k'} \log \beta_{w,k'})}.
+#'
+#' 
+#' @export
+#' 
+#' @examples
+#' cisTopicObject <- runtSNE(cisTopicobject, target='cell', method='Z-score')
+#' cisTopicObject
+
+runUmap <- function(
+  object,
+  target,
+  method='Z-score',
+  seed=123,
+  ...
+){
+  
+  # Check info
+  if (length(object@selected.model) < 1){
+    stop('Please, run selectModel() first.')
+  }
+  
+  # Check dependencies
+  if(! "umap" %in% installed.packages()){
+    stop('Please, install umap: \n install.packages("umap")')
+  } else {
+    require(umap)
+  }
+  
+  modelMat <- .modelMatSelection(object, target, method)
+  
+  set.seed(seed)
+  Umap <- umap::umap(t(modelMat), ...)
+  rownames(Umap$layout) <- colnames(modelMat)
+  colnames(Umap$layout) <- paste0('UMAP', 1:ncol(Umap$layout))
+  
+  object@dr[[target]][['Umap']] <- Umap$layout
+  object@calc.params[[target]][['Umap']] <- c(as.list(environment(), all = TRUE)[names(formals("runUmap"))[c(2,3)]], list(...))
+  return(object)
+}
+
 #' Calculate Diffusion Components on the cell-cisTopic distributions
 #'
 #' Calculate Diffusion Components on the cell-cisTopic distributions
 #' @param object Initialized cisTopic object, after the object@@selected.model has been filled.
-#' @param method Select the method for processing the cell assignments: 'Zscore',  'probability', 'predictive.distribution'.
+#' @param target Whether dimensionality reduction should be applied on cells ('cell') or regions (region). Note that for speed and clarity
+#' reasons, dimesionality reduction on regions will only be done using the regions assigned to topics with high confidence 
+#' (see binarizecisTopics()).
+#' @param method Select the method for processing the cell assignments: 'Z-score' and 'Probability'. In the case of regions, 
+#' an additional method, 'NormTop' is available (see getRegionScores()).
 #' @param seed Integer for making the results reproducible.
-#' @param ... See DiffusionMap from the package destiny.
+#' @param ... See \code{DiffusionMap} from the package destiny.
 #'
 #' @return Returns a cisTopic object with the tSNE coordinates stored in object@@dr$DM.
 #'
-#' @details Zscore computes the Z-score for each topic assingment per cell, probability divides the topic assignments by the total number
-#' of assignments in the cell in the last iteration plus alpha and predictive distribution calculates the probability of the seeing
-#' the regions per cell.
+#' @details 'Z-score' computes the Z-score for each topic assingment per cell/region. 'Probability' divides the topic assignments by the total number
+#' of assignments in the cell/region in the last iteration plus alpha. If using 'NormTop', regions are given an score defined by: \eqn{\beta_{w, k} (\log
+#' \beta_{w,k} - 1 / K \sum_{k'} \log \beta_{w,k'})}.
 #'
-#' @importFrom lda predictive.distribution
 #' @export
 
 runDM <- function(
   object,
-  method='Zscore',
+  target,
+  method='Z-score',
   seed=123,
   ...
 ){
-  if (method == 'Zscore'){
-    modelMat <- scale(object@selected.model$document_expects, center=TRUE, scale=TRUE)
+  
+  # Check info
+  if (length(object@selected.model) < 1){
+    stop('Please, run selectModel() first.')
   }
-
-  if (method == 'probability'){
-    alpha <- 50/length(cisTopicObject@selected.model$topic_sums)
-    modelMat <- apply(object@selected.model$document_sums, 2, function(x) {(x + alpha)/sum(x + alpha)})
+  
+  # Check dependencies
+  if(! "destiny" %in% installed.packages()){
+    stop('Please, install destiny: \n source("https://bioconductor.org/biocLite.R") \n biocLite("destiny")')
+  } else {
+    require(destiny)
   }
-
-  if (method == 'predictive.distribution'){
-    if (is.null(object@selected.model$predictive.distribution)){
-      object <- predictiveDistribution(object)
-    }
-    modelMat <- object@selected.model$predictive.distribution
-  }
+  
+  modelMat <- .modelMatSelection(object, target, method)
 
   set.seed(seed)
-  dif <- DiffusionMap(t(modelMat), ...)
+  dif <- destiny::DiffusionMap(t(modelMat), ...)
   coord <- dif@eigenvectors
-  rownames(coord) <- object@cell.names
-  colnames(coord) <- paste('DC', seq(1:ncol(coord)))
-  object@dr[['DiffusionMap']] <- coord
-  object@calc.params[['runDM']] <- c(as.list(environment(), all = TRUE)[names(formals("runDM"))[c(2,3)]], list(...))
+  rownames(coord) <- colnames(modelMat)
+  colnames(coord) <- paste0('DC', seq(1:ncol(coord)))
+  object@dr[[target]][['DiffusionMap']] <- coord
+  object@calc.params[[target]][['runDM']] <- c(as.list(environment(), all = TRUE)[names(formals("runDM"))[c(2,3)]], list(...))
   return(object)
-
 }
 
 #' Calculate Principal Components on the cell-cisTopic distributions
 #'
 #' Calculate Principal Components (PCs) on the cell-cisTopic distributions
 #' @param object Initialized cisTopic object, after the object@@selected.model has been filled.
-#' @param method Select the method for processing the cell assignments: 'Zscore',  'probability', 'predictive.distribution'.
-#' @param ... See prcomp from the package stats.
+#' @param target Whether dimensionality reduction should be applied on cells ('cell') or regions (region). Note that for speed and clarity
+#' reasons, dimesionality reduction on regions will only be done using the regions assigned to topics with high confidence 
+#' (see binarizecisTopics()).
+#' @param method Select the method for processing the cell assignments: 'Z-score' and 'Probability'. In the case of regions, 
+#' an additional method, 'NormTop' is available (see getRegionScores()).
+#' @param ... See \code{prcomp} from the package stats.
 #'
-#' @return Returns a cisTopic object with a list of PCA information stored in object@@dr$PCA.
+#' @return Returns a cisTopic object with a list of PCA information stored in object@@dr$cell$PCA or object@@dr$region$PCA.
 #'
 #' @slot loadings Matrix whose columns contain eigenvectors
 #' @slot sdev Standard deviations of the PCs
@@ -118,45 +186,38 @@ runDM <- function(
 #' @slot var.cos2 Cos2 of the variables. Measures their representation quality.
 #' @slot var.contrib Contributions of the variables to the PCs
 #' @slot ind.coord Coordinates of individuals
-#' @slot ind.cos2 Cos2 of the individuals.
+#' @slot ind.cos2 Cos2 of the individuals
 #' @slot ind.contrib Contributions of the individuals to the PCs
 #' @slot eigs Eigenvalues, which measure the variability retained per PC
 #' @slot variance.explained Percentage of variance explained by each component
 #'
-#' @details Zscore computes the Z-score for each topic assingment per cell, probability divides the topic assignments by the total number
-#' of assignments in the cell in the last iteration plus alpha and predictive distribution calculates the probability of the seeing
-#' the regions per cell.
+#' @details 'Z-score' computes the Z-score for each topic assingment per cell/region. 'Probability' divides the topic assignments by the total number
+#' of assignments in the cell/region in the last iteration plus alpha. If using 'NormTop', regions are given an score defined by: \eqn{\beta_{w, k} (\log
+#' \beta_{w,k} - 1 / K \sum_{k'} \log \beta_{w,k'})}.
 #'
 #' @importFrom stats prcomp
-#' @importFrom lda predictive.distribution
 #' @export
 
 runPCA <- function(
   object,
-  method='Zscore',
+  target,
+  method='Z-score',
   seed=123,
   ...
 ){
-  if (method == 'Zscore'){
-    modelMat <- scale(object@selected.model$document_expects, center=TRUE, scale=TRUE)
+  
+  # Check info
+  if (length(object@selected.model) < 1){
+    stop('Please, run selectModel() first.')
   }
-
-  if (method == 'probability'){
-    alpha <- 50/length(cisTopicObject@selected.model$topic_sums)
-    modelMat <- apply(object@selected.model$document_sums, 2, function(x) {(x + alpha)/sum(x + alpha)})
-  }
-
-  if (method == 'predictive.distribution'){
-    if (is.null(object@selected.model$predictive.distribution)){
-      object <- predictiveDistribution(object)
-    }
-    modelMat <- object@selected.model$predictive.distribution
-  }
+  
+  inimodelMat <- .modelMatSelection(object, target, method)
 
   set.seed(seed)
-  modelMat <- scale(t(modelMat), center=TRUE, scale=FALSE, ...)
-  rownames(modelMat) <- object@cell.names
-  colnames(modelMat) <-  paste('Topic', 1:ncol(modelMat), sep='')
+  modelMat <- scale(t(inimodelMat), center=TRUE, scale=FALSE, ...)
+  rownames(modelMat) <- colnames(inimodelMat)
+  rm(inimodelMat)
+  colnames(modelMat) <- paste('Topic', 1:ncol(modelMat), sep='')
   pca <- prcomp(modelMat)
 
   # Compute Coordinates
@@ -186,132 +247,282 @@ runPCA <- function(
   # Individual contributions
   ind.contrib <- t(apply(ind.coord, 1,  function(ind) 100*(1/nrow(modelMat))*(ind^2/eigs)))
 
-  object@dr[['PCA']] <- list(loadings=loadings, sdev=sdev, var.coord=var.coord, var.cos2=var.cos2, var.contrib=var.contrib,
+  object@dr[[target]][['PCA']] <- list(loadings=loadings, sdev=sdev, var.coord=var.coord, var.cos2=var.cos2, var.contrib=var.contrib,
                              ind.coord=ind.coord, ind.cos2=ind.cos2, ind.contrib=ind.contrib, eigs=eigs, variance.explained=variance.explained)
-  object@calc.params[['runPCA']] <- c(as.list(environment(), all = TRUE)[names(formals("runPCA"))[c(2,3)]], list(...))
+  object@calc.params[[target]][['runPCA']] <- c(as.list(environment(), all = TRUE)[names(formals("runPCA"))[c(2,3)]], list(...))
   return(object)
 }
 
-#' Plot cell states based on dimensionality reduction over cell-cisTopic distributions
+# Helper function
+
+.modelMatSelection <- function(
+  object,
+  target,
+  method,
+  all.regions=FALSE
+){
+  # Check info
+  if (length(object@selected.model) < 1){
+    stop('Please, run selectModel() first.')
+  }
+  
+  if (target == 'cell'){
+    if (method == 'Z-score'){
+      modelMat <- scale(object@selected.model$document_expects, center=TRUE, scale=TRUE)
+    }
+    
+    else if (method == 'Probability'){
+      alpha <- object@calc.params[['runModels']]$alpha/length(object@selected.model$topic_sums)
+      modelMat <- apply(object@selected.model$document_sums, 2, function(x) {(x + alpha)/sum(x + alpha)})
+    }
+    else{
+      stop('Incorrect method selected. Chose method between "Z-score" and "Probability".')
+    }
+    colnames(modelMat) <- object@cell.names
+    rownames(modelMat) <- paste0('Topic', 1:nrow(modelMat))
+  }
+  
+  else if (target == 'region'){
+    if (!all.regions){
+      if (length(object@binarized.cisTopics) < 1){
+        stop('Please, use binarizecisTopics() first for defining the high confidence regions for dimensionality reduction!')
+      }
+      else {
+        regions <- unique(unlist(lapply(object@binarized.cisTopics, rownames)))
+      }
+    }
+    
+    topic.mat <- object@selected.model$topics
+    
+    if (method == 'NormTop'){
+      normalizedTopics <- topic.mat/(rowSums(topic.mat) + 1e-05)
+      modelMat <- apply(normalizedTopics, 2, function(x) x * (log(x + 1e-05) - sum(log(x + 1e-05))/length(x)))
+    }
+    
+    else if (method == 'Z-score'){
+      modelMat <- scale(object@selected.model$topics, center=TRUE, scale=TRUE)
+    }
+    
+    else if (method == 'Probability'){
+      beta <- object@calc.params[['runModels']]$beta
+      topic.mat <- object@selected.model$topics
+      modelMat <-  (topic.mat + beta)/rowSums(topic.mat + beta)
+    }
+    
+    else{
+      stop('Incorrect method selected. Chose "NormTop", "Z-score" and "Probability".')
+    }
+    
+    colnames(modelMat) <- object@region.names
+    rownames(modelMat) <- paste0('Topic', 1:nrow(modelMat))
+    
+    if (!all.regions){
+      modelMat <- modelMat[,regions]
+    }
+  }
+  
+  else{
+    stop('Please, provide target="cell" or "region".')
+  }
+  
+  return(modelMat)
+}
+
+
+#' Plot features (cells or regions) based on dimensionality reduction over cell-topic or topic-region distributions
 #'
-#' Plot cell states based on dimensionality reduction over cell-cisTopic distributions
-#' @param object Initialized cisTopic object, after the object@@selected.model has been filled.
-#' @param method Select the dimensionality reduction method to use for plotting: 'tSNE',  'PCA',  'Biplot', 'DiffusionMap'.
+#' Plot features (cells or regions) based on dimensionality reduction over cell-topic or topic-region distributions
+#'
+#' @param object Initialized cisTopic object, after the object@@dr has been filled.
+#' @param target Whether dimensionality reduction should be applied on cells ('cell') or regions (region). Note that for speed and clarity
+#' reasons, dimesionality reduction on regions will only be done using the regions assigned to topics with high confidence 
+#' (see binarizecisTopics()).
+#' @param method Select the dimensionality reduction method to use for plotting: 'tSNE', 'Umap',  'PCA',  'Biplot', 'DM' (for Diffusion Map).
 #' @param colorBy Select the cell metadata used to colour the plots with. By default, all features are used.
 #' @param dim Dimensions to use in the plot (2 or 3). Biplot is only doable in 2D.
 #' @param intervals Intervals to apply on the color palette for coloring continuous variables. By default, it is 10.
-#' @param topic_contr Color by topic distribution ('Zscore' or 'probability'). 
+#' @param topic_contr Color by topic distribution ('Z-score' or 'Probability'). 
 #' @param topics Vector containing the numbers of the topics for which the plot has to be made if topic_contr is not null.
 #' @param col.low Color to use for lowest topic enrichment
 #' @param col.mid Color to use for medium topic enrichment
 #' @param col.high Color to use for high topic enrichment
-#' @param labels Labels for the Zscore in the continuous variables plots
+#' @param labels Labels for the Z-score in the continuous variables plots
 #' @param colsVar List specifying the colors to use for each label in each colouring level for cell metadata
 #' @param plot_ly Whether plot_ly should be used for the plots
+#' @param legend Whether plots should be given with a legend. If FALSE, the legend is given in an independent following plot.
+#' @param ... Ignored
 #'
 #' @return Plots cell states based on the dimensionality reduction method selected, coloured by the given metadata (one plot per feature).
 #'
 #' @export
 
-plotCellStates <- function(
+plotFeatures <- function(
   object,
+  target,
   method='tSNE',
   colorBy=NULL,
   dim=2,
   intervals=10,
-  topic_contr='Zscore',
-  topics='all',
-  col.low = "dodgerblue",
-  col.mid = "floralwhite",
-  col.high = "brown1",
+  topic_contr=NULL,
+  topics=NULL,
+  col.low = "pink",
+  col.mid = "red",
+  col.high = "darkred",
   labels=3,
   colVars=list(),
   plot_ly=FALSE,
+  legend=TRUE,
+  cex.legend=0.7,
+  factor.min=0.05,
+  factor.max=0.75,
   ...
 ){
-  if (method == 'tSNE'){
-    if (is.null(object@dr[['tSNE']])){
-      stop('Run the function runtSNE first!')
-    }
-    coordinates <- object@dr[['tSNE']]
-    if (ncol(coordinates) == 2 && dim > 2){
-      stop('If you want to plot tSNE in 3D, please use runtSNE with dims = 3 as argument.')
-    }
+  if (is.null(colorBy) && is.null(topic_contr)){
+    stop('Please select whether to color by some feature or topic contributions.')
   }
-  else if (method == 'PCA' || method == 'Biplot'){
-    if (is.null(object@dr[['PCA']])){
-      stop('Run the function runPCA first!')
-    }
-    coordinates <- object@dr[['PCA']]$ind.coord
+  # Check dependencies
+  if(! "plotly" %in% installed.packages() && plot_ly ){
+    stop('Please, install plotly: \n install.packages("plotly")')
+  }  else {
+    require(plotly)
   }
-  else if (method == 'DM'){
-    if (is.null(object@dr[['DiffusionMap']])){
-      stop('Run the function runDM first!')
-    }
-    coordinates <- object@dr[['DiffusionMap']]
+  
+  if(! "scatterplot3d" %in% installed.packages() && !plot_ly && dim == 3 ){
+    stop('Please, install scatterplot3d: \n install.packages("scatterplot3d")')
+  } else {
+    require(scatterplot3d)
   }
+  
+  # Select coordinates to plot
+  coordinates <- .selectCoordinates(object, target, method, dim)  
+  
+  # Select cell/region data
+  if (target == 'cell'){
+    feature.data <- object@cell.data[rownames(coordinates),]
+  }
+  else if (target == 'region'){
+    feature.data <- object@region.data[rownames(coordinates),]
+  }
+  feature.names <- rownames(feature.data)
+  
+  # Get par values
+  par.opts <- par()
 
-  if (is.null(colorBy)){
-    colorBy <- colnames(object@cell.data)
-  }
-
-  for (var in colorBy){
-    variable <- object@cell.data[,var]
-    names(variable) <- object@cell.names
-    if(is.numeric(variable)){
-      colorPal <- grDevices::colorRampPalette(c("darkgreen", "yellow","red"))
-      if (method != 'Biplot'){
-        .plotContinuous(coordinates, variable, object@cell.names, colorPal, main=var, intervals=intervals, dim=dim, plot_ly=plot_ly)
+  # Variables to color by
+  if (!is.null(colorBy)){
+    
+    if (sum(colorBy %in% colnames(feature.data)) != length(colorBy)){
+      stop(paste('The variable', colorBy[-which(colorBy %in% colnames(feature.data))], 'is not included in the', target, 'data. Please check and re-run.'))
+    }
+    
+    for (columnName in colorBy){
+      variable <- setNames(feature.data[,columnName], feature.names)
+      
+      # Continuous plotting
+      if(is.numeric(variable)){
+        colorPal <- grDevices::colorRampPalette(c(col.low, col.mid, col.high))
+        if (method != 'Biplot'){
+          .plotContinuous(coordinates, variable, feature.names, colorPal, main=columnName, intervals=intervals, dim=dim, plot_ly=plot_ly, legend=legend, factor.min = factor.min, factor.max=factor.max)
+        }
+        else{
+          coordinates <- .rescaleVector(coordinates[,c(1:2)])
+          var.coord <- .rescaleVector(object@dr[[target]][['PCA']]$var.coord[,c(1:2)])
+          .plotContinuous(coordinates, variable, feature.names, colorPal, main=columnName, intervals=intervals, dim=2, var.coord=var.coord, plot_ly=plot_ly, legend=legend, factor.min = factor.min, factor.max=factor.max)
+        }
+        
       }
+      
       else{
-        coordinates <- .rescaleVector(coordinates[,c(1:2)])
-        var.coord <- .rescaleVector(object@dr[['PCA']]$var.coord[,c(1:2)])
-        .plotContinuous(coordinates, variable, object@cell.names, colorPal, main=var, intervals=intervals, dim=2, var.coord=var.coord, plot_ly=plot_ly)
-      }
-
-    }
-    else{
-      if (method != 'Biplot'){
-        .plotFactor(coordinates, variable, object@cell.names, main=var, dim=dim, colVars=colVars, plot_ly=plot_ly)
-      }
-      else{
-        coordinates <- .rescaleVector(coordinates[,c(1:2)])
-        var.coord <- .rescaleVector(object@dr[['PCA']]$var.coord[,c(1:2)])
-        .plotFactor(coordinates, variable, object@cell.names, main=var, dim=2, var.coord=var.coord, colVars=colVars, plot_ly=plot_ly)
+        if (method != 'Biplot'){
+          .plotFactor(coordinates, variable, feature.names, main=columnName, dim=dim, colVars=colVars, plot_ly=plot_ly, legend=legend, cex.legend = cex.legend, factor.min = factor.min, factor.max=factor.max)
+        }
+        else{
+          coordinates <- .rescaleVector(coordinates[,c(1:2)])
+          var.coord <- .rescaleVector(object@dr[[target]][['PCA']]$var.coord[,c(1:2)])
+          .plotFactor(coordinates, variable, feature.names, main=columnName, dim=2, var.coord=var.coord, colVars=colVars, plot_ly=plot_ly, legend=legend, cex.legend = cex.legend, factor.min = factor.min, factor.max = factor.max)
+        }
       }
     }
   }
 
+    
   if (!is.null(topic_contr)){
-    if (topic_contr == 'Zscore'){
-      topic.mat <- scale(object@selected.model$document_expects, center=TRUE, scale=TRUE)
-    }
-    if (topic_contr == 'probability'){
-      alpha <- 50/length(cisTopicObject@selected.model$topic_sums)
-      topic.mat <- apply(object@selected.model$document_sums, 2, function(x) {(x + alpha)/sum(x + alpha)})
-    }
-    rownames(topic.mat) <- paste('Topic', 1:nrow(topic.mat))
-   
-    if(topics[1] != 'all'){
+    topic.mat <- .modelMatSelection(object, target, topic_contr)
+    
+    if (!is.null(topics)){
       topic.mat <- topic.mat[topics,,drop=FALSE]
-    } 
+    }
     
     colorPal <- grDevices::colorRampPalette(c(col.low, col.mid, col.high))
     for (i in 1:nrow(topic.mat)){
       if(method != 'Biplot'){
-        .plotContinuous(coordinates, topic.mat[i,], object@cell.names, colorPal, main=rownames(topic.mat)[i], intervals=intervals, dim=dim, labels=labels, plot_ly=plot_ly)
+        .plotContinuous(coordinates, topic.mat[i,], feature.names, colorPal, main=rownames(topic.mat)[i], intervals=intervals, dim=dim, labels=labels, plot_ly=plot_ly, legend=legend, factor.min = factor.min, factor.max=factor.max)
       }
       else{
         coordinates <- .rescaleVector(coordinates[,c(1:2)])
-        var.coord <- .rescaleVector(object@dr[['PCA']]$var.coord[,c(1:2)])
-        .plotContinuous(coordinates, topic.mat[i,], object@cell.names, colorPal, main=rownames(topic.mat)[i], intervals=intervals, dim=2, var.coord = var.coord, labels=labels, plot_ly=plot_ly)
+        var.coord <- .rescaleVector(object@dr[[target]][['PCA']]$var.coord[,c(1:2)])
+        .plotContinuous(coordinates, topic.mat[i,], feature.names, colorPal, main=rownames(topic.mat)[i], intervals=intervals, dim=2, var.coord = var.coord, labels=labels, plot_ly=plot_ly, legend=legend, factor.min = factor.min, factor.max=factor.max)
       }
     }
   }
+  # Restore par
+  suppressWarnings(par(par.opts))
 }
 
 
-#' Helper Functions
+
+# Helper Functions
+
+.selectCoordinates <- function(
+  object,
+  target,
+  method,
+  dim=dim
+){
+  if (!target %in% c('cell', 'region')){
+    stop('Please, provide target="cell" or "region".')
+  } 
+  
+  if (method == 'tSNE'){
+    if (is.null(object@dr[[target]][['tSNE']])){
+      stop(paste0('Please, run first: cisTopicObject <- runtSNE(cisTopicObject, target="', target,'", ...).'))
+    }
+    
+    coordinates <- object@dr[[target]][['tSNE']]
+    
+    if (ncol(coordinates) == 2 && dim > 2){
+      stop(paste0('Please, run first: cisTopicObject <- runtSNE(cisTopicObject, target="', target,'", dim=3 ...)for a 3D tSNE.'))
+    }
+  }
+  
+  else if (method == 'Umap'){
+    if (is.null(object@dr[[target]][['Umap']])){
+      stop(paste0('Please, run first: cisTopicObject <- runUmap(cisTopicObject, target="', target,'", ...).'))
+    }
+    
+    coordinates <- object@dr[[target]][['Umap']]
+    
+    if (ncol(coordinates) == 2 && dim > 2){
+      stop(paste0('Please, run first: cisTopicObject <- runUmap(cisTopicObject, target="', target,'", n_components=3 ...)for a 3D tSNE.'))
+    }
+  }
+  
+  else if (method == 'PCA' || method == 'Biplot'){
+    if (is.null(object@dr[[target]][['PCA']])){
+      stop(paste0('Please, run first: cisTopicObject <- runPCA(cisTopicObject, target="', target,'", ...).'))
+    }
+    coordinates <- object@dr[[target]][['PCA']]$ind.coord
+  }
+  
+  else if (method == 'DM'){
+    if (is.null(object@dr[[target]][['DiffusionMap']])){
+      stop(paste0('Please, run first: cisTopicObject <- runDM(cisTopicObject, target="', target,'", ...).'))
+    }
+    coordinates <- object@dr[[target]][['DiffusionMap']]
+  }
+  return(coordinates)
+}
+  
 
 .plotContinuous <- function(
   coordinates,
@@ -324,16 +535,18 @@ plotCellStates <- function(
   var.coord=NULL,
   labels=3,
   plot_ly=FALSE,
+  legend=TRUE,
+  factor.min=0.05,
+  factor.max=0.2,
   ...
 ){
-  par.opts <- par()
   cellColor <- setNames(adjustcolor(colorPal(intervals), alpha=.8)[as.numeric(cut(variable,breaks=10, right=F,include.lowest=T))], names)
-  layout(matrix(1:2,ncol=2), width = c(3,1),height = c(1,1))
-  par(bty = 'n')
+  par(bty='n')
+  
   if (!is.null(var.coord)){
     # Plot the correlation circle
     a <- seq(0, 2*pi, length = 100)
-    plot( cos(a), sin(a), type = 'l', col="gray", xlab = "PC1",  ylab = "PC2")
+    plot(cos(a), sin(a), type = 'l', col="gray", xlab = "PC1",  ylab = "PC2", xlim = c(-1-factor.min, 1+factor.max), ylim= c(-1-factor.min, 1+factor.max))
     abline(h = 0, v = 0, lty = 2)
 
     # Plot dots
@@ -347,8 +560,9 @@ plotCellStates <- function(
   }
   else{
     if (dim == 2){
-      if (plot_ly == FALSE){
-        plot(coordinates, col=cellColor[rownames(coordinates)], pch=16, xlab=colnames(coordinates)[1], ylab=colnames(coordinates)[2])
+      if (!plot_ly){
+        plot(coordinates, col=cellColor[rownames(coordinates)], pch=16, xlab=colnames(coordinates)[1], ylab=colnames(coordinates)[2], xlim = c(min(coordinates[,1])-factor.min*abs(min(coordinates[,1])), max(coordinates[,1])+factor.max*abs(max(coordinates[,1]))), 
+             ylim=c(min(coordinates[,2])-factor.min*abs(min(coordinates[,2])), max(coordinates[,2])+factor.max*abs(max(coordinates[,2]))), main=main)
       } else {
         p <- plot_ly(x = coordinates[,1], y = coordinates[,2], color = variable, colors=adjustcolor(colorPal(intervals), alpha=.8)) %>%
           add_markers() %>%
@@ -359,8 +573,10 @@ plotCellStates <- function(
       }
     }
     if (dim == 3) {
-      if (plot_ly == FALSE){
-        scatterplot3d(coordinates[,1], coordinates[,2], coordinates[,3], color=cellColor[rownames(coordinates)], pch=16, xlab=colnames(coordinates)[1], ylab=colnames(coordinates)[2], zlab = colnames(coordinates)[3], main=main)
+      if (!plot_ly){
+        scatterplot3d(coordinates[,1], coordinates[,2], coordinates[,3], color=cellColor[rownames(coordinates)], pch=16, xlab=colnames(coordinates)[1], ylab=colnames(coordinates)[2], zlab = colnames(coordinates)[3], main=main,
+                      xlim = c(min(coordinates[,1])-factor.min*abs(min(coordinates[,1])), max(coordinates[,1])+factor.max*abs(max(coordinates[,1]))), ylim = c(min(coordinates[,2])-factor.min*abs(min(coordinates[,2])), max(coordinates[,2])+factor.max*abs(max(coordinates[,2]))),
+                      zlim = c(min(coordinates[,3])-factor.min*abs(min(coordinates[,3])), max(coordinates[,3])+factor.max*abs(max(coordinates[,3]))))
       } else {
         p <- plot_ly(x = coordinates[,1], y = coordinates[,2], z = coordinates[,3], color = variable, colors=adjustcolor(colorPal(intervals), alpha=.8)) %>%
           add_markers() %>%
@@ -372,16 +588,46 @@ plotCellStates <- function(
       }
     }
   }
-
-  if (plot_ly == FALSE){
-    legend_image <- as.raster(matrix(rev(colorPal(intervals)), ncol=1))
-    plot(c(0,2),c(0,1),type = 'n', axes = F,xlab = '', ylab = '', main = main)
-    labels.name <- seq(from = min(variable), to = max(variable), length.out = labels)
-    labels.name <- round(labels.name, 2)
-    text(x=1.5, y = seq(0,1,l=labels), cex=1, labels = labels.name)
-    rasterImage(legend_image, 0, 0, 1, 1)
-    suppressWarnings(par(par.opts))
+  
+  if (!plot_ly){
+    if (legend){
+      .vertical.image.legend(c(min(variable), max(variable)), colorPal(intervals))
+    } else {
+      plot.new()
+      .vertical.image.legend(c(min(variable), max(variable)), colorPal(intervals))
+    }
   }
+}
+
+.distinctColorPalette <-function(k) {
+  set.seed(123)
+  ColorSpace <<- t(unique(col2rgb(scales::hue_pal(l=60:100)(2e3))))
+  km <- kmeans(ColorSpace, k, iter.max=20)
+  colors <- rgb(round(km$centers), maxColorValue=255)
+  return(colors)
+}
+
+# Adapted from aqfig
+
+.vertical.image.legend <- function(zlim, col){
+  starting.par.settings <- par(no.readonly=TRUE)
+  mai <- par("mai")
+  fin <- par("fin")
+  x.legend.fig <- c( 1.0-(mai[4]/fin[1]), 1.0 )
+  y.legend.fig <- c( mai[1]/fin[2], 1.0-(mai[3]/fin[2]) )
+  x.legend.plt <- c( x.legend.fig[1]+(0.08*(x.legend.fig[2]-x.legend.fig[1])),
+                     x.legend.fig[2]-(0.6*(x.legend.fig[2]-x.legend.fig[1])) )
+  y.legend.plt <- y.legend.fig
+  cut.pts <- seq(zlim[1], zlim[2], length=length(col)+1)
+  z <- ( cut.pts[1:length(col)] + cut.pts[2:(length(col)+1)] ) / 2
+  par(new=TRUE, pty="m", plt=c(x.legend.plt, y.legend.plt), bty='o')
+  image(x=1, y=z, z=matrix(z, nrow=1, ncol=length(col)),
+        col=col, xlab="", ylab="", xaxt="n", yaxt="n")
+  axis(4, mgp = c(3, 0.2, 0), las = 2, cex.axis=0.6, tcl=-0.1)
+  box()
+  mfg.settings <- par()$mfg
+  par(starting.par.settings)
+  par(mfg=mfg.settings, new=FALSE)
 }
 
 .plotFactor <- function(
@@ -393,21 +639,27 @@ plotCellStates <- function(
   var.coord=NULL,
   colVars=list(),
   plot_ly = FALSE,
+  legend = TRUE, 
+  cex.legend=0.7,
+  factor.min=0.05,
+  factor.max=0.5,
   ...
 ){
-  par.opts <- par()
+  
   levels <- as.vector(sort(unique(variable)))
+  
   if(is.null(colVars[[main]])) {
-    colVars[[main]] <- setNames(rainbow(length(unique(variable)), s=0.5), levels)
+    colVars[[main]] <- setNames(.distinctColorPalette(k=length(levels)), levels)
   }
+  
   cellColor <- setNames(colVars[[main]][variable], names)
-
-  layout(matrix(1:2,ncol=2), width = c(3,1),height = c(1,1))
+  
   par(bty = 'n')
+  
   if (!is.null(var.coord)){
     # Plot the correlation circle
     a <- seq(0, 2*pi, length = 100)
-    plot( cos(a), sin(a), type = 'l', col="gray", xlab = "PC1",  ylab = "PC2")
+    plot(cos(a), sin(a), type = 'l', col="gray", xlab = "PC1",  ylab = "PC2", xlim = c(-1-factor.min, 1+factor.max), ylim = c(-1-factor.min, 1+factor.max))
     abline(h = 0, v = 0, lty = 2)
 
     # Plot dots
@@ -421,8 +673,9 @@ plotCellStates <- function(
   }
   else{
     if (dim == 2){
-      if (plot_ly == FALSE){
-        plot(coordinates, col=cellColor[rownames(coordinates)], pch=16, xlab=colnames(coordinates)[1], ylab=colnames(coordinates)[2])
+      if (!plot_ly){
+        plot(coordinates, col=cellColor[rownames(coordinates)], pch=16, xlab=colnames(coordinates)[1], ylab=colnames(coordinates)[2], xlim = c(min(coordinates[,1])-factor.min*abs(min(coordinates[,1])), max(coordinates[,1])+factor.max*abs(max(coordinates[,1]))), 
+             ylim=c(min(coordinates[,2])-factor.min*abs(min(coordinates[,2])), max(coordinates[,2])+factor.max*abs(max(coordinates[,2]))), main=main)
       } else {
         p <- plot_ly(x = coordinates[,1], y = coordinates[,2], color = variable, colors= unique(colVars[[main]][variable])) %>%
           add_markers() %>%
@@ -433,8 +686,10 @@ plotCellStates <- function(
       }
     }
     if (dim == 3) {
-      if (plot_ly == FALSE){
-        scatterplot3d(coordinates[,1], coordinates[,2], coordinates[,3], color=cellColor[rownames(coordinates)], pch=16, xlab=colnames(coordinates)[1], ylab=colnames(coordinates)[2], zlab = colnames(coordinates)[3], main=main)
+      if (!plot_ly){
+        s3d <-  scatterplot3d(coordinates[,1], coordinates[,2], coordinates[,3], color=cellColor[rownames(coordinates)], pch=16, xlab=colnames(coordinates)[1], ylab=colnames(coordinates)[2], zlab = colnames(coordinates)[3], main=main, 
+                              xlim = c(min(coordinates[,1])-factor.min*abs(min(coordinates[,1])), max(coordinates[,1])+factor.max*abs(max(coordinates[,1]))), ylim = c(min(coordinates[,2])-factor.min*abs(min(coordinates[,2])), max(coordinates[,2])+factor.max*abs(max(coordinates[,2]))),
+                              zlim = c(min(coordinates[,3])-factor.min*abs(min(coordinates[,3])), max(coordinates[,3])+factor.max*abs(max(coordinates[,3]))))
       } else {
         p <- plot_ly(x = coordinates[,1], y = coordinates[,2], z = coordinates[,3], color = variable, colors = unique(colVars[[main]][variable])) %>%
           add_markers() %>%
@@ -446,11 +701,19 @@ plotCellStates <- function(
       }
     }
   }
-
-  if (plot_ly == FALSE){
-    plot(c(0,2),c(0,1),type = 'n', axes = F,xlab = '', ylab = '', main = main)
-    legend(x=0, y=1, legend=names(colVars[[main]]), pch=16, col=colVars[[main]], bty='n', x.intersp = 0.2)
-    suppressWarnings(par(par.opts)) 
+  
+  if (!plot_ly){
+    if (legend){
+      if (dim == 2){
+        legend("topright", legend =  names(colVars[[main]]), fill=colVars[[main]], cex=cex.legend)
+      } else {
+        legend(s3d$xyz.convert(max(coordinates[,1]), max(coordinates[,2]), max(coordinates[,3])), fill = colVars[[main]], legend = names(colVars[[main]]), cex = cex.legend)
+      }
+    }
+    else {
+      plot.new()
+      legend(x="top", legend = names(colVars[[main]]), fill=colVars[[main]], cex=cex.legend, title=as.expression(bquote(bold(.(main)))))
+    }
   }
 }
 
@@ -466,58 +729,90 @@ plotCellStates <- function(
 #'
 #' Plot cell states based on dimensionality reduction over cell-cisTopic distributions
 #' @param object Initialized cisTopic object, after the object@@selected.model has been filled.
-#' @param method Select the normalization method to use for plotting: 'Zscore' or 'probability'.
+#' @param method Select the normalization method to use for plotting: 'Z-score' or 'Probability'.
 #' @param colorBy Select the cell metadata used to colour the plots with. By default, all categorical features are used.
 #' @param colVars List specifying the colors to use for each label in each colouring level
 #' @param col.low Color to use for lowest topic enrichment
 #' @param col.mid Color to use for medium topic enrichment
 #' @param col.high Color to use for high topic enrichment
-#' @param ... See \code{aheatmap} from NMF
+#' @param select.cells If a subset of cells want to be used for making the heatmap, selected cell names can be provided (as a vector).
+#' @param ... See \code{Heatmap} from ComplexHeatmap
 #'
 #' @return Heatmap clustering cells based on their cell-cisTopic distributions.
+#' 
+#' @details 'Z-score' computes the Z-score for each topic assingment per cell/region and 'Probability' divides the topic assignments by the total number
+#' of assignments in the cell/region in the last iteration plus alpha.
 #'
 #' @export
 
 cellTopicHeatmap <- function(
   object,
-  method ='Zscore',
+  method ='Z-score',
   colorBy=NULL,
-  colVars=list(),
-  col.low = "dodgerblue",
-  col.mid = "floralwhite",
-  col.high = "brown1",
+  colVars=NULL,
+  col.low = "floralwhite",
+  col.mid = "pink",
+  col.high = "red",
+  select.cells=NULL,
   ...)
   {
-  if (method == 'Zscore'){
-    topic.mat <- scale(object@selected.model$document_expects, center=TRUE, scale=TRUE)
+  
+  # Check dependencies
+  if(! "fastcluster" %in% installed.packages()){
+      stop('Please, install fastcluster: \n install.packages("fastcluster")')
+  } else {
+    require(fastcluster)
   }
-  else if (method == 'probability'){
-    alpha <- 50/length(cisTopicObject@selected.model$topic_sums)
-    topic.mat <- apply(object@selected.model$document_sums, 2, function(x) {(x + alpha)/sum(x + alpha)})
+  
+  if(! "ComplexHeatmap" %in% installed.packages()){
+    stop('Please, install ComplexHeatmap: source("https://bioconductor.org/biocLite.R") \nbiocLite("ComplexHeatmap")')
+  } else {
+    require(ComplexHeatmap)
   }
+  
+  # Check info
+  if (length(object@selected.model) < 1){
+    stop('Please, run selectModel() first.')
+  }
+  
+  topic.mat <- .modelMatSelection(object, 'cell', method)
 
   rownames(topic.mat) <- paste('Topic', seq(1,nrow(topic.mat)))
   colnames(topic.mat) <- object@cell.names
+  
+  if (!is.null(select.cells)){
+    if (length(select.cells) > 1){
+      topic.mat <- topic.mat[ ,select.cells]
+      object.cell.data <- object@cell.data[select.cells,]
+    }else{
+      stop('Only a cell name has been provided. Please select a group of cells and provide them as a vector.')
+    }
+  } else {
+    object.cell.data <- object@cell.data
+  }
 
-  cl.cells <- hclust.vector(t(topic.mat), method="ward", metric="euclidean")
+  cl.cells <- fastcluster::hclust.vector(t(topic.mat), method="ward", metric="euclidean")
   dd.cells <- as.dendrogram(cl.cells)
   colorPal <- grDevices::colorRampPalette(c(col.low, col.mid, col.high))
-
-  object.cell.data <- object@cell.data
+  
   if (is.null(colorBy)){
-    colorBy <- colnames(object.cell.data)[-which(as.vector(sapply(object.cell.data, is.numeric)))]
-  }
-
-  for (variable in colorBy){
-    if(is.null(colVars[[variable]])) {
-      colVars[[variable]] <- setNames(rainbow(length(unique(object.cell.data[,variable])), s=0.5), as.vector(sort(unique(object.cell.data[,variable]))))
-      cellColor <- setNames(colVars[[variable]][object.cell.data[,variable]], object@cell.names)
+    heatmap <- ComplexHeatmap::Heatmap(data.matrix(topic.mat), col=colorPal(20), cluster_columns=dd.cells, name=method,
+                                       show_column_names=FALSE, show_row_names = TRUE, 
+                                       heatmap_legend_param = list(legend_direction = "horizontal", legend_width = unit(5, "cm"), title_position='topcenter'),
+                                       column_title = "Topic contribution per cell", column_title_gp = gpar(fontface = 'bold'), ...)
+    ComplexHeatmap::draw(heatmap, heatmap_legend_side = "bottom")
+  } else {
+    for (variable in colorBy){
+      if(is.null(colVars[[variable]])) {
+        colVars[[variable]] <- setNames(.distinctColorPalette(length(unique(object@cell.data[,variable]))), as.vector(sort(unique(object@cell.data[,variable]))))
+        cellColor <- setNames(colVars[[variable]][object.cell.data[,variable]], rownames(object.cell.data))
+      }
     }
+    annotation <- ComplexHeatmap::HeatmapAnnotation(df = object.cell.data[,colorBy,drop=FALSE], col = colVars, which='column', width = unit(5, "mm"))
+    heatmap <- ComplexHeatmap::Heatmap(data.matrix(topic.mat), col=colorPal(20), cluster_columns=dd.cells, name=method,
+                                       show_column_names=FALSE, show_row_names = TRUE, top_annotation = annotation, 
+                                       heatmap_legend_param = list(legend_direction = "horizontal", legend_width = unit(5, "cm"), title_position='topcenter'),
+                                       column_title = "Topic contribution per cell", column_title_gp = gpar(fontface = 'bold'), ...)
+    ComplexHeatmap::draw(heatmap, heatmap_legend_side = "bottom", annotation_legend_side = "right")
   }
-
-  nmf.options(grid.patch=TRUE)
-  NMF::aheatmap(topic.mat, scale="none", revC=TRUE, main='cisTopic contributions per cell', sub='Column normalized topic contribution',
-                Colv=dd.cells, annCol=object.cell.data[object@cell.names, colorBy, drop=FALSE],
-                annColor=colVars, labCol=NA,
-                color = colorPal(20), fontsize=10, ...)
 }

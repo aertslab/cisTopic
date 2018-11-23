@@ -4,24 +4,35 @@
 \alias{getCistromes}
 \title{getCistromes}
 \usage{
-getCistromes(object, annotation = "Both", nCores = 1, ...)
+getCistromes(object, annotation = "Both", gene.cistrome = FALSE,
+  region.cistrome = TRUE, nCores = 1, ...)
 }
 \arguments{
 \item{object}{Initialized cisTopic object, after object@binarized.RcisTarget and object@region.data$CtxLabels have been filled.}
 
-\item{annotation}{Annotations to be used ('TF_highConf', 'Both'). By default, only the high confidence annotation is used.}
+\item{annotation}{Annotations to be used ('TF_highConf', 'Both'). By default, only the both high confidence and indirect annotation is used.}
+
+\item{gene.cistrome}{Whether the cistromes with gene linked gene symbols have to be formed (based on the closest gene). It requires to 
+run first annotateRegions().}
+
+\item{region.cistrome}{Whether the cistromes with regions in the data set linked to the ctx regions have to be formed (based on maximum overlap). It requires to 
+run first scoredRegionstoCtx().}
+
+\item{nCores}{Number of cores to be used (by default 1).}
 
 \item{...}{Ignored}
 }
 \value{
-Motif enrichment table is stored in object@binarized.RcisTarget
+Cistromes are stored as ctx regions (object@cistromes.ctx), regions (object@cistromes.regions) and if specified, as gene symbols
+(object@cistromes.genes). Cistromes containing extended in their name are formed by both the high confidence and indirect annotation; otherwise,
+only by the high confidence features.
 }
 \description{
 Get cistromes formed based on motif enrichment with RcisTarget
 }
 \examples{
 
-cisTopicObject <- getCistromes(cisTopicObject, annotation = 'Both')
+cisTopicObject <- getCistromes(cisTopicObject, annotation = 'Both', gene.cistrome=FALSE, nCores=1)
 cisTopicObject
 
 }

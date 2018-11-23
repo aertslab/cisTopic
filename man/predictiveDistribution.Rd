@@ -4,10 +4,12 @@
 \alias{predictiveDistribution}
 \title{Probability of each region in each cell in the data set.}
 \usage{
-predictiveDistribution(object, ...)
+predictiveDistribution(object, big.matrix = FALSE, ...)
 }
 \arguments{
 \item{object}{Initialized cisTopic object.}
+
+\item{big.matrix}{If having big data, we recommend to use the bigmemory package for the calculations.}
 
 \item{...}{Ignored.}
 }
@@ -21,8 +23,8 @@ Calculates the probability of each region in each cell.
 \examples{
 bamfiles <- c('example_1.bam', 'example_2.bam', 'example_3.bam')
 regions <- 'example.bed'
-cisTopicObject <- CreatecisTopicObjectfromBAM(bamfiles, regions)
-cisTopicObject <- RunModel(cisTopicObject)
+cisTopicObject <- createcisTopicObjectfromBAM(bamfiles, regions)
+cisTopicObject <- runModels(cisTopicObject)
 cisTopicObject <- selectModel(cisTopicObject)
-cisTopicObject <- predictiveDistributioncisTopicObject)
+cisTopicObject <- predictiveDistribution(cisTopicObject)
 }

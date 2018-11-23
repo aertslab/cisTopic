@@ -4,10 +4,12 @@
 \alias{logLikelihoodByIter}
 \title{Plots log likelihood in the models per iteration.}
 \usage{
-logLikelihoodByIter(object, ...)
+logLikelihoodByIter(object, select = NULL, ...)
 }
 \arguments{
 \item{object}{Initialized cisTopic object.}
+
+\item{select}{Plot log-likelihood per iteration for selected topics (as a vector with the number of topics per model).}
 
 \item{...}{Ignored.}
 }
