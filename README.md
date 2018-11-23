@@ -12,7 +12,7 @@
 
 cisTopic is an R-package to simultaneously identify cell states and cis-regulatory topics from single cell epigenomics data.
 
-## Dependencies
+## Dependencies (for R < 3.5)
 
 The following packages have to be installed manually before installing cisTopic:
 
