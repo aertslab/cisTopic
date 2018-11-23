@@ -23,6 +23,12 @@ getSignaturesRegions <- function(
   minOverlap=0.4,
   ...
 ){
+  if(! "GenomicRanges" %in% installed.packages()){
+    stop('Please, install GenomicRanges: source("https://bioconductor.org/biocLite.R") \nbiocLite("GenomicRanges")')
+  } else {
+    require(ComplexHeatmap)
+  }
+  
   if (length(object@signatures) > 0){
     if(sum(labels %in% names(object@signatures) > 0)){
       error <- labels[which(labels %in% names(object@signatures))]
@@ -85,7 +91,7 @@ getSignaturesRegions <- function(
   return(regionsSignature)
 }
 
-#' @import GenomicRanges
+
 .getOverlapRegionsFromCoordinates <- function(
   coordinates,
   regions,
