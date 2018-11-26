@@ -365,7 +365,7 @@ We are now ready to run RcisTarget in each topic using the wrapper function `top
 
 ```{r, eval = FALSE}
 date()
-pathToFeather <- "/media/data/lcb/icistarget/data/rankings/feather/hg19-regions-1M-9species.all_regions.mc8nr.feather"
+pathToFeather <- "feather/hg19-regions-9species.all_regions.mc8nr.feather"
 cisTopicObject <- topicsRcisTarget(cisTopicObject, genome='hg19', pathToFeather, reduced_database=FALSE, nesThreshold=3, rocthr=0.005, maxRank=20000, nCores=5)
 date()
 ```

@@ -11,7 +11,7 @@
 
 <meta name="author" content="Carmen Bravo González-Blas, Liesbeth Minnoye, Sara Aibar and Stein Aerts" />
 
-<meta name="date" content="2018-11-23" />
+<meta name="date" content="2018-11-26" />
 
 <title>cisTopic on simulated single cell epigenomes from melanoma cell lines</title>
 
@@ -129,7 +129,7 @@ $(document).ready(function () {
 
 <h1 class="title toc-ignore">cisTopic on simulated single cell epigenomes from melanoma cell lines</h1>
 <p class="author-name">Carmen Bravo González-Blas, Liesbeth Minnoye, Sara Aibar and Stein Aerts</p>
-<h4 class="date"><em>2018-11-23</em></h4>
+<h4 class="date"><em>2018-11-26</em></h4>
 <h4 class="package">Package</h4>
 <p>cisTopic 0.2.0</p>
 
@@ -429,7 +429,7 @@ plotFeatures(cisTopicObject, method='tSNE', target='region', topic_contr=NULL, c
 <pre class="r"><code>cisTopicObject &lt;- scoredRegionsToCtx(cisTopicObject, genome='hg19')</code></pre>
 <p>We are now ready to run RcisTarget in each topic using the wrapper function <code>topicsRcisTarget()</code>. This function uses the binarised topic regions converted to ctx regions [Reference running time: 7 minutes]</p>
 <pre class="r"><code>date()
-pathToFeather &lt;- &quot;/media/data/lcb/icistarget/data/rankings/feather/hg19-regions-1M-9species.all_regions.mc8nr.feather&quot;
+pathToFeather &lt;- &quot;feather/hg19-regions-9species.all_regions.mc8nr.feather&quot;
 cisTopicObject &lt;- topicsRcisTarget(cisTopicObject, genome='hg19', pathToFeather, reduced_database=FALSE, nesThreshold=3, rocthr=0.005, maxRank=20000, nCores=5)
 date()</code></pre>
 <p>Once RcisTarget is run, interactive motif enrichment tables can be explored (e.g. per topic):</p>

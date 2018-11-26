@@ -17,8 +17,8 @@ cisTopic is an R-package to simultaneously identify cell states and cis-regulato
 The following packages have to be installed manually before installing cisTopic:
 
 ```r
-install.packages("https://bioconductor.org/packages/release/bioc/src/contrib/AUCell_1.4.0.tar.gz", repos=NULL)
-install.packages("https://bioconductor.org/packages/release/bioc/src/contrib/RcisTarget_1.2.0.tar.gz", repos=NULL)
+devtools::install_github("Ãaertslab/RcisTarget")
+devtools::install_github("Ãaertslab/AUCell")
 ```
 
 ## Installation
