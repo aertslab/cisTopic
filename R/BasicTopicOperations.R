@@ -65,8 +65,8 @@ getRegionsScores <- function(
 #'
 #' @return A list with the selected regions per topic stored in object@@binarized.cisTopics
 #'
-#' @importFrom fitdistrplus fitdist
-#' @importFrom plyr llply
+#' @import fitdistrplus 
+#' @import plyr 
 #' @export
 
 
