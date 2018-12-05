@@ -182,9 +182,15 @@ getBedFiles <- function(
   dir.create(path, showWarnings = FALSE)
   object.binarized.cisTopics <- object@binarized.cisTopics
   coordinates <- object@region.data[ , c('seqnames', 'start', 'end')]
+  
+  savedScipen <- getOption("scipen")
+  options(scipen=500) 
+  
   for (i in 1:length(object.binarized.cisTopics)){
     write.table(coordinates[rownames(object.binarized.cisTopics[[i]]),], file=paste(path, '/Topic_', i, '.bed', sep=''), row.names=FALSE, col.names = FALSE, quote=FALSE,  sep = "\t", eol = "\n")
   }
+  
+  options(scipen=savedScipen)
 }
 
 #' getBigwigFiles
