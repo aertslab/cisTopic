@@ -21,7 +21,7 @@ selectModel(object, select = NULL, keepBinaryMatrix = TRUE,
 \value{
 Returns a cisTopic object (when the input is a cisTopic object) with the selected model stored in object@selected.model, and the log likelihoods of the models in object@log.lik.
 The unnormalized cell assignments throughtout the sampling iterations are stored in \code{cisTopicObject@selected.model$document_expects}; 
-while the corresposding unnormalized region assignments are stored in \code{cisTopicObject@selected.model$topics}.
+while the corresponding unnormalized region assignments are stored in \code{cisTopicObject@selected.model$topics}.
 }
 \description{
 Plots log likelihood of the different models and selects the best one based on the maximum likelihood (or specified by the user).
