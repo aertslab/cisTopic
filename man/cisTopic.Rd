@@ -28,7 +28,8 @@ functional when the number of topics and the size of the data set allows it.}
 
 \item{\code{log.lik}}{Data frame containing the log likelihood of the models built.}
 
-\item{\code{selected.model}}{List with the information regards the model selected. The model is represented as an object of the class cisTopicModel.}
+\item{\code{selected.model}}{List with the information regards the model selected. The unnormalized cell assignments throughtout the sampling iterations are
+stored in \code{cisTopicObject@selected.model$document_expects}; while the corresposding unnormalized region assignments are stored in \code{cisTopicObject@selected.model$topics}.}
 
 \item{\code{dr}}{Dimensionality reduction outputs, which can be applied on 'cell' or 'region'. Within each slot ('cell' or 'regions'), there are
 sub-slots named by technique: 'Umap', 'tSNE', 'DiffussionMap', 'PCA', 'Biplot'.}

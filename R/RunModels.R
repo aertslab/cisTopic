@@ -182,7 +182,8 @@ runModels <- function(
 #' @param ... Ignored.
 #'
 #' @return Returns a cisTopic object (when the input is a cisTopic object) with the selected model stored in object@@selected.model, and the log likelihoods of the models in object@@log.lik.
-#' Otherwise, it returns a list with the selected models.
+#' The unnormalized cell assignments throughtout the sampling iterations are stored in \code{cisTopicObject@@selected.model$document_expects}; 
+#' while the corresposding unnormalized region assignments are stored in \code{cisTopicObject@@selected.model$topics}.
 #'
 #' @export
 #'
