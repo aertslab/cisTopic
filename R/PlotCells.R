@@ -347,10 +347,12 @@ runPCA <- function(
 #' @param col.mid Color to use for medium topic enrichment
 #' @param col.high Color to use for high topic enrichment
 #' @param labels Labels for the Z-score in the continuous variables plots
+#' @param cex.legend Size of the legend
+#' @param cex.dot Size of the dot
 #' @param colsVar List specifying the colors to use for each label in each colouring level for cell metadata
 #' @param plot_ly Whether plot_ly should be used for the plots
 #' @param legend Whether plots should be given with a legend. If FALSE, the legend is given in an independent following plot.
-#' @param ... Ignored
+#' @param ... Ignored.
 #'
 #' @return Plots cell states based on the dimensionality reduction method selected, coloured by the given metadata (one plot per feature).
 #'
@@ -375,6 +377,7 @@ plotFeatures <- function(
   cex.legend=0.7,
   factor.min=0.05,
   factor.max=0.75,
+  cex.dot=1,
   ...
 ){
   if (is.null(colorBy) && is.null(topic_contr)){
@@ -422,24 +425,24 @@ plotFeatures <- function(
       if(is.numeric(variable)){
         colorPal <- grDevices::colorRampPalette(c(col.low, col.mid, col.high))
         if (method != 'Biplot'){
-          .plotContinuous(coordinates, variable, feature.names, colorPal, main=columnName, intervals=intervals, dim=dim, plot_ly=plot_ly, legend=legend, factor.min = factor.min, factor.max=factor.max)
+          .plotContinuous(coordinates, variable, feature.names, colorPal, main=columnName, intervals=intervals, dim=dim, plot_ly=plot_ly, legend=legend, factor.min = factor.min, factor.max=factor.max, cex.dot=cex.dot)
         }
         else{
           coordinates <- .rescaleVector(coordinates[,c(1:2)])
           var.coord <- .rescaleVector(object@dr[[target]][['PCA']]$var.coord[,c(1:2)])
-          .plotContinuous(coordinates, variable, feature.names, colorPal, main=columnName, intervals=intervals, dim=2, var.coord=var.coord, plot_ly=plot_ly, legend=legend, factor.min = factor.min, factor.max=factor.max)
+          .plotContinuous(coordinates, variable, feature.names, colorPal, main=columnName, intervals=intervals, dim=2, var.coord=var.coord, plot_ly=plot_ly, legend=legend, factor.min = factor.min, factor.max=factor.max, cex.dot=cex.dot)
         }
         
       }
       
       else{
         if (method != 'Biplot'){
-          .plotFactor(coordinates, variable, feature.names, main=columnName, dim=dim, colVars=colVars, plot_ly=plot_ly, legend=legend, cex.legend = cex.legend, factor.min = factor.min, factor.max=factor.max)
+          .plotFactor(coordinates, variable, feature.names, main=columnName, dim=dim, colVars=colVars, plot_ly=plot_ly, legend=legend, cex.legend = cex.legend, factor.min = factor.min, factor.max=factor.max, cex.dot=cex.dot)
         }
         else{
           coordinates <- .rescaleVector(coordinates[,c(1:2)])
           var.coord <- .rescaleVector(object@dr[[target]][['PCA']]$var.coord[,c(1:2)])
-          .plotFactor(coordinates, variable, feature.names, main=columnName, dim=2, var.coord=var.coord, colVars=colVars, plot_ly=plot_ly, legend=legend, cex.legend = cex.legend, factor.min = factor.min, factor.max = factor.max)
+          .plotFactor(coordinates, variable, feature.names, main=columnName, dim=2, var.coord=var.coord, colVars=colVars, plot_ly=plot_ly, legend=legend, cex.legend = cex.legend, factor.min = factor.min, factor.max = factor.max, cex.dot=cex.dot)
         }
       }
     }
@@ -456,12 +459,12 @@ plotFeatures <- function(
     colorPal <- grDevices::colorRampPalette(c(col.low, col.mid, col.high))
     for (i in 1:nrow(topic.mat)){
       if(method != 'Biplot'){
-        .plotContinuous(coordinates, topic.mat[i,], feature.names, colorPal, main=rownames(topic.mat)[i], intervals=intervals, dim=dim, labels=labels, plot_ly=plot_ly, legend=legend, factor.min = factor.min, factor.max=factor.max)
+        .plotContinuous(coordinates, topic.mat[i,], feature.names, colorPal, main=rownames(topic.mat)[i], intervals=intervals, dim=dim, labels=labels, plot_ly=plot_ly, legend=legend, factor.min = factor.min, factor.max=factor.max, cex.dot=cex.dot)
       }
       else{
         coordinates <- .rescaleVector(coordinates[,c(1:2)])
         var.coord <- .rescaleVector(object@dr[[target]][['PCA']]$var.coord[,c(1:2)])
-        .plotContinuous(coordinates, topic.mat[i,], feature.names, colorPal, main=rownames(topic.mat)[i], intervals=intervals, dim=2, var.coord = var.coord, labels=labels, plot_ly=plot_ly, legend=legend, factor.min = factor.min, factor.max=factor.max)
+        .plotContinuous(coordinates, topic.mat[i,], feature.names, colorPal, main=rownames(topic.mat)[i], intervals=intervals, dim=2, var.coord = var.coord, labels=labels, plot_ly=plot_ly, legend=legend, factor.min = factor.min, factor.max=factor.max, cex.dot=cex.dot)
       }
     }
   }
@@ -538,6 +541,7 @@ plotFeatures <- function(
   legend=TRUE,
   factor.min=0.05,
   factor.max=0.2,
+  cex.dot=1,
   ...
 ){
   cellColor <- setNames(adjustcolor(colorPal(intervals), alpha=.8)[as.numeric(cut(variable,breaks=10, right=F,include.lowest=T))], names)
@@ -550,7 +554,7 @@ plotFeatures <- function(
     abline(h = 0, v = 0, lty = 2)
 
     # Plot dots
-    points(coordinates, col=cellColor[rownames(coordinates)], pch=16)
+    points(coordinates, col=cellColor[rownames(coordinates)], pch=16, ...)
 
     # Add active variables
     arrows(0, 0, var.coord[, 1], var.coord[, 2], length = 0.1, angle = 15, code = 2)
@@ -562,7 +566,7 @@ plotFeatures <- function(
     if (dim == 2){
       if (!plot_ly){
         plot(coordinates, col=cellColor[rownames(coordinates)], pch=16, xlab=colnames(coordinates)[1], ylab=colnames(coordinates)[2], xlim = c(min(coordinates[,1])-factor.min*abs(min(coordinates[,1])), max(coordinates[,1])+factor.max*abs(max(coordinates[,1]))), 
-             ylim=c(min(coordinates[,2])-factor.min*abs(min(coordinates[,2])), max(coordinates[,2])+factor.max*abs(max(coordinates[,2]))), main=main)
+             ylim=c(min(coordinates[,2])-factor.min*abs(min(coordinates[,2])), max(coordinates[,2])+factor.max*abs(max(coordinates[,2]))), main=main, cex=cex.dot)
       } else {
         p <- plot_ly(x = coordinates[,1], y = coordinates[,2], color = variable, colors=adjustcolor(colorPal(intervals), alpha=.8)) %>%
           add_markers() %>%
@@ -576,7 +580,7 @@ plotFeatures <- function(
       if (!plot_ly){
         scatterplot3d(coordinates[,1], coordinates[,2], coordinates[,3], color=cellColor[rownames(coordinates)], pch=16, xlab=colnames(coordinates)[1], ylab=colnames(coordinates)[2], zlab = colnames(coordinates)[3], main=main,
                       xlim = c(min(coordinates[,1])-factor.min*abs(min(coordinates[,1])), max(coordinates[,1])+factor.max*abs(max(coordinates[,1]))), ylim = c(min(coordinates[,2])-factor.min*abs(min(coordinates[,2])), max(coordinates[,2])+factor.max*abs(max(coordinates[,2]))),
-                      zlim = c(min(coordinates[,3])-factor.min*abs(min(coordinates[,3])), max(coordinates[,3])+factor.max*abs(max(coordinates[,3]))))
+                      zlim = c(min(coordinates[,3])-factor.min*abs(min(coordinates[,3])), max(coordinates[,3])+factor.max*abs(max(coordinates[,3]))), cex.symbols=cex.dot)
       } else {
         p <- plot_ly(x = coordinates[,1], y = coordinates[,2], z = coordinates[,3], color = variable, colors=adjustcolor(colorPal(intervals), alpha=.8)) %>%
           add_markers() %>%
@@ -643,9 +647,9 @@ plotFeatures <- function(
   cex.legend=0.7,
   factor.min=0.05,
   factor.max=0.5,
+  cex.dot=1,
   ...
 ){
-  
   levels <- as.vector(sort(unique(variable)))
   
   if(is.null(colVars[[main]])) {
@@ -663,7 +667,7 @@ plotFeatures <- function(
     abline(h = 0, v = 0, lty = 2)
 
     # Plot dots
-    points(coordinates, col=cellColor[rownames(coordinates)], pch=16)
+    points(coordinates, col=cellColor[rownames(coordinates)], pch=16, cex=cex.dot)
 
     # Add active variables
     arrows(0, 0, var.coord[, 1], var.coord[, 2], length = 0.1, angle = 15, code = 2)
@@ -675,7 +679,7 @@ plotFeatures <- function(
     if (dim == 2){
       if (!plot_ly){
         plot(coordinates, col=cellColor[rownames(coordinates)], pch=16, xlab=colnames(coordinates)[1], ylab=colnames(coordinates)[2], xlim = c(min(coordinates[,1])-factor.min*abs(min(coordinates[,1])), max(coordinates[,1])+factor.max*abs(max(coordinates[,1]))), 
-             ylim=c(min(coordinates[,2])-factor.min*abs(min(coordinates[,2])), max(coordinates[,2])+factor.max*abs(max(coordinates[,2]))), main=main)
+             ylim=c(min(coordinates[,2])-factor.min*abs(min(coordinates[,2])), max(coordinates[,2])+factor.max*abs(max(coordinates[,2]))), main=main, cex=cex.dot)
       } else {
         p <- plot_ly(x = coordinates[,1], y = coordinates[,2], color = variable, colors= unique(colVars[[main]][variable])) %>%
           add_markers() %>%
@@ -689,7 +693,7 @@ plotFeatures <- function(
       if (!plot_ly){
         s3d <-  scatterplot3d(coordinates[,1], coordinates[,2], coordinates[,3], color=cellColor[rownames(coordinates)], pch=16, xlab=colnames(coordinates)[1], ylab=colnames(coordinates)[2], zlab = colnames(coordinates)[3], main=main, 
                               xlim = c(min(coordinates[,1])-factor.min*abs(min(coordinates[,1])), max(coordinates[,1])+factor.max*abs(max(coordinates[,1]))), ylim = c(min(coordinates[,2])-factor.min*abs(min(coordinates[,2])), max(coordinates[,2])+factor.max*abs(max(coordinates[,2]))),
-                              zlim = c(min(coordinates[,3])-factor.min*abs(min(coordinates[,3])), max(coordinates[,3])+factor.max*abs(max(coordinates[,3]))))
+                              zlim = c(min(coordinates[,3])-factor.min*abs(min(coordinates[,3])), max(coordinates[,3])+factor.max*abs(max(coordinates[,3]))), cex.symbols=cex.dot)
       } else {
         p <- plot_ly(x = coordinates[,1], y = coordinates[,2], z = coordinates[,3], color = variable, colors = unique(colVars[[main]][variable])) %>%
           add_markers() %>%

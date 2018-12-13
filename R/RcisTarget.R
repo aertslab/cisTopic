@@ -133,6 +133,9 @@ scoredRegionsToCtx <- function(
 #' @param genome Genome to which the data was aligned or liftovered (hg19, mm9, dm3 or dm6).
 #' @param motifRankings Feather database corresponding to the genome
 #' @param reduced_database Whether a reduced version of the database (e.g. background database) is being used or not (by default, it is set to false).
+#' @param nesThreshold Minimum enrichment score that a motif should have to be included in the table
+#' @param rocthr ROC threshold for AUC calculation. For mouse and human, we recommend 0.005; for fly, 0.01.
+#' @param maxRank Number of regions consider for visualization. For mouse and human, we recommend 20000; for fly, 5000.
 #' @param ... See RcisTarget
 #'
 #' @return Motif enrichment table is stored in object@@binarized.RcisTarget
@@ -173,18 +176,30 @@ topicsRcisTarget <- function(
   if (genome == 'hg19'){
     data(motifAnnotations_hgnc)
     motifAnnot <- motifAnnotations_hgnc
+    if(rocthr!=0.005 | maxRank!=20000){
+      warning("For Homo sapiens the recommended settings are: rocthr=0.005, maxRank=20000")
+    } 
   }
   else if (genome == 'mm9'){
     data(motifAnnotations_mgi)
     motifAnnot <- motifAnnotations_mgi
+    if(rocthr!=0.005 | maxRank!=20000){
+      warning("For Mus musculus the recommended settings are: rocthr=0.005, maxRank=20000")
+    } 
   }
   else if (genome == 'dm3'){
     data(motifAnnotations_dmel)
     motifAnnot <- motifAnnotations_dmel
+    if(rocthr!=0.01 | maxRank!=5000){
+      warning("For Drosophila melanogaster the recommended settings are: rocthr=0.01, maxRank=5000")
+    } 
   }
   else if (genome == 'dm6'){
     data(motifAnnotations_dmel)
     motifAnnot <- motifAnnotations_dmel
+    if(rocthr!=0.01 | maxRank!=5000){
+      warning("For Drosophila melanogaster the recommended settings are: rocthr=0.01, maxRank=5000")
+    } 
   } else {
     stop('The genome required is not available! Try using the liftover option.')
   }
@@ -239,9 +254,14 @@ topicsRcisTarget <- function(
   object.binarized.RcisTarget <- list()
 
   for (i in 1:length(cisTopic.cisTarget)){
-    colnames(cisTopic.cisTarget[[i]])[c(1, 7, 9)] <- c('cisTopic', 'nEnrRegions', 'enrichedRegions')
-    cisTopic.cisTarget[[i]]$cisTopic <- rep(paste('Topic', i, sep='_'), nrow(cisTopic.cisTarget[[i]]))
-    object.binarized.RcisTarget[[i]] <- addLogo(cisTopic.cisTarget[[i]])
+    if(nrow(cisTopic.cisTarget[[i]]) > 0){
+      colnames(cisTopic.cisTarget[[i]])[c(1, 7, 9)] <- c('cisTopic', 'nEnrRegions', 'enrichedRegions')
+      cisTopic.cisTarget[[i]]$cisTopic <- rep(paste('Topic', i, sep='_'), nrow(cisTopic.cisTarget[[i]]))
+      object.binarized.RcisTarget[[i]] <- addLogo(cisTopic.cisTarget[[i]])
+    } else {
+      cisTopic.cisTarget[[i]] <- NULL
+    }
+    
   }
 
   object@binarized.RcisTarget <- object.binarized.RcisTarget

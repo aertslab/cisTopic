@@ -8,7 +8,7 @@ plotFeatures(object, target, method = "tSNE", colorBy = NULL, dim = 2,
   intervals = 10, topic_contr = NULL, topics = NULL, col.low = "pink",
   col.mid = "red", col.high = "darkred", labels = 3, colVars = list(),
   plot_ly = FALSE, legend = TRUE, cex.legend = 0.7, factor.min = 0.05,
-  factor.max = 0.75, ...)
+  factor.max = 0.75, cex.dot = 1, ...)
 }
 \arguments{
 \item{object}{Initialized cisTopic object, after the object@dr has been filled.}
@@ -41,7 +41,11 @@ reasons, dimesionality reduction on regions will only be done using the regions 
 
 \item{legend}{Whether plots should be given with a legend. If FALSE, the legend is given in an independent following plot.}
 
-\item{...}{Ignored}
+\item{cex.legend}{Size of the legend}
+
+\item{cex.dot}{Size of the dot}
+
+\item{...}{Ignored.}
 
 \item{colsVar}{List specifying the colors to use for each label in each colouring level for cell metadata}
 }

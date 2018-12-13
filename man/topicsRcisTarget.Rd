@@ -16,6 +16,12 @@ topicsRcisTarget(object, genome, pathToFeather, reduced_database = FALSE,
 
 \item{reduced_database}{Whether a reduced version of the database (e.g. background database) is being used or not (by default, it is set to false).}
 
+\item{nesThreshold}{Minimum enrichment score that a motif should have to be included in the table}
+
+\item{rocthr}{ROC threshold for AUC calculation. For mouse and human, we recommend 0.005; for fly, 0.01.}
+
+\item{maxRank}{Number of regions consider for visualization. For mouse and human, we recommend 20000; for fly, 5000.}
+
 \item{...}{See RcisTarget}
 
 \item{motifRankings}{Feather database corresponding to the genome}
