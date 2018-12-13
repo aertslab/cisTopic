@@ -554,7 +554,7 @@ plotFeatures <- function(
     abline(h = 0, v = 0, lty = 2)
 
     # Plot dots
-    points(coordinates, col=cellColor[rownames(coordinates)], pch=16, ...)
+    points(coordinates, col=cellColor[rownames(coordinates)], pch=16, cex=cex.dot)
 
     # Add active variables
     arrows(0, 0, var.coord[, 1], var.coord[, 2], length = 0.1, angle = 15, code = 2)
