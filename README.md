@@ -24,6 +24,6 @@ library(cisTopic)
 ```
 ## Databases
 RcisTarget feather databases are available at [https://resources.aertslab.org/cistarget/](https://resources.aertslab.org/cistarget/).
-## Rendered vignettes
-[CompleteAnalysis.nb vignette](https://rawcdn.githack.com/aertslab/cisTopic/ac830b26c40f6c658f6e5378c4c51cd14a0bbf62/vignettes/CompleteAnalysis.html)
-[CompleteAnalysis.nb vignette](https://rawcdn.githack.com/aertslab/cisTopic/ac830b26c40f6c658f6e5378c4c51cd14a0bbf62/vignettes/CompleteAnalysis.nb.html)
+
+## Tutorial
+You can find the rendered vignette [here](https://rawcdn.githack.com/aertslab/cisTopic/f6091ff94c79dfc927ae8eddf201d10a3f092923/vignettes/CompleteAnalysis.html).
