@@ -191,6 +191,12 @@ We can also generate a heatmap based on the cell-cisTopic distributions.
 cellTopicHeatmap(cisTopicObject, method='Probability', colorBy=c('LineType', 'cellLine'))
 ```
 
+If you want to retrieve the normalised assignments for other analyses, you can use the function `modelMatSelection`:
+
+```{r, eval=FALSE}
+cellassign <- modelMatSelection(cisTopicObject, 'cell', 'Probability')
+```
+
 #### - Enrichment of epigenomic signatures in the cells
 
 By multiplying the cell and topic assignments, the likelihood of each region in each cell (i.e. predictive distribution). This matrix is stored in `object@predictive.distribution`. These distributions can be used to estimate drop-outs and build cell-specific region rankings that can be used with `AUCell` for estimating the enrichment of epigenomic signatures within the cells.
@@ -228,7 +234,7 @@ plotFeatures(cisTopicObject, method='Umap', target='cell', topic_contr=NULL, col
 
 #### - Defining topics
 
-To analyze the regions included in the cisTopics, the first step is always to derive a score that evaluates how likely is for a region to belong to a topic. `getRegionsScores()` calculates these scores based on the proportion of region specific assignments to a topic. These scores can be rescaled into the range [0,1], which will be useful for the binarization step (as it will force data to follow a gamma distribution shape).
+To analyze the regions included in the cisTopics, the first step is always to derive a score that evaluates how likely is for a region to belong to a topic. `getRegionsScores()` calculates these scores based on the proportion of region specific assignments to a topic. These scores can be rescaled into the range [0,1], which will be useful for the binarization step (as it will force data to follow a gamma distribution shape). This information is stored in the `region.data` slot.
 
 ```{r, eval = FALSE}
 cisTopicObject <- getRegionsScores(cisTopicObject, method='NormTop', scale=TRUE)
