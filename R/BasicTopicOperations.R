@@ -34,7 +34,7 @@ getRegionsScores <- function(
   }
   
   # Get scores
-  scores <- .modelMatSelection(object, 'region', method, all.regions=TRUE)
+  scores <- modelMatSelection(object, 'region', method, all.regions=TRUE)
 
   # Scale
   if (scaled == TRUE) {

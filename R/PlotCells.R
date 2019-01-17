@@ -44,7 +44,7 @@ runtSNE <- function(
     require(Rtsne)
   }
   
-  modelMat <- .modelMatSelection(object, target, method)
+  modelMat <- modelMatSelection(object, target, method)
 
   set.seed(seed)
   tSNE <- Rtsne::Rtsne(t(modelMat), ...)
@@ -103,7 +103,7 @@ runUmap <- function(
     require(umap)
   }
   
-  modelMat <- .modelMatSelection(object, target, method)
+  modelMat <- modelMatSelection(object, target, method)
   
   set.seed(seed)
   Umap <- umap::umap(t(modelMat), ...)
@@ -155,7 +155,7 @@ runDM <- function(
     require(destiny)
   }
   
-  modelMat <- .modelMatSelection(object, target, method)
+  modelMat <- modelMatSelection(object, target, method)
 
   set.seed(seed)
   dif <- destiny::DiffusionMap(t(modelMat), ...)
@@ -211,7 +211,7 @@ runPCA <- function(
     stop('Please, run selectModel() first.')
   }
   
-  inimodelMat <- .modelMatSelection(object, target, method)
+  inimodelMat <- modelMatSelection(object, target, method)
 
   set.seed(seed)
   modelMat <- scale(t(inimodelMat), center=TRUE, scale=FALSE, ...)
@@ -253,9 +253,26 @@ runPCA <- function(
   return(object)
 }
 
-# Helper function
+#' Retrieve normalised topic-cell and region-topic assignments
+#'
+#' Retrieve topic-cell and region-topic assignments
+#' @param object Initialized cisTopic object, after the object@@selected.model has been filled.
+#' @param target Whether dimensionality reduction should be applied on cells ('cell') or regions ('region'). Note that for speed and clarity
+#' reasons, dimesionality reduction on regions will only be done using the regions assigned to topics with high confidence 
+#' (see binarizecisTopics()).
+#' @param method Select the method for processing the cell assignments: 'Z-score' and 'Probability'. In the case of regions, 
+#' an additional method, 'NormTop' is available (see getRegionScores()).
+#' @param all.regions If target is region, whether to return a matrix with all regions or only regions belonging to binarized 
+#' topics (see binarizecisTopics()).
+#'
+#' @details 'Z-score' computes the Z-score for each topic assingment per cell/region. 'Probability' divides the topic assignments by the total number
+#' of assignments in the cell/region in the last iteration plus alpha. If using 'NormTop', regions are given an score defined by: \eqn{\beta_{w, k} (\log
+#' \beta_{w,k} - 1 / K \sum_{k'} \log \beta_{w,k'})}.
+#'
+#' @importFrom stats prcomp
+#' @export
 
-.modelMatSelection <- function(
+modelMatSelection <- function(
   object,
   target,
   method,
@@ -450,7 +467,7 @@ plotFeatures <- function(
 
     
   if (!is.null(topic_contr)){
-    topic.mat <- .modelMatSelection(object, target, topic_contr)
+    topic.mat <- modelMatSelection(object, target, topic_contr)
     
     if (!is.null(topics)){
       topic.mat <- topic.mat[topics,,drop=FALSE]
@@ -779,7 +796,7 @@ cellTopicHeatmap <- function(
     stop('Please, run selectModel() first.')
   }
   
-  topic.mat <- .modelMatSelection(object, 'cell', method)
+  topic.mat <- modelMatSelection(object, 'cell', method)
 
   rownames(topic.mat) <- paste('Topic', seq(1,nrow(topic.mat)))
   colnames(topic.mat) <- object@cell.names
