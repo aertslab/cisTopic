@@ -121,7 +121,12 @@ binarizecisTopics  <- function(
     else if (length(cutoffs) != ncol(scores)){
       stop('Thresholds for all topics are not provided. Check the length of the cutoff vector.')
     }
-
+    
+    for (i in 1:length(cutoffs)){
+      ranking <- scores[order(scores[,i], decreasing=TRUE),i]
+      cutoffs[i] <- ranking[cutoffs[i]+1]
+    }
+    
     if (plot == TRUE){
       for(i in 1:ncol(scores)){
         par(mfrow=c(1,1))
@@ -131,7 +136,7 @@ binarizecisTopics  <- function(
         title(sub=paste("Regions with score > ", signif(cutoffs[i], 2), sep=""))
       }
     }
-    object.binarized.cisTopics <- llply(1:ncol(scores), function (i) scores[which(scores[,i] > cutoff), i, drop = FALSE])
+    object.binarized.cisTopics <- llply(1:ncol(scores), function (i) scores[which(scores[,i] > cutoffs[i]), i, drop = FALSE])
   }
 
   object.binarized.cisTopics <- llply(1:ncol(scores), function (i) object.binarized.cisTopics[[i]][order(object.binarized.cisTopics[[i]][,1], decreasing = TRUE), , drop=FALSE])
