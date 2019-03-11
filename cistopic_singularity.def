@@ -1,0 +1,223 @@
+Bootstrap: scratch
+
+%setup
+    alpine_lastest_stable_base_url='http://dl-cdn.alpinelinux.org/alpine/latest-stable/releases/x86_64'
+
+    # Get url of last stable version of alpine minirootfs:
+    #   - Parse YAML file with info about lastest releases.
+    #   - Get url of the first "Mini root filesystem" section.
+    alpine_minirootfs_url=$(
+        curl "${alpine_lastest_stable_base_url}/latest-releases.yaml" \
+          | awk \
+                -F ': ' \
+                -v "alpine_lastest_stable_base_url=${alpine_lastest_stable_base_url}" '
+                {
+                    if ( $1 ~ "  title" ) {
+                        if ($2 == "\"Mini root filesystem\"" ) {
+                            mini_root_filesystem_section = 1;
+                        } else {
+                            mini_root_filesystem_section = 0;
+                        }
+                    } else if ( mini_root_filesystem_section == 1 && $1 == "  file") {
+                        # Print full url to Alpine minirootfs.
+                        printf("%s/%s", alpine_lastest_stable_base_url, $2);
+                        mini_root_filesystem_file_found = 1;
+                        exit 0;
+                    }
+                }
+                END {
+                    if ( mini_root_filesystem_file_found != 1 ) {
+                        # Unable to find minirootfs url.
+                        printf("%s", "error");
+                    }
+                }
+                '
+    )
+
+    if [ "${alpine_minirootfs_url}" = "error" ] ; then
+        printf 'Error: Unable to find last stable version of alpine minirootfs url.';
+        exit 1;
+    fi
+
+    # Download and extract alpine minirootfs.
+    curl ${alpine_minirootfs_url} \
+       | tar xz -C "${SINGULARITY_ROOTFS}" --exclude=./dev --exclude=./etc/hosts
+
+%post
+    export LANG=en_US.UTF-8
+
+    # Use a custom TMP dir for manually downloadeded packages.
+    export TMPDIR=$(mktemp -t -d cistopic_singularity_XXXXXX);
+
+    # Update package list.
+    apk update
+
+    # Upgrade installed packages.
+    apk upgrade
+
+    # Install needed packages to download, compile and run R packages.
+    apk add \
+        build-base expat expat-dev libxml2 libxml2-dev \
+        autoconf automake libtool curl R R-dev R-doc git
+
+
+    # Function to install a CRAN package.
+    install_CRAN_package () {
+        local CRAN_package="${1}"
+
+        printf 'if (!require("%s", character.only=TRUE, quietly=TRUE)) {\n    install.packages(c("%s"), repo=c(CRAN = "https://cloud.r-project.org"));\n}\nq();\n' \
+            "${CRAN_package}" \
+            "${CRAN_package}" \
+          | R --vanilla --quiet
+    }
+
+    # Function to Install a Bioconductor packages.
+    install_Bioconductor_package () {
+        local bioconductor_package="${1}"
+
+        printf 'if (!require("%s", character.only=TRUE, quietly=TRUE)) {\n    require(BiocManager);\n    BiocManager::install(c("%s"));\n}\nq();\n' \
+            "${bioconductor_package}" \
+            "${bioconductor_package}" \
+          | R --vanilla --quiet
+    }
+
+
+    ## Install httpuv manually as installing it directly from R does not work.
+
+    httpuv_version='1.4.5.1'
+
+    httpuv_CRAN_packages='
+        Rcpp
+        promises
+        later
+        BH
+    '
+
+    # Install list of CRAN packages needed to install httpuv.
+    for CRAN_package in ${httpuv_CRAN_packages} ; do
+        printf '\nInstalling CRAN package: "%s"\n\n' "${CRAN_package}"
+        install_CRAN_package "${CRAN_package}"
+    done
+
+    # Download httpuv tarball.
+    curl \
+        -o "${TMPDIR}/httpuv_${httpuv_version}.tar.gz" \
+        "https://cloud.r-project.org/src/contrib/httpuv_${httpuv_version}.tar.gz"
+
+    # Extract httpuv tarball.
+    tar xz -C ${TMPDIR} -f "${TMPDIR}/httpuv_${httpuv_version}.tar.gz"
+
+    # Regenerate automake config files for libuv.
+    cd ${TMPDIR}/httpuv/src/libuv/ && aclocal && autoconf && automake && cd -
+
+    # Install httpuv.
+    R CMD INSTALL ${TMPDIR}/httpuv
+
+    # Remove downloaded and extracted httpuv related files.
+    rm -r ${TMPDIR}/httpuv "${TMPDIR}/httpuv_${httpuv_version}.tar.gz"
+
+
+    ## Install udunits2 manually as it is not in the apk package manager.
+
+    udunits2_version='2.2.26'
+
+    # Download udunits2 tarball.
+    curl \
+        -o "${TMPDIR}/udunits-${udunits2_version}.tar.gz" \
+        "ftp://ftp.unidata.ucar.edu/pub/udunits/udunits-${udunits2_version}.tar.gz"
+
+    # Extract udunits2 tarball.
+    tar xz -C ${TMPDIR} -f "${TMPDIR}/udunits-${udunits2_version}.tar.gz"
+
+    # Configure and install udunits2.
+    cd ${TMPDIR}/udunits-${udunits2_version} && ./configure && make && make install && cd -
+
+    # Remove downloaded and extracted udunits2 related files.
+    rm -r "${TMPDIR}/udunits-${udunits2_version}" "${TMPDIR}/udunits-${udunits2_version}.tar.gz"
+
+
+    ## Install R dependencies for cisTopic.
+
+    # List of CRAN packages.
+    CRAN_packages='
+        BiocManager
+        data.table
+        doSNOW
+        DT
+        fastcluster
+        feather
+        fitdistrplus
+        ggplot2
+        knitr
+        lda
+        Matrix
+        plotly
+        plyr
+        rmarkdown
+        Rtsne
+        R.utils
+        scatterplot3d
+        tibble
+        umap
+    '
+
+    # List of Bioconductor packages.
+    bioconductor_packages='
+        BiocGenerics
+        BiocStyle
+        GenomicRanges
+        ChIPseeker
+        ComplexHeatmap
+        destiny
+        GSEABase
+        Rsubread
+        rGREAT
+        rtracklayer
+        S4Vectors
+        SummarizedExperiment
+        AUCell
+        RcisTarget
+    '
+
+    # Install list of CRAN packages.
+    for CRAN_package in ${CRAN_packages} ; do
+        printf '\nInstalling CRAN package: "%s"\n\n' "${CRAN_package}"
+        install_CRAN_package "${CRAN_package}"
+    done
+
+    # Install list of BioConductor packages.
+    for bioconductor_package in ${bioconductor_packages} ; do
+        printf '\nInstalling Bioconductor package: "%s"\n\n' "${bioconductor_package}"
+        install_Bioconductor_package "${bioconductor_package}"
+    done
+
+
+    ## cisTopic installation.
+
+    # Clone cisTopic git repository.
+    git clone --depth 1 https://github.com/aertslab/cisTopic ${TMPDIR}/cisTopic-git
+
+    # Install cisTopic.
+    R CMD INSTALL ${TMPDIR}/cisTopic-git
+
+    # Remove cisTopic git repository.
+    rm -rf ${TMPDIR}/cisTopic-git
+
+
+    # Remove build dependencies.
+    apk del build-base expat-dev libxml2-dev autoconf automake libtool R-dev R-doc git
+
+%runscript
+    R "${@}"
+
+%labels
+    Maintainer Gert Hulselmans
+    Package cisTopic
+    Version v0.2.0
+    URL https://github.com/aertslab/cisTopic
+
+%environment
+    export R_MAX_NUM_DLLS=500
+
+%help
+    For help see: https://rawcdn.githack.com/aertslab/cisTopic/f6091ff94c79dfc927ae8eddf201d10a3f092923/vignettes/CompleteAnalysis.html
