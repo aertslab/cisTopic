@@ -44,7 +44,7 @@ Heatmap containing the row normalised AUC values for the signatures in the topic
 \examples{
 ###
 # Load cisTopic object:
-path2cisTopicObject <- system.file(package="cisTopic", "inst/examples/cisTopicObject_melanoma.Rds")
+path2cisTopicObject <- system.file(package="cisTopic", "examples/cisTopicObject_melanoma.Rds")
 cisTopicObject <- readRDS(path2cisTopicObject)
 ###
 
