@@ -60,7 +60,6 @@ annotateRegions <- function(
 #'
 #' @importFrom plyr llply
 #' @export
-
 GREAT <- function(
   object,
   genome='hg19',
