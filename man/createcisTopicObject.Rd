@@ -5,8 +5,8 @@
 \title{Initialize and setup the cisTopic object}
 \usage{
 createcisTopicObject(count.matrix, project.name = "cisTopicProject",
-  min.cells = 1, min.regions = 1, is.acc = 1, keepCountsMatrix = TRUE,
-  ...)
+  min.cells = 1, min.regions = 1, is.acc = 1,
+  keepCountsMatrix = TRUE, ...)
 }
 \arguments{
 \item{count.matrix}{Count matrix containing cells as rows and regions as columns. The row names must be the coordinates in position format (e.g. chr1:110-610).

@@ -4,11 +4,12 @@
 \alias{plotFeatures}
 \title{Plot features (cells or regions) based on dimensionality reduction over cell-topic or topic-region distributions}
 \usage{
-plotFeatures(object, target, method = "tSNE", colorBy = NULL, dim = 2,
-  intervals = 10, topic_contr = NULL, topics = NULL, col.low = "pink",
-  col.mid = "red", col.high = "darkred", labels = 3, colVars = list(),
-  plot_ly = FALSE, legend = TRUE, cex.legend = 0.7, factor.min = 0.05,
-  factor.max = 0.75, cex.dot = 1, ...)
+plotFeatures(object, target, method = "tSNE", colorBy = NULL,
+  dim = 2, intervals = 10, topic_contr = NULL, topics = NULL,
+  col.low = "pink", col.mid = "red", col.high = "darkred",
+  labels = 3, colVars = list(), plot_ly = FALSE, legend = TRUE,
+  cex.legend = 0.7, factor.min = 0.05, factor.max = 0.75,
+  cex.dot = 1, ...)
 }
 \arguments{
 \item{object}{Initialized cisTopic object, after the object@dr has been filled.}
