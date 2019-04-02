@@ -2,7 +2,8 @@ Package: cisTopic
 Type: Package
 Title: cisTopic: Probabilistic modelling of cis-regulatory topics from
         single cell epigenomics data
-Version: 0.2.0
+Version: 0.2.1
+Date: 2019-04-02
 Author: Carmen Bravo González-Blas
 Maintainer: Carmen Bravo González-Blas <carmen.bravogonzalezblas@kuleuven.vib.be>
 Description: The sparse nature of single cell epigenomics data can be overruled using probabilistic modelling methods such as Latent Dirichlet
@@ -11,7 +12,7 @@ Description: The sparse nature of single cell epigenomics data can be overruled 
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.0
 Depends: R (>= 3.4)
 biocViews: GenomicRanges, rtracklayer
 Imports: stats, Matrix, lda, doSNOW, parallel, plyr,
@@ -26,4 +27,3 @@ Suggests: Rsubread, rGREAT, ChIPseeker, scatterplot3d, plotly, destiny, Rtsne, u
         knitr, rmarkdown, BiocStyle, tibble
 VignetteBuilder: knitr
 NeedsCompilation: no
-Packaged: 2018-07-12 16:23:10 UTC; u0117456
