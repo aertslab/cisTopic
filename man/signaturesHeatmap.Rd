@@ -6,8 +6,8 @@
 \usage{
 signaturesHeatmap(object, topics = "all", selected.signatures = "all",
   nCores = 4, aucMaxRank = 0.03 * nrow(aucellRankings),
-  col.low = "dodgerblue", col.mid = "floralwhite", col.high = "brown1",
-  scale = TRUE, ...)
+  col.low = "dodgerblue", col.mid = "floralwhite",
+  col.high = "brown1", scale = TRUE, transposeHeatmap = FALSE, ...)
 }
 \arguments{
 \item{object}{Initialized cisTopic object, after regions scores have been calculated with getRegionScores and object@signatures
@@ -31,6 +31,8 @@ For this, the function annotateRegions() must be run first.}
 
 \item{scale}{Whether AUC enrichment should be normalized}
 
+\item{transposeHeatmap}{Transposes the heatmap (e.g. Topics as rows instead of columns)}
+
 \item{...}{See \code{Heatmap} from ComplexHeatmap}
 }
 \value{
@@ -38,4 +40,14 @@ Heatmap showing the enrichment per topic per signature
 }
 \description{
 Heatmap containing the row normalised AUC values for the signatures in the topics.
+}
+\examples{
+###
+# Load cisTopic object:
+path2cisTopicObject <- system.file(package="cisTopic", "examples/cisTopicObject_melanoma.Rds")
+cisTopicObject <- readRDS(path2cisTopicObject)
+###
+
+signaturesHeatmap(cisTopicObject)
+
 }

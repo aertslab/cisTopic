@@ -4,7 +4,8 @@
 \alias{scoredRegionsToCtx}
 \title{scoredRegionsToCtx}
 \usage{
-scoredRegionsToCtx(object, genome, liftOver = NULL, minOverlap = 0.4, ...)
+scoredRegionsToCtx(object, genome, liftOver = NULL, minOverlap = 0.4,
+  ...)
 }
 \arguments{
 \item{object}{Initialized cisTopic object, after the object@binarized.cisTopics has been filled.}

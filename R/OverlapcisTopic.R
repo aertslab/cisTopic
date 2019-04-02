@@ -136,13 +136,22 @@ getSignaturesRegions <- function(
 #' @param col.mid Color to use for medium signature enrichment
 #' @param col.high Color to use for high signature enrichment
 #' @param scale Whether AUC enrichment should be normalized
+#' @param transposeHeatmap Transposes the heatmap (e.g. Topics as rows instead of columns)
 #' @param ... See \code{Heatmap} from ComplexHeatmap
 #'
 #' @return Heatmap showing the enrichment per topic per signature
 #'
+#' @examples
+#' ###
+#' # Load cisTopic object:
+#' path2cisTopicObject <- system.file(package="cisTopic", "examples/cisTopicObject_melanoma.Rds")
+#' cisTopicObject <- readRDS(path2cisTopicObject)
+#' ###
+#'
+#' signaturesHeatmap(cisTopicObject)
+#'
 #' @import AUCell
 #' @export
-
 signaturesHeatmap <- function(
   object,
   topics = 'all',
@@ -153,12 +162,8 @@ signaturesHeatmap <- function(
   col.mid = "floralwhite",
   col.high = "brown1",
   scale=TRUE,
+  transposeHeatmap=FALSE,
   ...){
-  
-  # Check info
-  if(length(cisTopicObject@signatures) < 1){
-    stop('Please, run getSignaturesRegions() first.')
-  }
   
   # Check dependencies
   if(! "fastcluster" %in% installed.packages()){
@@ -177,6 +182,9 @@ signaturesHeatmap <- function(
   scores <- .getScores(object)
   if (selected.signatures[1] != 'annotation'){
     signatures <- object@signatures
+    if(length(signatures) < 1){
+      stop('Please, run getSignaturesRegions() first.')
+    }
     if (is.null(signatures)){
       stop('Please run getSignaturesRegions() first.')
     }
@@ -212,14 +220,23 @@ signaturesHeatmap <- function(
   
 
   cl.topics <- fastcluster::hclust.vector(t(enrichMatrix), method="ward", metric="euclidean")
-  dd.col <- as.dendrogram(cl.topics)
+  dd.topics <- as.dendrogram(cl.topics)
 
   colorPal <- grDevices::colorRampPalette(c(col.low, col.mid, col.high))
 
-  heatmap <- ComplexHeatmap::Heatmap(data.matrix(enrichMatrix), col=colorPal(20), cluster_columns=dd.col,
+  if(!transposeHeatmap){
+    heatmap <- ComplexHeatmap::Heatmap(data.matrix(enrichMatrix), col=colorPal(20), cluster_columns=dd.topics,
                                      show_column_names=TRUE, show_row_names = TRUE, 
                                      heatmap_legend_param = list(legend_direction = "horizontal", legend_width = unit(5, "cm"), title_position='topcenter'),
                                      name = name_heatmap, column_title_gp = gpar(fontface = 'bold'), ...)
+  
+  }else{
+    heatmap <- ComplexHeatmap::Heatmap(data.matrix(t(enrichMatrix)), col=colorPal(20), cluster_rows=dd.topics,
+                                       show_column_names=TRUE, show_row_names = TRUE, 
+                                       heatmap_legend_param = list(legend_direction = "horizontal", legend_width = unit(5, "cm"), title_position='topcenter'),
+                                       name = name_heatmap, column_title_gp = gpar(fontface = 'bold'), ...)
+  }
+  
   ComplexHeatmap::draw(heatmap, heatmap_legend_side = "bottom")
 }
 
