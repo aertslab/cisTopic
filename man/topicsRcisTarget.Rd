@@ -5,8 +5,7 @@
 \title{topicsRcisTarget}
 \usage{
 topicsRcisTarget(object, genome, pathToFeather, reduced_database = FALSE,
-  nesThreshold = 3, rocthr = 0.005, maxRank = 20000, nCores = 1,
-  ...)
+  nesThreshold = 3, rocthr = 0.005, maxRank = 20000, nCores = 1, ...)
 }
 \arguments{
 \item{object}{Initialized cisTopic object, after the object@binarized.regions.to.Rct has been filled.}
