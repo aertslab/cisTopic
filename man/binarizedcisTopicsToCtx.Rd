@@ -4,8 +4,8 @@
 \alias{binarizedcisTopicsToCtx}
 \title{binarizedcisTopicsToCtx}
 \usage{
-binarizedcisTopicsToCtx(object, genome, liftOver = NULL,
-  minOverlap = 0.4, ...)
+binarizedcisTopicsToCtx(object, genome, liftOver = NULL, minOverlap = 0.4,
+  ...)
 }
 \arguments{
 \item{object}{Initialized cisTopic object, after the object@binarized.cisTopics has been filled.}

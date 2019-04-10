@@ -1,3 +1,216 @@
+#' Initialize and setup the cisTopic object starting from CellRanger ATAC output matrix.
+#'
+#' Initializes the cisTopic object from CellRanger ATAC output files and defined regions. 
+#' @param data_folder Matrix folder from CellRanger ATAC (/outs/filtered_peak_bc_matrix/, after untar file).''
+#' @param metrics List of CellRanger barcodes and their metrics (/outs/singlecell.csv)
+#' @param project.name Project name (string).
+#' @param min.cells Minimal number of cells in which the region has to be accessible. By default, all regions accessible in at least one cell are kept.
+#' @param min.regions Minimal number of regions that have to be accessible within a cell to be kept. By default, all cells with at least one region accessible are kept.
+#' @param is.acc Number of counts necessary to consider a region as accessible.
+#' @param keepCountsMatrix Whether to keep the counts matrix or not inside the object. For large matrices, we recommend to set this
+#' to FALSE.
+#' @return Returns a cisTopic object with the counts data stored in object@@count.matrix.
+#' object@@binary.count.matrix, object@@cell.names, object@@cell.data (including counting statistics), object@@regions.ranges, object@@regions.data are also initialized.
+#'
+#' @import Matrix
+#' 
+#' @export
+#'
+#' @examples
+#' data_folder <- '/outs/filtered_peak_bc_matrix'
+#' cisTopicObject <- createcisTopicObjectFrom10Xmatrix(data_folder)
+#' cisTopicObject
+
+createcisTopicObjectFrom10Xmatrix <- function(
+  data_folder,
+  metrics,
+  project.name = "cisTopicProject",
+  min.cells = 1,
+  min.regions = 1,
+  is.acc = 1,
+  keepCountsMatrix = TRUE,
+  ...
+) {
+  # Check dependencies
+  
+  if(! "Matrix" %in% installed.packages()){
+    stop('Please, install Matrix: \n install.packages("Matrix")')
+  } else {
+    suppressMessages(require(Matrix))
+  }
+  
+  # Prepare barcodes and metrics
+  CR_metrics <- fread(metrics, header = T, sep = ',')
+  CR_metrics <- CR_metrics[which(unlist(as.vector(CR_metrics[,10] == 1))),]
+  CR_metrics <- as.data.frame(CR_metrics)
+  rownames(CR_metrics) <- unlist(as.vector(CR_metrics[,1]))
+  CR_metrics <- CR_metrics[,-1]
+  barcodes <- rownames(CR_metrics)
+  
+  # Read peaks
+  regions <- paste0(data_folder, '/peaks.bed')
+  regions_frame <- read.table(regions)
+  if (ncol(regions_frame) >= 5){
+    regions_frame <- regions_frame[,c(1:3, 5)]
+  } else {
+    regions_frame <- regions_frame[,c(1:3)]
+    regions_frame <- cbind(regions_frame, rep('*', nrow(regions_frame)))
+  }
+  
+  colnames(regions_frame) <- c('Chr', 'Start', 'End', 'Strand')
+  
+  
+  m <- readMM(paste0(data_folder, '/matrix.mtx'))
+  colnames(m) <- barcodes
+  rownames(m) <- paste0(regions_frame[,1], ':', regions_frame[,2], '-', regions_frame[,3])
+  
+  # Prepare cell data
+  print('Creating cisTopic object...')
+  count.matrix <- m
+  
+  cell.data <- CR_metrics
+  colnames(cell.data) <- paste0('10X_', colnames(cell.data))
+  
+  object <- createcisTopicObject(count.matrix = count.matrix, 
+                                 project.name = project.name,
+                                 min.cells = min.cells,
+                                 min.regions = min.regions,
+                                 is.acc = is.acc,
+                                 keepCountsMatrix=keepCountsMatrix)
+  
+  object <- addCellMetadata(object, cell.data = as.data.frame(cell.data))
+  return(object)
+}
+
+
+#' Initialize and setup the cisTopic object starting from CellRanger ATAC output files and defined regions
+#'
+#' Initializes the cisTopic object from CellRanger ATAC output files and defined regions. 
+#' @param fragments Fragment file from CellRanger ATAC (/outs/fragments.tsv.gz)
+#' @param regions Path to the bed file with the defined regions.
+#' @param metrics List of CellRanger barcodes and their metrics (/outs/singlecell.csv)
+#' @param project.name Project name (string).
+#' @param min.cells Minimal number of cells in which the region has to be accessible. By default, all regions accessible in at least one cell are kept.
+#' @param min.regions Minimal number of regions that have to be accessible within a cell to be kept. By default, all cells with at least one region accessible are kept.
+#' @param is.acc Number of counts necessary to consider a region as accessible.
+#' @param keepCountsMatrix Whether to keep the counts matrix or not inside the object. For large matrices, we recommend to set this
+#' to FALSE.
+#'
+#' @return Returns a cisTopic object with the counts data stored in object@@count.matrix.
+#' object@@binary.count.matrix, object@@cell.names, object@@cell.data (including counting statistics), object@@regions.ranges, object@@regions.data are also initialized.
+#'
+#' @import Matrix
+#' @import data.table
+#' @import GenomicRanges
+#' @import dplyr
+#' 
+#' @export
+#'
+#' @examples
+#' fragments <- '/outs/fragments.tsv.gz'
+#' regions <- '/outs/peaks.bed'
+#' metrics <- '/outs/singlecell.csv'
+#' cisTopicObject <- createcisTopicObjectFrom10X(fragments, regions, metrics)
+#' cisTopicObject
+
+createcisTopicObjectFrom10X <- function(
+  fragments,
+  regions,
+  metrics,
+  project.name = "cisTopicProject",
+  min.cells = 1,
+  min.regions = 1,
+  is.acc = 1,
+  keepCountsMatrix = TRUE,
+  ...
+) {
+  # Check dependencies
+  
+  if(! "Matrix" %in% installed.packages()){
+    stop('Please, install Matrix: \n install.packages("Matrix")')
+  } else {
+    suppressMessages(require(Matrix))
+  }
+  
+  if(! "GenomicRanges" %in% installed.packages()){
+    stop('Please, install Matrix: \n install.packages("GenomicRanges")')
+  } else {
+    suppressMessages(require(GenomicRanges))
+  }
+  
+  if(! "data.table" %in% installed.packages()){
+    stop('Please, install Matrix: \n install.packages("data.table")')
+  } else {
+    suppressMessages(require(data.table))
+  }
+  if(! "dplyr" %in% installed.packages()){
+    stop('Please, install Matrix: \n install.packages("dplyr")')
+  } else {
+    suppressMessages(require(dplyr))
+  }
+  
+  print('Counting...')
+  # Prepare annotation
+  regions_frame <- read.table(regions)
+  if (ncol(regions_frame) >= 5){
+    regions_frame <- regions_frame[,c(1:3, 5)]
+  } else {
+    regions_frame <- regions_frame[,c(1:3)]
+    regions_frame <- cbind(regions_frame, rep('*', nrow(regions_frame)))
+  }
+  
+  colnames(regions_frame) <- c('Chr', 'Start', 'End', 'Strand')
+  peak_ranges <- makeGRangesFromDataFrame(as.data.frame(regions_frame))
+  
+  # Prepare barcodes and metrics
+  CR_metrics <- fread(metrics, header = T, sep = ',')
+  CR_metrics <- CR_metrics[which(unlist(as.vector(CR_metrics[,10] == 1))),]
+  CR_metrics <- as.data.frame(CR_metrics)
+  rownames(CR_metrics) <- unlist(as.vector(CR_metrics[,1]))
+  CR_metrics <- CR_metrics[,-1]
+  barcodes <- rownames(CR_metrics)
+  
+  # Select fragments from good cells
+  good_fragments <- data.table::fread(cmd=paste0("zcat < ", frag_gz_file)) %>% 
+    data.frame() %>% filter(V4 %in% barcodes) %>%  # filter for barcodes in our search set
+    GenomicRanges::makeGRangesFromDataFrame(seqnames.field = "V1", start.field = "V2", end.field = "V3", keep.extra.columns = TRUE)
+  
+  # Get the overlaps with peaks
+  Frag2peak <- GenomicRanges::findOverlaps(peak_ranges, good_fragments)
+  
+  # Establish a numeric index for the barcodes for sparse matrix purposes
+  id <- factor(as.character(GenomicRanges::mcols(good_fragments)$V4), levels = barcodes)
+  
+  # Make sparse matrix with counts with peaks by  unique barcode
+  countdf <- data.frame(peaks = S4Vectors::queryHits(Frag2peak),
+                        sample = as.numeric(id)[S4Vectors::subjectHits(Frag2peak)]) %>%
+    dplyr::group_by(peaks, sample) %>% dplyr::summarise(count = n()) %>% data.matrix()
+  
+  m <- Matrix::sparseMatrix(i = c(countdf[,1], length(peak_ranges)),
+                            j = c(countdf[,2], length(barcodes)),
+                            x = c(countdf[,3],0))
+  colnames(m) <- barcodes
+  rownames(m) <- paste0(regions_frame[,1], ':', regions_frame[,2], '-', regions_frame[,3])
+  
+  # Prepare cell data
+  print('Creating cisTopic object...')
+  count.matrix <- m
+  
+  cell.data <- CR_metrics
+  colnames(cell.data) <- paste0('10X_', colnames(cell.data))
+
+  object <- createcisTopicObject(count.matrix = count.matrix, 
+                                 project.name = project.name,
+                                 min.cells = min.cells,
+                                 min.regions = min.regions,
+                                 is.acc = is.acc,
+                                 keepCountsMatrix=keepCountsMatrix)
+  
+  object <- addCellMetadata(object, cell.data = as.data.frame(cell.data))
+  return(object)
+}
+
+
 #' Initialize and setup the cisTopic object starting from bam files and defined regions
 #'
 #' Initializes the cisTopic object from the raw bam files and defined regions

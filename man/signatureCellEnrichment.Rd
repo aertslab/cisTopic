@@ -4,9 +4,8 @@
 \alias{signatureCellEnrichment}
 \title{signatureCellEnrichment}
 \usage{
-signatureCellEnrichment(object, aucellRankings,
-  selected.signatures = "all", nCores = 1, aucMaxRank = 0.03 *
-  nrow(aucellRankings), plot = TRUE, ...)
+signatureCellEnrichment(object, aucellRankings, selected.signatures = "all",
+  nCores = 1, aucMaxRank = 0.03 * nrow(aucellRankings), plot = TRUE, ...)
 }
 \arguments{
 \item{object}{Initialized cisTopic object, after object@cistromes.regions have been filled (see \code{getCistromes()}).}
