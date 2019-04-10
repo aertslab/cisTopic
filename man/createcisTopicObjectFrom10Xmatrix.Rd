@@ -33,6 +33,6 @@ Initializes the cisTopic object from CellRanger ATAC output files and defined re
 }
 \examples{
 data_folder <- '/outs/filtered_peak_bc_matrix'
-cisTopicObject <- createcisTopicObjectFrom10Xmatrix(data_folder)
+cisTopicObject <- createcisTopicObjectFrom10Xmatrix(data_folder, metrics)
 cisTopicObject
 }

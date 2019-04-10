@@ -18,7 +18,7 @@
 #'
 #' @examples
 #' data_folder <- '/outs/filtered_peak_bc_matrix'
-#' cisTopicObject <- createcisTopicObjectFrom10Xmatrix(data_folder)
+#' cisTopicObject <- createcisTopicObjectFrom10Xmatrix(data_folder, metrics)
 #' cisTopicObject
 
 createcisTopicObjectFrom10Xmatrix <- function(
@@ -171,7 +171,7 @@ createcisTopicObjectFrom10X <- function(
   barcodes <- rownames(CR_metrics)
   
   # Select fragments from good cells
-  good_fragments <- data.table::fread(cmd=paste0("zcat < ", frag_gz_file)) %>% 
+  good_fragments <- data.table::fread(cmd=paste0("zcat < ", fragments)) %>% 
     data.frame() %>% filter(V4 %in% barcodes) %>%  # filter for barcodes in our search set
     GenomicRanges::makeGRangesFromDataFrame(seqnames.field = "V1", start.field = "V2", end.field = "V3", keep.extra.columns = TRUE)
   
