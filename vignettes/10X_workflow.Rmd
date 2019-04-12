@@ -95,7 +95,7 @@ metrics <- paste0(pathTo10X, 'atac_v1_pbmc_5k_singlecell.csv')
 cisTopicObject <- createcisTopicObjectFrom10Xmatrix(data_folder, metrics,  project.name='5kPBMCs')
 ```
 
-* b Starting from the **CellRanger ATAC fragments file and a bed file with potential rgeulatory regions**. For more information regards the fragments file, please visit: https://support.10xgenomics.com/single-cell-atac/software/pipelines/latest/output/fragments. In this case, we will use as regulatory regions the ones provided by CellRanger ATAC and the function will count which fragments overlap with each region in each cell [Reference running time (5k cells, 97k regions): 20 min]
+* b.  Starting from the **CellRanger ATAC fragments file and a bed file with potential rgeulatory regions**. For more information regards the fragments file, please visit: https://support.10xgenomics.com/single-cell-atac/software/pipelines/latest/output/fragments. In this case, we will use as regulatory regions the ones provided by CellRanger ATAC and the function will count which fragments overlap with each region in each cell [Reference running time (5k cells, 97k regions): 20 min]
 ```{r, eval=FALSE}
 pathTo10X <- '/media/seq-srv-06/lcb/cbravo/cisTopic_v0.1/10x_example/'
 fragments <- paste0(pathTo10X, 'atac_v1_pbmc_5k_fragments.tsv.gz')
