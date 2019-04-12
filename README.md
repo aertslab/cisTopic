@@ -1,13 +1,7 @@
 ### News
-  - ***2018-11-23***:
-    - cisTopic v0.2.0: Umap dimensionality reduction, new plotting functions, region clustering,
-      predictive distribution and enrichment of region sets (e.g. ChIP-seq signatures, topic-specific cistromes) in cells. 
-  - ***2018-07-19***:
-    - Vignette on cisTopic in a big data set (Lake et al., 2018).
-    - Update for liftOver.
-    - Update for big data management.
-  - ***2018-07-12***:
-    - Updates for mm9, dm3 and dm6 motif enrichment.
+  - ***2019-4-12***:
+    - New functions for CellRanger ATAC input and tutorial on the 5k PBMC data set from 10X . 
+      
 # cisTopic: Probabilistic modelling of cis-regulatory topics from single cell epigenomics data
 cisTopic is an R-package to simultaneously identify cell states and cis-regulatory topics from single cell epigenomics data.
 ## Dependencies (for R < 3.5)
@@ -25,5 +19,6 @@ library(cisTopic)
 ## Databases
 RcisTarget feather databases are available at [https://resources.aertslab.org/cistarget/](https://resources.aertslab.org/cistarget/).
 
-## Tutorial
-You can find the rendered vignette [here](https://rawcdn.githack.com/aertslab/cisTopic/f6091ff94c79dfc927ae8eddf201d10a3f092923/vignettes/CompleteAnalysis.html).
+## Tutorials
+ 	- [Basic tutorial on simulated single cell epigenomes from melanoma cell lines](https://rawcdn.githack.com/aertslab/cisTopic/f628c6f60918511ba0fa4a85366ebf52db5940f7/vignettes/CompleteAnalysis.html).
+	- [10X tutorial on the 5k PBMC data set from 10X](https://rawcdn.githack.com/aertslab/cisTopic/f628c6f60918511ba0fa4a85366ebf52db5940f7/vignettes/10X_workflow.html).
