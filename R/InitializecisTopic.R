@@ -41,7 +41,7 @@ createcisTopicObjectFrom10Xmatrix <- function(
   
   # Prepare barcodes and metrics
   CR_metrics <- fread(metrics, header = T, sep = ',')
-  CR_metrics <- CR_metrics[which(unlist(as.vector(CR_metrics[,10] == 1))),]
+  CR_metrics <- CR_metrics[which(unlist(as.vector(CR_metrics[,'is__cell_barcode'] == 1))),]
   CR_metrics <- as.data.frame(CR_metrics)
   rownames(CR_metrics) <- unlist(as.vector(CR_metrics[,1]))
   CR_metrics <- CR_metrics[,-1]
@@ -164,7 +164,7 @@ createcisTopicObjectFrom10X <- function(
   
   # Prepare barcodes and metrics
   CR_metrics <- fread(metrics, header = T, sep = ',')
-  CR_metrics <- CR_metrics[which(unlist(as.vector(CR_metrics[,10] == 1))),]
+  CR_metrics <- CR_metrics[which(unlist(as.vector(CR_metrics[,'is__cell_barcode'] == 1))),]
   CR_metrics <- as.data.frame(CR_metrics)
   rownames(CR_metrics) <- unlist(as.vector(CR_metrics[,1]))
   CR_metrics <- CR_metrics[,-1]
