@@ -1,0 +1,103 @@
+---
+title: "Running GREAT and motif enrichment with mm10 and hg38"
+author: "Carmen Bravo González-Blas and Stein Aerts"
+vignette: >
+  %\VignetteIndexEntry{cisTopic: Probabilistic modelling of single cell epigenomes}
+  %\VignetteEngine{knitr::rmarkdown}
+output: 
+  html_document:
+    toc: yes
+    toc_float: yes
+    number_sections: false
+  pdf_document:
+    toc: yes
+  html_notebook:
+    toc: yes
+---
+
+*Vignette built on `r format(Sys.time(), "%b %d, %Y")` with cisTopic **version `r packageVersion("cisTopic")`***.
+
+This vignette provides the code to run rGREAT with the hg38 assembly and RcisTarget with hg38 and mm10 based on liftover. 
+
+# Installation
+
+## R < 3.5
+
+If your R version is below 3.5, you will need to install manually the following packages:
+
+```{r, eval=FALSE, results='asis'}
+devtools::install_github("aertslab/AUCell")
+devtools::install_github("aertslab/RcisTarget")
+```
+
+```{r, eval=FALSE, results='asis'}
+source("https://bioconductor.org/biocLite.R")
+biocLite('GenomicRanges')
+```
+
+## cisTopic package
+
+For installing cisTopic run:
+
+```{r, eval=FALSE, results='asis'}
+devtools::install_github("aertslab/cisTopic")
+```
+
+# Running rGREAT and RcisTarget with mm10 
+
+```{r, eval=FALSE}
+# GREAT can work directly on mm10 coordinates
+cisTopicObject <- GREAT(cisTopicObject, genome='mm10', fold_enrichment=2, geneHits=1, sign=0.05, request_interval=10)
+
+# For using RcisTarget, we need to liftover the coordinates to the mm9 assemble
+library(R.utils)
+url <- "http://hgdownload.soe.ucsc.edu/goldenPath/mm10/liftOver/mm10ToMm9.over.chain.gz"
+mm10Tomm9.chain <- "mm10Tomm9.over.chain"
+download.file(url, destfile = paste0(mm10Tomm9.chain, ".gz"))
+gunzip(paste0(mm10Tomm9.chain, ".gz"))
+
+# Import chain file
+mm10Tomm9.chain  <- import.chain(mm10Tomm9.chain)
+
+# Obtain liftOver dictionary (as list)
+mm10_coord <- cisTopicObject@region.ranges
+mm10_to_mm9_list <- liftOver(mm10_coord, mm10Tomm9.chain)
+
+# Run GREAT based on liftover to mm9 coordinates
+cisTopicObject <- binarizedcisTopicsToCtx(cisTopicObject, liftOver=mm10_to_mm9_list, genome='mm9')
+cisTopicObject <- scoredRegionsToCtx(cisTopicObject, liftOver=mm10_to_mm9_list, genome='mm9')
+pathToFeather <- 'mm9-DHS_enh_prom_pennstate-9species.all_regions.mc9nr.feather'
+cisTopicObject <- topicsRcisTarget(cisTopicObject, genome='mm9', pathToFeather, reduced_database=FALSE, nesThreshold=3, rocthr=0.005, maxRank=20000, nCores=4)
+cisTopicObject<- getCistromes(cisTopicObject, annotation = 'Both', nCores=5)
+```
+
+# Running rGREAT and RcisTarget with hg38 
+
+```{r, eval=FALSE}
+# url and file name for a chain file
+library(R.utils)
+url <- "http://hgdownload.soe.ucsc.edu/goldenPath/hg38/liftOver/hg38ToHg19.over.chain.gz"
+hg38ToHg19.chain <- "data/hg38ToHg19.over.chain"
+download.file(url, destfile = paste0(hg38ToHg19.chain, ".gz"))
+gunzip(paste0(hg38ToHg19.chain, ".gz"))
+
+# Import chain file
+hg38ToHg19.chain <- import.chain(hg38ToHg19.chain)
+
+# Obtain liftOver dictionary (as list)
+hg38_coord <- cisTopicObject@region.ranges
+hg38_to_hg19_list <- liftOver(hg38_coord, hg38ToHg19.chain)
+
+# Run GREAT based on liftover to hg19 coordinates
+cisTopicObject <- GREAT(cisTopicObject, genome='hg19', liftOver=hg38_to_hg19_list, fold_enrichment=2, geneHits=1, sign=0.05, request_interval=10)
+
+# Run GREAT based on liftover to hg19 coordinates
+cisTopicObject <- binarizedcisTopicsToCtx(cisTopicObject, liftOver=hg38_to_hg19_list)
+cisTopicObject <- scoredRegionsToCtx(cisTopicObject, liftOver=hg38_to_hg19_list)
+pathToFeather <- "hg19-regions-1M-9species.all_regions.mc9nr.feather"
+cisTopicObject <- topicsRcisTarget(cisTopicObject, genome='hg19', pathToFeather, reduced_database=FALSE, nesThreshold=3, rocthr=0.005, maxRank=20000, nCores=1)
+cisTopicObject<- getCistromes(cisTopicObject, annotation = 'Both', nCores=5)
+```
+
+
+
