@@ -89,7 +89,7 @@ For initializing the cisTopic object:
 
 * a.  Starting from the **CellRanger ATAC count matrix** [Reference running time (5k cells, 97k regions): 1,5 min]
 ```{r, eval=FALSE}
-pathTo10X <- '/media/seq-srv-06/lcb/cbravo/cisTopic_v0.1/10x_example/'
+pathTo10X <- '/10x_example/'
 data_folder <- paste0(pathTo10X, 'filtered_peak_bc_matrix')
 metrics <- paste0(pathTo10X, 'atac_v1_pbmc_5k_singlecell.csv')
 cisTopicObject <- createcisTopicObjectFrom10Xmatrix(data_folder, metrics,  project.name='5kPBMCs')
@@ -97,7 +97,7 @@ cisTopicObject <- createcisTopicObjectFrom10Xmatrix(data_folder, metrics,  proje
 
 * b.  Starting from the **CellRanger ATAC fragments file and a bed file with potential rgeulatory regions**. For more information regards the fragments file, please visit: https://support.10xgenomics.com/single-cell-atac/software/pipelines/latest/output/fragments. In this case, we will use as regulatory regions the ones provided by CellRanger ATAC and the function will count which fragments overlap with each region in each cell [Reference running time (5k cells, 97k regions): 20 min]
 ```{r, eval=FALSE}
-pathTo10X <- '/media/seq-srv-06/lcb/cbravo/cisTopic_v0.1/10x_example/'
+pathTo10X <- '/10x_example/'
 fragments <- paste0(pathTo10X, 'atac_v1_pbmc_5k_fragments.tsv.gz')
 regions <-  paste0(pathTo10X, 'atac_v1_pbmc_5k_peaks.bed')
 metrics <- paste0(pathTo10X, 'atac_v1_pbmc_5k_singlecell.csv')
@@ -107,7 +107,7 @@ cisTopicObject <- createcisTopicObjectFrom10X(fragments, regions, metrics, proje
 By default, the slots `@cell.data` and `@region.data` will be initialized with the number of reads and accessible regions (depending on the selected threshold) per cell and region, respectively, and the metrics from CellRanger ATAC. Extra metadata can be added using the functions `addCellMetadata` (e.g. phenotype information) and `addRegionMetadata`. For example, we can add the graph-based clusters from CellRanger ATAC for comparison.
 
 ```{r, eval=FALSE}
-pathTo10X <- '/media/seq-srv-06/lcb/cbravo/cisTopic_v0.1/10x_example/'
+pathTo10X <- '/10x_example/'
 pathTographBasedClusters_CRA <- paste0(pathTo10X, 'analysis/clustering/graphclust/clusters.csv') 
 graphBasedClusters_CRA <- read.table(pathTographBasedClusters_CRA, sep=',', header=TRUE, row.names = 1)
 colnames(graphBasedClusters_CRA) <- 'graphBasedClusters_CRA'
@@ -402,7 +402,7 @@ cisTopicObject <- scoredRegionsToCtx(cisTopicObject, genome='hg19')
 We are now ready to run RcisTarget in each topic using the wrapper function `topicsRcisTarget()`. This function uses the binarised topic regions converted to ctx regions.
 
 ```{r, eval = FALSE}
-pathToFeather <- "/media/data/lcb/icistarget/data/rankings/feather/hg19-regions-9species.all_regions.mc8nr.feather"
+pathToFeather <- "hg19-regions-9species.all_regions.mc8nr.feather"
 cisTopicObject <- topicsRcisTarget(cisTopicObject, genome='hg19', pathToFeather, reduced_database=FALSE, nesThreshold=3, rocthr=0.005, maxRank=20000, nCores=5)
 ```
 
