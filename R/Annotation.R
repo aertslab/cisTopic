@@ -104,6 +104,7 @@ GREAT <- function(
   ...
   )
   {
+  coord <- coord[!duplicated(names(coord)),]
   coord <- sortSeqlevels(coord)
   coord <- sort(coord)
   job <- submitGreatJob(coord, species=genome, request_interval = request_interval, ...)
