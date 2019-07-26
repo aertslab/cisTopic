@@ -6,8 +6,8 @@
 \usage{
 signaturesHeatmap(object, topics = "all", selected.signatures = "all",
   nCores = 4, aucMaxRank = 0.03 * nrow(aucellRankings),
-  col.low = "dodgerblue", col.mid = "floralwhite", col.high = "brown1",
-  scale = TRUE, transposeHeatmap = FALSE, ...)
+  col.low = "dodgerblue", col.mid = "floralwhite",
+  col.high = "brown1", scale = TRUE, transposeHeatmap = FALSE, ...)
 }
 \arguments{
 \item{object}{Initialized cisTopic object, after regions scores have been calculated with getRegionScores and object@signatures

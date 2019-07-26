@@ -4,8 +4,8 @@
 \alias{binarizecisTopics}
 \title{Binarize cisTopic}
 \usage{
-binarizecisTopics(object, method = "GammaFit", thrP = 0.99, plot = TRUE,
-  cutoffs = NULL)
+binarizecisTopics(object, method = "GammaFit", thrP = 0.99,
+  plot = TRUE, cutoffs = NULL)
 }
 \arguments{
 \item{object}{Initialized cisTopic object, after the object@region.data has been filled with the cisTopic scores.}

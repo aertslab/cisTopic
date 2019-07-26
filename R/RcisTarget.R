@@ -129,9 +129,8 @@ scoredRegionsToCtx <- function(
 #'
 #' Run RcisTarget in the binarized topics
 #' @param object Initialized cisTopic object, after the object@@binarized.regions.to.Rct has been filled.
-#' @param pathToFeather Path to the feather database to use. Note that this database has to match the genome used for mapping.
+#' @param pathToDb Path to the feather or parquet database to use. Note that this database has to match the genome used for mapping.
 #' @param genome Genome to which the data was aligned or liftovered (hg19, mm9, dm3 or dm6).
-#' @param motifRankings Feather database corresponding to the genome
 #' @param reduced_database Whether a reduced version of the database (e.g. background database) is being used or not (by default, it is set to false).
 #' @param nesThreshold Minimum enrichment score that a motif should have to be included in the table
 #' @param rocthr ROC threshold for AUC calculation. For mouse and human, we recommend 0.005; for fly, 0.01.
@@ -141,7 +140,7 @@ scoredRegionsToCtx <- function(
 #' @return Motif enrichment table is stored in object@@binarized.RcisTarget
 #' @examples
 #' pathToFeather <- "hg19-regions-1M-9species.all_regions.mc9nr.feather"
-#' cisTopicObject <- topicRcisTarget(cisTopicObject, genome='hg19', pathToFeather)
+#' cisTopicObject <- topicRcisTarget(cisTopicObject, genome='hg19', pathToDb)
 #' cisTopicObject
 #' @import RcisTarget
 #' @importFrom parallel makeCluster
@@ -205,19 +204,29 @@ topicsRcisTarget <- function(
   }
 
   topicsList <- object@binarized.regions.to.Rct
+  
+  extension <- strsplit(pathToDb, "\\.")[[1]][length(strsplit(pathToDb, "\\.")[[1]])]
+  if (extension == 'feather'){
+    columnsinRanking <- feather::feather_metadata(pathToDb)[["dim"]][2]-1
+  }
+  else if (extension == "parquet"){
+    pq <- arrow::parquet_file_reader(pathToDb)
+    columnsinRanking <- pq$GetSchema()$num_fields()-1
+  }
+  else{
+    stop("Database format must be feather or parquet.")
+  }
 
   if (reduced_database == FALSE){
     ctxreg <- unique(as.vector(unlist(object@binarized.regions.to.Rct)))
-    motifRankings <- importRankings(pathToFeather, columns = c('features', ctxreg))
+    motifRankings <- importRankings(pathToDb, columns = c('features', ctxreg))
   }
   else{
-    motifRankings <- importRankings(pathToFeather)
+    motifRankings <- importRankings(pathToDb)
     ctxregions <- colnames(getRanking(motifRankings))[-1]
     topicsList <- llply(1:length(topicsList), function(i) topicsList[[i]][which(topicsList[[i]] %in% ctxregions)])
     names(topicsList) <- names(object@binarized.regions.to.Rct)
   }
-  
-    columnsinRanking <- feather_metadata(pathToFeather)[[2]][2]
   
   if (length(topicsList) < nCores){
     print(paste('The number of cores (', nCores, ') is higher than the number of topics (', topic,').', sep=''))
