@@ -203,7 +203,6 @@ abline(h=2.5)
 ```
 
 ```{r, eval=FALSE}
-cisTopicObject@cell.data <- cisTopicObject@cell.data[, -ncol(cisTopicObject@cell.data)]
 # Add cluster information
 densityClust <- dclust$clusters
 densityClust <- as.data.frame(densityClust)
