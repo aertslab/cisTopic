@@ -139,7 +139,7 @@ scoredRegionsToCtx <- function(
 #'
 #' @return Motif enrichment table is stored in object@@binarized.RcisTarget
 #' @examples
-#' pathToFeather <- "hg19-regions-1M-9species.all_regions.mc9nr.feather"
+#' pathToDb <- "hg19-regions-1M-9species.all_regions.mc9nr.feather"
 #' cisTopicObject <- topicRcisTarget(cisTopicObject, genome='hg19', pathToDb)
 #' cisTopicObject
 #' @import RcisTarget
@@ -152,7 +152,7 @@ scoredRegionsToCtx <- function(
 topicsRcisTarget <- function(
   object,
   genome,
-  pathToFeather,
+  pathToDb,
   reduced_database = FALSE,
   nesThreshold = 3,
   rocthr = 0.005,
