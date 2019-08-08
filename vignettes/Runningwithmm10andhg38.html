@@ -222,7 +222,7 @@ div.tocify {
 </div>
 
 
-<p><em>Vignette built on Jul 03, 2019 with cisTopic <strong>version 0.2.1</strong></em>.</p>
+<p><em>Vignette built on Aug 08, 2019 with cisTopic <strong>version 0.2.1</strong></em>.</p>
 <p>This vignette provides the code to run rGREAT with the hg38 assembly and RcisTarget with hg38 and mm10 based on liftover.</p>
 <div id="installation" class="section level1">
 <h1>Installation</h1>
@@ -286,8 +286,8 @@ hg38_to_hg19_list &lt;- liftOver(hg38_coord, hg38ToHg19.chain)
 cisTopicObject &lt;- GREAT(cisTopicObject, genome='hg19', liftOver=hg38_to_hg19_list, fold_enrichment=2, geneHits=1, sign=0.05, request_interval=10)
 
 # Run GREAT based on liftover to hg19 coordinates
-cisTopicObject &lt;- binarizedcisTopicsToCtx(cisTopicObject, liftOver=hg38_to_hg19_list)
-cisTopicObject &lt;- scoredRegionsToCtx(cisTopicObject, liftOver=hg38_to_hg19_list)
+cisTopicObject &lt;- binarizedcisTopicsToCtx(cisTopicObject, liftOver=hg38_to_hg19_list, genome=&quot;hg19&quot;)
+cisTopicObject &lt;- scoredRegionsToCtx(cisTopicObject, liftOver=hg38_to_hg19_list, genome=&quot;hg19&quot;)
 pathToFeather &lt;- &quot;hg19-regions-1M-9species.all_regions.mc9nr.feather&quot;
 cisTopicObject &lt;- topicsRcisTarget(cisTopicObject, genome='hg19', pathToFeather, reduced_database=FALSE, nesThreshold=3, rocthr=0.005, maxRank=20000, nCores=1)
 cisTopicObject&lt;- getCistromes(cisTopicObject, annotation = 'Both', nCores=5)</code></pre>
