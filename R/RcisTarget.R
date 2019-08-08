@@ -229,7 +229,7 @@ topicsRcisTarget <- function(
   }
   
   if (length(topicsList) < nCores){
-    print(paste('The number of cores (', nCores, ') is higher than the number of topics (', topic,').', sep=''))
+    print(paste('The number of cores (', nCores, ') is higher than the number of topics (', length(topicsList),').', sep=''))
   }
 
   if(nCores > 1){
