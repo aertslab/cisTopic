@@ -92,8 +92,8 @@ hg38_to_hg19_list <- liftOver(hg38_coord, hg38ToHg19.chain)
 cisTopicObject <- GREAT(cisTopicObject, genome='hg19', liftOver=hg38_to_hg19_list, fold_enrichment=2, geneHits=1, sign=0.05, request_interval=10)
 
 # Run GREAT based on liftover to hg19 coordinates
-cisTopicObject <- binarizedcisTopicsToCtx(cisTopicObject, liftOver=hg38_to_hg19_list)
-cisTopicObject <- scoredRegionsToCtx(cisTopicObject, liftOver=hg38_to_hg19_list)
+cisTopicObject <- binarizedcisTopicsToCtx(cisTopicObject, liftOver=hg38_to_hg19_list, genome="hg19")
+cisTopicObject <- scoredRegionsToCtx(cisTopicObject, liftOver=hg38_to_hg19_list, genome="hg19")
 pathToFeather <- "hg19-regions-1M-9species.all_regions.mc9nr.feather"
 cisTopicObject <- topicsRcisTarget(cisTopicObject, genome='hg19', pathToFeather, reduced_database=FALSE, nesThreshold=3, rocthr=0.005, maxRank=20000, nCores=1)
 cisTopicObject<- getCistromes(cisTopicObject, annotation = 'Both', nCores=5)
