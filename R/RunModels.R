@@ -154,7 +154,8 @@ runModels <- function(
     object@models <- models
   }
   if(returnType=='selectedModel') {
-    object@selected.model <- selectModel(models)
+    object@models <- models
+    object <- selectModel(object, keepModels=FALSE)
   }
   
   return(object)
