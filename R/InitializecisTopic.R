@@ -45,7 +45,10 @@ createcisTopicObjectFrom10Xmatrix <- function(
   CR_metrics <- as.data.frame(CR_metrics)
   rownames(CR_metrics) <- unlist(as.vector(CR_metrics[,1]))
   CR_metrics <- CR_metrics[,-1]
-  barcodes <- rownames(CR_metrics)
+  
+  barcodes <- rownames(CR_metrics) # default (e.g. V2)
+  barcodesFile <- paste0(data_folder, '/barcodes.tsv') # overwrite if exists
+  if(file.exists(barcodesFile)) barcodes <- read.table(paste0(data_folder, '/barcodes.tsv'))[,1]
   
   # Read peaks
   regions <- paste0(data_folder, '/peaks.bed')
@@ -68,6 +71,9 @@ createcisTopicObjectFrom10Xmatrix <- function(
   print('Creating cisTopic object...')
   count.matrix <- m
   
+  if(any(!barcodes %in% rownames(CR_metrics))) warning("Some barcodes are missing from the metrics, the count matrix might include empty droplets (e.g. non-cells).")
+  CR_metrics <- CR_metrics[barcodes,,drop=FALSE]
+  rownames(CR_metrics) <- barcodes
   cell.data <- CR_metrics
   colnames(cell.data) <- paste0('10X_', colnames(cell.data))
   
