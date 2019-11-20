@@ -273,7 +273,7 @@ signatureCellEnrichment <- function(
   ...
 ){
   # Check info
-  if(length(cisTopicObject@signatures) < 1){
+  if(length(object@signatures) < 1){
     stop('Please, run getSignaturesRegions() first.')
   }
   
