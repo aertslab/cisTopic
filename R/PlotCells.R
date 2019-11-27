@@ -634,6 +634,7 @@ plotFeatures <- function(
 
 # Adapted from aqfig
 
+
 .vertical.image.legend <- function(zlim, col){
   starting.par.settings <- par(no.readonly=TRUE)
   mai <- par("mai")
