@@ -557,7 +557,7 @@ getCistromeEnrichment <- function(
   plot=TRUE,
   ...
 ){
-  topicCistromes <- cisTopicObject@cistromes.regions[[topic]]
+  topicCistromes <- object@cistromes.regions[[topic]]
   
   if (length(grep(TFname, names(topicCistromes))) < 1){
     stop(paste0('The specified cistrome cannot be found. Please, check whether there is a cistrome for ', TFname, ' in topic ', topic, ' with ', annotation, '.'))
