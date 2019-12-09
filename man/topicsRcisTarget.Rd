@@ -4,7 +4,7 @@
 \alias{topicsRcisTarget}
 \title{topicsRcisTarget}
 \usage{
-topicsRcisTarget(object, genome, pathToFeather, reduced_database = FALSE,
+topicsRcisTarget(object, genome, pathToDb, reduced_database = FALSE,
   nesThreshold = 3, rocthr = 0.005, maxRank = 20000, nCores = 1,
   ...)
 }
@@ -12,6 +12,8 @@ topicsRcisTarget(object, genome, pathToFeather, reduced_database = FALSE,
 \item{object}{Initialized cisTopic object, after the object@binarized.regions.to.Rct has been filled.}
 
 \item{genome}{Genome to which the data was aligned or liftovered (hg19, mm9, dm3 or dm6).}
+
+\item{pathToDb}{Path to the feather or parquet database to use. Note that this database has to match the genome used for mapping.}
 
 \item{reduced_database}{Whether a reduced version of the database (e.g. background database) is being used or not (by default, it is set to false).}
 
@@ -22,8 +24,6 @@ topicsRcisTarget(object, genome, pathToFeather, reduced_database = FALSE,
 \item{maxRank}{Number of regions consider for visualization. For mouse and human, we recommend 20000; for fly, 5000.}
 
 \item{...}{See RcisTarget}
-
-\item{pathToDb}{Path to the feather or parquet database to use. Note that this database has to match the genome used for mapping.}
 }
 \value{
 Motif enrichment table is stored in object@binarized.RcisTarget
@@ -32,7 +32,7 @@ Motif enrichment table is stored in object@binarized.RcisTarget
 Run RcisTarget in the binarized topics
 }
 \examples{
-pathToFeather <- "hg19-regions-1M-9species.all_regions.mc9nr.feather"
+pathToDb <- "hg19-regions-1M-9species.all_regions.mc9nr.feather"
 cisTopicObject <- topicRcisTarget(cisTopicObject, genome='hg19', pathToDb)
 cisTopicObject
 }

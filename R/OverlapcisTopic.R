@@ -240,6 +240,83 @@ signaturesHeatmap <- function(
   ComplexHeatmap::draw(heatmap, heatmap_legend_side = "bottom")
 }
 
+#' topicSignaturesMatrix
+#'
+#' Matrix containing the row normalised AUC values for the signatures in the topics.
+#' @param object Initialized cisTopic object, after regions scores have been calculated with getRegionScores and object@@signatures
+#' is filled.
+#' @param topics By default all topics will be used, but topics can be selected based on index.
+#' @param selected.signatures By default all signatures will be used, but signatures can be selected based on index or name.
+#' Alternatively, 'annotation' can be selected to use as signatures the region type labels (e.g. promoter, distal intergenic, ...)
+#' For this, the function annotateRegions() must be run first.
+#' @param nCores Number of cores to be used for AUCell
+#' @param aucMaxRank Threshold to calculate the AUC
+#' @param scale Whether AUC enrichment should be normalized
+#' @param ... See \code{Heatmap} from ComplexHeatmap
+#'
+#' @return Matrix containing the enrichment per topic per signature
+#'
+#' @examples
+#' ###
+#' # Load cisTopic object:
+#' path2cisTopicObject <- system.file(package="cisTopic", "examples/cisTopicObject_melanoma.Rds")
+#' cisTopicObject <- readRDS(path2cisTopicObject)
+#' ###
+#'
+#' signatureMatrix <- topicSignaturesMatrix(cisTopicObject)
+#'
+#' @import AUCell
+#' @export
+topicSignaturesMatrix <- function(
+  object,
+  topics = 'all',
+  selected.signatures = 'all',
+  nCores = 4,
+  aucMaxRank = 0.03*nrow(aucellRankings),
+  scale=TRUE,
+  ...){
+  # Get scores
+  scores <- .getScores(object)
+  if (selected.signatures[1] != 'annotation'){
+    signatures <- object@signatures
+    if(length(signatures) < 1){
+      stop('Please, run getSignaturesRegions() first.')
+    }
+    if (is.null(signatures)){
+      stop('Please run getSignaturesRegions() first.')
+    }
+    if(selected.signatures[1] != 'all'){
+      if (sum(selected.signatures %in% names(signatures)) != length(selected.signatures)){
+        stop('Check whether the selected signatures have been stored in object@signatures.')
+      }
+      signatures <- signatures[selected.signatures]
+    }
+  }
+  else{
+    signatures <- split(object@region.data, object@region.data$annotation)    
+    if (is.null(signatures)){
+      stop('Please run annotateRegions() first.')
+    }
+    signatures <- lapply(signatures, function(x) rownames(x))
+  }
+  
+  if(topics[1] != 'all'){
+    scores <- scores[,topics]
+  }
+  
+  aucellRankings <- AUCell_buildRankings(as.matrix(scores), nCores=nCores, plotStats=FALSE, verbose = FALSE)
+  modulesAUC <- AUCell_calcAUC(signatures, aucellRankings, nCores=nCores, aucMaxRank=aucMaxRank, verbose=FALSE)
+  enrichMatrix <- getAUC(modulesAUC)
+  
+  if (scale){
+    enrichMatrix <- t(scale(t(enrichMatrix)))
+  } 
+  names(dimnames(enrichMatrix)) <- NULL
+  return(enrichMatrix)
+}
+
+
+
 #' signatureCellEnrichment
 #'
 #' Determine signatures enrichment in the cells. If specified, signature enrichment can be plotted.
