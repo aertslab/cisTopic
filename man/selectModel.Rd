@@ -4,13 +4,18 @@
 \alias{selectModel}
 \title{Model selection based on log likelihood}
 \usage{
-selectModel(object, select = NULL, keepBinaryMatrix = TRUE,
-  keepModels = TRUE, ...)
+selectModel(object, select = NULL, type = "derivative",
+  keepBinaryMatrix = TRUE, keepModels = TRUE, ...)
 }
 \arguments{
 \item{object}{Initialized cisTopic object or list of LDA models.}
 
 \item{select}{Number of topics of the selected model. If NULL, the model with the best log likelihood is picked.}
+
+\item{type}{Method for automatic selection of the best number of topics. By default, we use 'derivative' which calculates
+the second derivative in each point and takes the maximum (recommended with runWarpLDAModels, where curves are
+less noisy). Alternatively, if set to 'maximum', the model with the maximum log-likelihood is selected (recommended
+with runCGSModels).}
 
 \item{keepBinaryMatrix}{Whether to keep the binary accessibility matrix within the cisTopic object.}
 
@@ -20,8 +25,9 @@ selectModel(object, select = NULL, keepBinaryMatrix = TRUE,
 }
 \value{
 Returns a cisTopic object (when the input is a cisTopic object) with the selected model stored in object@selected.model, and the log likelihoods of the models in object@log.lik.
-The unnormalized cell assignments throughtout the sampling iterations are stored in \code{cisTopicObject@selected.model$document_expects}; 
-while the corresponding unnormalized region assignments are stored in \code{cisTopicObject@selected.model$topics}.
+The unnormalized (when using runCGSModels) or normalized (when using runWarpLDAModels) cell assignments throughtout the sampling 
+iterations are stored in \code{cisTopicObject@selected.model$document_expects}; while the corresponding 
+unnormalized region assignments are stored in \code{cisTopicObject@selected.model$topics}.
 }
 \description{
 Plots log likelihood of the different models and selects the best one based on the maximum likelihood (or specified by the user).
@@ -30,6 +36,6 @@ Plots log likelihood of the different models and selects the best one based on t
 bamfiles <- c('example_1.bam', 'example_2.bam', 'example_3.bam')
 regions <- 'example.bed'
 cisTopicObject <- CreatecisTopicObjectfromBAM(bamfiles, regions)
-cisTopicObject <- RunModel(cisTopicObject)
+cisTopicObject <- runCGSModels(cisTopicObject)
 cisTopicObject <- selectModel(cisTopicObject)
 }

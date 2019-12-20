@@ -7,7 +7,7 @@
 logLikelihoodByIter(object, select = NULL, ...)
 }
 \arguments{
-\item{object}{Initialized cisTopic object.}
+\item{object}{Initialized cisTopic object, after running runCGSModels.}
 
 \item{select}{Plot log-likelihood per iteration for selected topics (as a vector with the number of topics per model).}
 
@@ -24,6 +24,6 @@ may be required (together with an increase in the burnin).
 bamfiles <- c('example_1.bam', 'example_2.bam', 'example_3.bam')
 regions <- 'example.bed'
 cisTopicObject <- CreatecisTopicObjectfromBAM(bamfiles, regions)
-cisTopicObject <- RunModel(cisTopicObject)
+cisTopicObject <- runCGSModels(cisTopicObject)
 cisTopicObject <- logLikelihoodByIter(cisTopicObject)
 }

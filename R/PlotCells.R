@@ -289,8 +289,15 @@ modelMatSelection <- function(
     }
     
     else if (method == 'Probability'){
-      alpha <- object@calc.params[['runModels']]$alpha/length(object@selected.model$topic_sums)
-      modelMat <- apply(object@selected.model$document_sums, 2, function(x) {(x + alpha)/sum(x + alpha)})
+      if (!is.null(object@calc.params[['runModels']])){
+        alpha <- object@calc.params[['runModels']]$alpha/length(object@selected.model$topic_sums)
+        modelMat <- apply(object@selected.model$document_sums, 2, function(x) {(x + alpha)/sum(x + alpha)})
+      } else if (!is.null(object@calc.params[['runCGSModels']])){
+        alpha <- object@calc.params[['runCGSModels']]$alpha/length(object@selected.model$topic_sums)
+        modelMat <- apply(object@selected.model$document_sums, 2, function(x) {(x + alpha)/sum(x + alpha)})
+      } else {
+        modelMat <- object@selected.model$document_sums
+      }
     }
     else{
       stop('Incorrect method selected. Chose method between "Z-score" and "Probability".')
@@ -321,8 +328,13 @@ modelMatSelection <- function(
     }
     
     else if (method == 'Probability'){
-      beta <- object@calc.params[['runModels']]$beta
-      topic.mat <- object@selected.model$topics
+      if (!is.null(object@calc.params[['runModels']])){
+        beta <- object@calc.params[['runModels']]$beta
+      } else if (!is.null(object@calc.params[['runCGSModels']])){
+        beta <- object@calc.params[['runCGSModels']]$beta
+      } else {
+        beta <- object@calc.params[['runWarpLDAModels']]$beta
+      }
       modelMat <-  (topic.mat + beta)/rowSums(topic.mat + beta)
     }
     
