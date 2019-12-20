@@ -15,7 +15,7 @@ selectModel(object, select = NULL, type = "derivative",
 \item{type}{Method for automatic selection of the best number of topics. By default, we use 'derivative' which calculates
 the second derivative in each point and takes the maximum (recommended with runWarpLDAModels, where curves are
 less noisy). Alternatively, if set to 'maximum', the model with the maximum log-likelihood is selected (recommended
-with runCGSModels).}
+with runCGSModels). For WarpLDA models, the minimum perplexity can be also used to select the best model.}
 
 \item{keepBinaryMatrix}{Whether to keep the binary accessibility matrix within the cisTopic object.}
 

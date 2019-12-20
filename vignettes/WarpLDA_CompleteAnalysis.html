@@ -335,7 +335,7 @@ cisTopicObject@calc.params[['runCGSModels']]$beta &lt;- beta</code></pre>
 <ul>
 <li><p>The log likelihood can be used to estimate the plausibility of a model parameter value, given the observed data (i.e. the highest the likelihood, the better the model). This is not recommended when running WarpLDA, as the curves stabilize rather than reaching a maximum.</p></li>
 <li><p>The second derivative in each point of the likelihood curve, as it measures the changed in the curvature from point to point (i.e. the highest the second derivative means that the next model is not improving much more the log-likelihood) . This is not recommended when running CGS, as the curves tend to be noisier or reach a maximum. This is the default in this version of cisTopic.</p></li>
-<li><p>The perplexity of each model (only for WarpLDA models) measures</p></li>
+<li><p>The perplexity of each model (only for WarpLDA models) measures how well the model predicts the sample. The lower the perplexity is, the better the model.</p></li>
 </ul>
 <p><code>selectModel</code> will select the model with the highest log likelihood (<code>P(D|T)</code>) at the last iteration.</p>
 <pre class="r"><code>par(mfrow=c(3,3))

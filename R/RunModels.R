@@ -217,7 +217,7 @@ runCGSModels <- function(
 #' @param type Method for automatic selection of the best number of topics. By default, we use 'derivative' which calculates
 #' the second derivative in each point and takes the maximum (recommended with runWarpLDAModels, where curves are
 #' less noisy). Alternatively, if set to 'maximum', the model with the maximum log-likelihood is selected (recommended
-#' with runCGSModels).
+#' with runCGSModels). For WarpLDA models, the minimum perplexity can be also used to select the best model.
 #' @param keepBinaryMatrix Whether to keep the binary accessibility matrix within the cisTopic object.
 #' @param keepModels Whether to keep all the models within the cisTopic object.
 #' @param ... Ignored.
@@ -522,7 +522,8 @@ predictiveDistribution <- function(
 #' object@@selected.model, and a dataframe with the log likelihood of the other models to object@@log.lik. By default, this function will return all models for allowing posterior selection; however, note that if the number
 #' of models and the size of the data is considerably big, returning all models may be memory expensive.
 #' @param addModels Whether models should be added if there is a pre-existing list of models or should be overwritten by new models. If TRUE, parameters are setted to match the existing models.
-#' @param ... See \code{lda.collapsed.gibbs.sampler} from the package lda.
+#' @param tmp Folder to save intermediate models.
+#' @param ... See \code{LDA} from the package text2vec.
 #'
 #' @return Returns a cisTopic object with the models stored in object@@models.
 #' If specified, only the best model based on log likelihood is returned in object@@selected.model, and the rest of log likelihood values are stored in object@@log.lik.

@@ -29,6 +29,8 @@ log likelihood of the model is stabilized with this parameters.}
 
 \item{alphaByTopic}{Logical indicating whether the scalar given in alpha has to be divided by the number of topics. By default, it is set to true.}
 
+\item{tmp}{Folder to save intermediate models.}
+
 \item{addModels}{Whether models should be added if there is a pre-existing list of models or should be overwritten by new models. If TRUE, parameters are setted to match the existing models.}
 
 \item{returnType}{Defines what has to be returned to the cisTopic object: either 'allModels' or 'selectedModel'. 'allModels' will return
@@ -36,7 +38,7 @@ a list with all the fitted models (as lists) to object@models, while 'selectedMo
 object@selected.model, and a dataframe with the log likelihood of the other models to object@log.lik. By default, this function will return all models for allowing posterior selection; however, note that if the number
 of models and the size of the data is considerably big, returning all models may be memory expensive.}
 
-\item{...}{See \code{lda.collapsed.gibbs.sampler} from the package lda.}
+\item{...}{See \code{LDA} from the package text2vec.}
 }
 \value{
 Returns a cisTopic object with the models stored in object@models.

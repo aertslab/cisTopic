@@ -23,12 +23,12 @@ output:
 
 If your R version is below 3.5, you will need to install manually the following packages:
 
-```{r, eval=FALSE, results='asis' , message=FALSE}
+```{r, eval=FALSE, results='asis', message=FALSE}
 devtools::install_github("aertslab/AUCell")
 devtools::install_github("aertslab/RcisTarget")
 ```
 
-```{r, eval=FALSE, results='asis' , message=FALSE}
+```{r, eval=FALSE, results='asis', message=FALSE}
 source("https://bioconductor.org/biocLite.R")
 biocLite('GenomicRanges')
 ```
@@ -45,7 +45,7 @@ devtools::install_github("aertslab/cisTopic")
 
 In this vignette, you will require additional packages:
 
-```{r, eval=FALSE, results='asis' , message=FALSE}
+```{r, eval=FALSE, results='asis', message=FALSE}
 source("https://bioconductor.org/biocLite.R")
 biocLite(c('Rsubread', 'umap', 'Rtsne', 'ComplexHeatmap', 'fastcluster', 'data.table', 'rGREAT', 'ChIPseeker', 'TxDb.Hsapiens.UCSC.hg19.knownGene', 'org.Hs.eg.db'))
 ```
@@ -161,7 +161,7 @@ In this version of cisTopic, we incorporate three different approaches to select
 
 - The second derivative in each point of the likelihood curve, as it measures the changed in the curvature from point to point (i.e. the highest the second derivative means that the next model is not improving much more the log-likelihood) . This is not recommended when running CGS, as the curves tend to be noisier or reach a maximum. This is the default in this version of cisTopic.
 
-- The perplexity of each model (only for WarpLDA models) measures
+- The perplexity of each model (only for WarpLDA models) measures how well the model predicts the sample. The lower the perplexity is, the better the model.
 
 `selectModel` will select the model with the highest log likelihood (`P(D|T)`) at the last iteration.
 
