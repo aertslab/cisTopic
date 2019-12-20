@@ -15,7 +15,7 @@ LazyData: true
 RoxygenNote: 6.1.1
 Depends: R (>= 3.4)
 biocViews: GenomicRanges, rtracklayer
-Imports: stats, Matrix, lda, doSNOW, parallel, plyr,
+Imports: stats, Matrix, lda, text2vec, doSNOW, parallel, plyr,
         AUCell (>= 1.2.4), DT, fitdistrplus,
         RcisTarget (>= 1.0.2), ggplot2, data.table,
         feather, rtracklayer, GenomicRanges, S4Vectors
