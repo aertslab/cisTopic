@@ -28,4 +28,4 @@ RcisTarget feather databases are available at [https://resources.aertslab.org/ci
   - [Running GREAT and motif enrichment with the mm10 and hg38 genome assemblies](https://rawcdn.githack.com/aertslab/cisTopic/a83e1cd7ab45283890e944ee9754fca401a5c424/vignettes/Runningwithmm10andhg38.html).
   
 ### Version 3
- - [Basic tutorial on simulated single cell epigenomes from melanoma cell lines](https://rawcdn.githack.com/aertslab/cisTopic/bcd5be2bf8317dd0bb347df7547ccf49d26ffa4f/vignettes/WarpLDA_CompleteAnalysis.html). Data available [here](https://drive.google.com/drive/folders/18ETGIKgXkILo3Xfv9KuysOMqchmSfFX2?usp=sharing).
+ - [Basic tutorial on simulated single cell epigenomes from melanoma cell lines](https://rawcdn.githack.com/aertslab/cisTopic/e7d1e4f835bae95d859d92d509f2ac92d5bee732/vignettes/WarpLDA_CompleteAnalysis.html). Data available [here](https://drive.google.com/drive/folders/18ETGIKgXkILo3Xfv9KuysOMqchmSfFX2?usp=sharing).
