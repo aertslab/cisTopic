@@ -163,7 +163,7 @@ In this version of cisTopic, we incorporate three different approaches to select
 
 - The perplexity of each model (only for WarpLDA models) measures how well the model predicts the sample. The lower the perplexity is, the better the model.
 
-`selectModel` will select the model with the highest log likelihood (`P(D|T)`) at the last iteration.
+Alternatively, you can also manually select the number of topics with the parameter `select`.
 
 ```{r, fig.show='hold', fig.align='center' , message=FALSE}
 par(mfrow=c(3,3))
@@ -189,7 +189,7 @@ cisTopicObject <- runUmap(cisTopicObject, target='cell')
 Once calculations are done, cisTopic offers a unified visualization function (`plotFeatures`), which allows to visualize tSNE, diffussion maps, principal components and biplots (in 2/3D), colored by metadata and/or topic enrichment. 
 
 ```{r, fig.show='hold', fig.align='center' , message=FALSE}
-par(mfrow=c(1,3))
+par(mfrow=c(1,2))
 plotFeatures(cisTopicObject, method='Umap', target='cell', topic_contr=NULL, colorBy=c('cellLine', 'LineType'), cex.legend = 0.8, factor.max=.75, dim=2, legend=TRUE, col.low='darkgreen', col.mid='yellow', col.high='brown1', intervals=20)
 
 par(mfrow=c(2,5))
