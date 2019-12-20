@@ -1,8 +1,8 @@
-### News
-#### ***2019-12-20***:
-    - cisTopic v3: Faster topic modelling based on WarpLDA (see vignettes for details).
-    - The function runModels() is deprecated. Use runCGSModels() for modelling based on Collapsed Gibbs Sampling (equivalent to runModels()), or runWarpLDAModels() (for modelling based on WarpLDA).
-    - Version 2 objects (with or without models) can be used and analyzed with version 3.
+## News
+### ***2019-12-20***:
+- cisTopic v3: Faster topic modelling based on WarpLDA (see vignettes for details).
+- The function runModels() is deprecated. Use runCGSModels() for modelling based on Collapsed Gibbs Sampling (equivalent to runModels()), or runWarpLDAModels() (for modelling based on WarpLDA).
+- Version 2 objects (with or without models) can be used and analyzed with version 3.
       
 # cisTopic: Probabilistic modelling of cis-regulatory topics from single cell epigenomics data
 cisTopic is an R-package to simultaneously identify cell states and cis-regulatory topics from single cell epigenomics data.
