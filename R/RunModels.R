@@ -102,7 +102,7 @@ runCGSModels <- function(
     }
   }
   else{
-    object@calc.params[['runCGSModels']] <- c(as.list(environment(), all = TRUE)[names(formals("runWarpLDAModels"))[-1]], list(...))
+    object@calc.params[['runCGSModels']] <- c(as.list(environment(), all = TRUE)[names(formals("runCGSModels"))[-1]], list(...))
   }
   
   # Take binary count matrix
@@ -135,22 +135,22 @@ runCGSModels <- function(
       clusterSetRNGStream(cl, seed)
       if (alphaByTopic==TRUE){
         print('Running models...')
-        models <- suppressWarnings(llply(.data=topic, .fun=function(t) .lda.collapsed.gibbs.sampler_perTopic(cellList, t, regionList, num.iterations=iterations, alpha=alpha/t, eta=beta, compute.log.likelihood = TRUE, burnin=burnin, ...)[-1] , .parallel = TRUE, .paropts = list(.options.snow=opts), .inform=FALSE))
+        models <- suppressWarnings(llply(.data=topic, .fun=function(t) .lda.collapsed.gibbs.sampler_perTopic(cellList, t, regionList, num.iterations=iterations, alpha=alpha/t, eta=beta, compute.log.likelihood = TRUE, burnin=burnin, tmp=tmp, ...)[-1] , .parallel = TRUE, .paropts = list(.options.snow=opts), .inform=FALSE))
       }
       else{
         print('Running models...')
-        models <- suppressWarnings(llply(.data=topic, .fun=function(t) .lda.collapsed.gibbs.sampler_perTopic(cellList, t, regionList, num.iterations=iterations, alpha=alpha, eta=beta, compute.log.likelihood = TRUE, burnin=burnin, ...)[-1] , .parallel = TRUE, .paropts = list(.options.snow=opts), .inform=FALSE))
+        models <- suppressWarnings(llply(.data=topic, .fun=function(t) .lda.collapsed.gibbs.sampler_perTopic(cellList, t, regionList, num.iterations=iterations, alpha=alpha, eta=beta, compute.log.likelihood = TRUE, burnin=burnin, tmp=tmp, ...)[-1] , .parallel = TRUE, .paropts = list(.options.snow=opts), .inform=FALSE))
       }
       stopCluster(cl)
     }
     else{
       if (alphaByTopic==TRUE){
         print('Running models...')
-        models <- suppressWarnings(llply(.data=topic, .fun=function(t) .lda.collapsed.gibbs.sampler_perTopic(cellList, t, regionList, num.iterations=iterations, alpha=alpha/t, eta=beta, compute.log.likelihood = TRUE, burnin=burnin, ...)[-1], .progress = progress_text(char = ".")))
+        models <- suppressWarnings(llply(.data=topic, .fun=function(t) .lda.collapsed.gibbs.sampler_perTopic(cellList, t, regionList, num.iterations=iterations, alpha=alpha/t, eta=beta, compute.log.likelihood = TRUE, burnin=burnin, tmp=tmp, ...)[-1], .progress = progress_text(char = ".")))
       }
       else{
         print('Running models...')
-        models <- suppressWarnings(llply(.data=topic, .fun=function(t) .lda.collapsed.gibbs.sampler_perTopic(cellList, t, regionList, num.iterations=iterations, alpha=alpha, eta=beta, compute.log.likelihood = TRUE, burnin=burnin, ...)[-1], .progress = progress_text(char = ".")))
+        models <- suppressWarnings(llply(.data=topic, .fun=function(t) .lda.collapsed.gibbs.sampler_perTopic(cellList, t, regionList, num.iterations=iterations, alpha=alpha, eta=beta, compute.log.likelihood = TRUE, burnin=burnin,tmp=tmp, ...)[-1], .progress = progress_text(char = ".")))
       }
     }
 
@@ -160,11 +160,11 @@ runCGSModels <- function(
     set.seed(seed)
     if (alphaByTopic==TRUE){
       print('Running models...')
-      models <- llply(.lda.collapsed.gibbs.sampler_perTopic(cellList, topic, regionList, num.iterations=iterations, alpha=alpha/topic, eta=beta, compute.log.likelihood = TRUE, burnin=burnin, ...)[-1], .progress = progress_text(char = "."))
+      models <- llply(.lda.collapsed.gibbs.sampler_perTopic(cellList, topic, regionList, num.iterations=iterations, alpha=alpha/topic, eta=beta, compute.log.likelihood = TRUE, burnin=burnin, tmp=tmp, ...)[-1], .progress = progress_text(char = "."))
     }
     else{
       print('Running models...')
-      models <- llply(.lda.collapsed.gibbs.sampler_perTopic(cellList, topic, regionList, num.iterations=iterations, alpha=alpha, eta=beta, compute.log.likelihood = TRUE, burnin=burnin, ...)[-1], .progress = progress_text(char = "."))
+      models <- llply(.lda.collapsed.gibbs.sampler_perTopic(cellList, topic, regionList, num.iterations=iterations, alpha=alpha, eta=beta, compute.log.likelihood = TRUE, burnin=burnin, tmp=tmp, ...)[-1], .progress = progress_text(char = "."))
     }
   }
   
@@ -189,8 +189,8 @@ runCGSModels <- function(
   return(object)
 }
 
-.lda.collapsed.gibbs.sampler_perTopic <- function(cellList, topic, regionList, num.iterations=iterations, alpha=alpha, eta=beta, compute.log.likelihood = TRUE, burnin=burnin, tmp,...){
-  model <- lda.collapsed.gibbs.sampler(cellList, topic, regionList, num.iterations=iterations, alpha=alpha, eta=beta, compute.log.likelihood = TRUE, burnin=burnin,...)
+.lda.collapsed.gibbs.sampler_perTopic <- function(cellList, topic, regionList, num.iterations, alpha, eta, compute.log.likelihood = TRUE, burnin, tmp,...){
+  model <- lda.collapsed.gibbs.sampler(cellList, topic, regionList, num.iterations=num.iterations, alpha=alpha, eta=beta, compute.log.likelihood = TRUE, burnin=burnin,...)
   if(!is.null(tmp)){
     saveRDS(model, file=paste0(tmp, n_topics, '_topic.Rds'))
   }
