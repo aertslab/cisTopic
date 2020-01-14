@@ -270,7 +270,7 @@ selectModel <- function(
   object.log.lik$first_derivative <- c(-Inf, (diff(ll) / diff(topics)))
   object.log.lik$second_derivative <- c(-Inf, -Inf, diff(object.log.lik$first_derivative)[-1]/diff(topics[-1]))
   # Perplexity
-  if (!is.null(object@calc.params[['runWarpLDAModels']])){
+  if (!is.null(models[[1]]$perplexity)){
     object.log.lik$perplexity <- sapply(seq_along(models), FUN=function(i) models[[i]]$perplexity)
   } else {
     if(type=='perplexity'){
