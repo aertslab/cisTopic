@@ -190,7 +190,7 @@ runCGSModels <- function(
 }
 
 .lda.collapsed.gibbs.sampler_perTopic <- function(cellList, topic, regionList, num.iterations, alpha, eta, compute.log.likelihood = TRUE, burnin, tmp,...){
-  model <- lda.collapsed.gibbs.sampler(cellList, topic, regionList, num.iterations=num.iterations, alpha=alpha, eta=beta, compute.log.likelihood = TRUE, burnin=burnin,...)
+  model <- lda.collapsed.gibbs.sampler(cellList, topic, regionList, num.iterations=num.iterations, alpha=alpha, eta=eta, compute.log.likelihood = TRUE, burnin=burnin,...)
   if(!is.null(tmp)){
     saveRDS(model, file=paste0(tmp, n_topics, '_topic.Rds'))
   }
