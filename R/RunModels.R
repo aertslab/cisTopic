@@ -291,7 +291,7 @@ selectModel <- function(
       points(object.log.lik$topics[which(object.log.lik$second_derivative == max(object.log.lik$second_derivative))], object.log.lik$LL[which(object.log.lik$second_derivative == max(object.log.lik$second_derivative))], pch=4, col='red', lwd = 7)
       title(sub=paste("Best model:", object.log.lik$topics[which(object.log.lik$second_derivative == max(object.log.lik$second_derivative))], 'topics'))
       selected.model <- models[[which(object.log.lik$second_derivative == max(object.log.lik$second_derivative))]]
-    } else if (type == 'perplexity') {
+    } else if (type == 'perplexity' & !is.null(models[[1]]$perplexity)) {
       points(object.log.lik$topics[which(object.log.lik$perplexity == min(object.log.lik$perplexity))], object.log.lik$LL[which(object.log.lik$perplexity == min(object.log.lik$perplexity))], pch=4, col='red', lwd = 7)
       title(sub=paste("Best model:", object.log.lik$topics[which(object.log.lik$perplexity == min(object.log.lik$perplexity))], 'topics'))
       selected.model <- models[[which(object.log.lik$perplexity == min(object.log.lik$perplexity))]]
@@ -313,7 +313,7 @@ selectModel <- function(
     } else if (type == 'derivative'){
       points(object.log.lik$topics[which(object.log.lik$second_derivative == max(object.log.lik$second_derivative))], max(object.log.lik$second_derivative), pch=4, col='red', lwd = 7)
       title(sub=paste("Best model:", object.log.lik$topics[which(object.log.lik$second_derivative == max(object.log.lik$second_derivative))], 'topics'))
-    } else if (type == 'perplexity'){
+    } else if (type == 'perplexity' & !is.null(models[[1]]$perplexity)){
       points(object.log.lik$topics[which(object.log.lik$perplexity == min(object.log.lik$perplexity))], object.log.lik$second_derivative[which(object.log.lik$perplexity == min(object.log.lik$perplexity))], pch=4, col='red', lwd = 7)
       title(sub=paste("Best model:", object.log.lik$topics[which(object.log.lik$perplexity == min(object.log.lik$perplexity))], 'topics'))
     }
