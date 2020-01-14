@@ -325,7 +325,7 @@ selectModel <- function(
   }
   
   # Perplexity
-  if (!is.null(object@calc.params[['runWarpLDAModels']])){
+  if (!is.null(models[[1]]$perplexity)){
     plot(object.log.lik$topics, object.log.lik$perplexity, xlab="Number of topics", ylab="Perplexity", type='o', pch=16, col='black', main='Model selection')
     if (is.null(select)){
       if (type=='maximum'){
