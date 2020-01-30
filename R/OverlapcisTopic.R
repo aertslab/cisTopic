@@ -324,7 +324,7 @@ topicSignaturesMatrix <- function(
 #' @param selected.signatures By default all signatures will be used, but signatures can be selected based on index or name.
 #' Alternatively, 'annotation' can be selected to use as signatures the region type labels (e.g. promoter, distal intergenic, ...)
 #' For this, the function annotateRegions() must be run first.
-#' @param aucellRankings Precomputed aucellRankings using \code{cisTopic_buildRankings()}. These rankings are not stored in the cisTopicObject due to their size.
+#' @param aucellRankings Precomputed aucellRankings using \code{AUCell_buildRankings()}. These rankings are not stored in the cisTopicObject due to their size.
 #' @param nCores Number of cores to be used for AUCell
 #' @param aucMaxRank Threshold to calculate the AUC
 #' @param plot Whether enrichment plot should be done. If yes, parameters for plotFeatures will not be ignored.
@@ -334,7 +334,9 @@ topicSignaturesMatrix <- function(
 #' their AUC enrichment values will be plotted.
 #' @examples
 #'
-#' cisTopicObject <- getCistromeEnrichment(cisTopicObject, annotation = 'Both', nCores=1)
+#' pred.matrix <- predictiveDistribution(cisTopicObject)
+#' aucellRankings <- AUCell_buildRankings(pred.matrix)
+#' cisTopicObject <-  signatureCellEnrichment(cisTopicObject, aucellRankings, nCores=1)
 #' cisTopicObject
 #'
 #' @import AUCell

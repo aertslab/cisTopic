@@ -11,7 +11,7 @@ signatureCellEnrichment(object, aucellRankings,
 \arguments{
 \item{object}{Initialized cisTopic object, after object@cistromes.regions have been filled (see \code{getCistromes()}).}
 
-\item{aucellRankings}{Precomputed aucellRankings using \code{cisTopic_buildRankings()}. These rankings are not stored in the cisTopicObject due to their size.}
+\item{aucellRankings}{Precomputed aucellRankings using \code{AUCell_buildRankings()}. These rankings are not stored in the cisTopicObject due to their size.}
 
 \item{selected.signatures}{By default all signatures will be used, but signatures can be selected based on index or name.
 Alternatively, 'annotation' can be selected to use as signatures the region type labels (e.g. promoter, distal intergenic, ...)
@@ -34,7 +34,9 @@ Determine signatures enrichment in the cells. If specified, signature enrichment
 }
 \examples{
 
-cisTopicObject <- getCistromeEnrichment(cisTopicObject, annotation = 'Both', nCores=1)
+pred.matrix <- predictiveDistribution(cisTopicObject)
+aucellRankings <- AUCell_buildRankings(pred.matrix)
+cisTopicObject <-  signatureCellEnrichment(cisTopicObject, aucellRankings, nCores=1)
 cisTopicObject
 
 }
