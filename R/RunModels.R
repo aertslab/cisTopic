@@ -257,6 +257,10 @@ selectModel <- function(
   else{
     stop('Incorrect input. Is it a cisTopic object or a list of models?')
   }
+  
+  if (object.log.lik$topics < 3 && type='derivative'){
+    stop('You need at least 3 models to use the derivative method.')
+  }
 
   # Make data frame
   # LL
@@ -267,14 +271,16 @@ selectModel <- function(
   object.log.lik <- object.log.lik[order(object.log.lik$topics),]
   ll <- object.log.lik$LL
   # 2nd derivative
-  object.log.lik$first_derivative <- c(-Inf, (diff(ll) / diff(topics)))
-  object.log.lik$second_derivative <- c(-Inf, -Inf, diff(object.log.lik$first_derivative)[-1]/diff(topics[-1]))
-  # Perplexity
-  if (!is.null(models[[1]]$perplexity)){
-    object.log.lik$perplexity <- sapply(seq_along(models), FUN=function(i) models[[i]]$perplexity)
-  } else {
-    if(type=='perplexity'){
-      stop('The perplexity option is only available for WarpLDA models.')
+  if(object.log.lik$topics > 2){
+    object.log.lik$first_derivative <- c(-Inf, (diff(ll) / diff(topics)))
+    object.log.lik$second_derivative <- c(-Inf, -Inf, diff(object.log.lik$first_derivative)[-1]/diff(topics[-1]))
+    # Perplexity
+    if (!is.null(models[[1]]$perplexity)){
+      object.log.lik$perplexity <- sapply(seq_along(models), FUN=function(i) models[[i]]$perplexity)
+    } else {
+      if(type=='perplexity'){
+        stop('The perplexity option is only available for WarpLDA models.')
+      }
     }
   }
   
@@ -287,7 +293,7 @@ selectModel <- function(
       points(object.log.lik$topics[which(object.log.lik$LL == max(object.log.lik$LL))], max(object.log.lik$LL), pch=4, col='red', lwd = 7)
       title(sub=paste("Best model:", object.log.lik$topics[which(object.log.lik$LL == max(object.log.lik$LL))], 'topics'))
       selected.model <- models[[which(object.log.lik$LL == max(object.log.lik$LL))]]
-    } else if (type == 'derivative'){
+    } else if (type == 'derivative' && object.log.lik$topics > 2){
       points(object.log.lik$topics[which(object.log.lik$second_derivative == max(object.log.lik$second_derivative))], object.log.lik$LL[which(object.log.lik$second_derivative == max(object.log.lik$second_derivative))], pch=4, col='red', lwd = 7)
       title(sub=paste("Best model:", object.log.lik$topics[which(object.log.lik$second_derivative == max(object.log.lik$second_derivative))], 'topics'))
       selected.model <- models[[which(object.log.lik$second_derivative == max(object.log.lik$second_derivative))]]
@@ -303,25 +309,27 @@ selectModel <- function(
     selected.model <- models[[which(object.log.lik$topics == select)]]
   }
   
-  # 2nd derivative
-  plot(object.log.lik$topics[-c(1, 2)], object.log.lik$second_derivative[-c(1, 2)], xlab="Number of topics", ylab="Second derivative on the log-likelihood curve", type='o',  pch=16, col='black', main='Model selection')
-  
-  if (is.null(select)){
-    if (type=='maximum'){
-      points(object.log.lik$topics[which(object.log.lik$LL == max(object.log.lik$LL))], object.log.lik$second_derivative[which(object.log.lik$LL == max(object.log.lik$LL))], pch=4, col='red', lwd = 7)
-      title(sub=paste("Best model:", object.log.lik$topics[which(object.log.lik$LL == max(object.log.lik$LL))], 'topics'))
-    } else if (type == 'derivative'){
-      points(object.log.lik$topics[which(object.log.lik$second_derivative == max(object.log.lik$second_derivative))], max(object.log.lik$second_derivative), pch=4, col='red', lwd = 7)
-      title(sub=paste("Best model:", object.log.lik$topics[which(object.log.lik$second_derivative == max(object.log.lik$second_derivative))], 'topics'))
-    } else if (type == 'perplexity' & !is.null(models[[1]]$perplexity)){
-      points(object.log.lik$topics[which(object.log.lik$perplexity == min(object.log.lik$perplexity))], object.log.lik$second_derivative[which(object.log.lik$perplexity == min(object.log.lik$perplexity))], pch=4, col='red', lwd = 7)
-      title(sub=paste("Best model:", object.log.lik$topics[which(object.log.lik$perplexity == min(object.log.lik$perplexity))], 'topics'))
+  if (object.log.lik$topics > 2){
+    # 2nd derivative
+    plot(object.log.lik$topics[-c(1, 2)], object.log.lik$second_derivative[-c(1, 2)], xlab="Number of topics", ylab="Second derivative on the log-likelihood curve", type='o',  pch=16, col='black', main='Model selection')
+    
+    if (is.null(select)){
+      if (type=='maximum'){
+        points(object.log.lik$topics[which(object.log.lik$LL == max(object.log.lik$LL))], object.log.lik$second_derivative[which(object.log.lik$LL == max(object.log.lik$LL))], pch=4, col='red', lwd = 7)
+        title(sub=paste("Best model:", object.log.lik$topics[which(object.log.lik$LL == max(object.log.lik$LL))], 'topics'))
+      } else if (type == 'derivative'){
+        points(object.log.lik$topics[which(object.log.lik$second_derivative == max(object.log.lik$second_derivative))], max(object.log.lik$second_derivative), pch=4, col='red', lwd = 7)
+        title(sub=paste("Best model:", object.log.lik$topics[which(object.log.lik$second_derivative == max(object.log.lik$second_derivative))], 'topics'))
+      } else if (type == 'perplexity' & !is.null(models[[1]]$perplexity)){
+        points(object.log.lik$topics[which(object.log.lik$perplexity == min(object.log.lik$perplexity))], object.log.lik$second_derivative[which(object.log.lik$perplexity == min(object.log.lik$perplexity))], pch=4, col='red', lwd = 7)
+        title(sub=paste("Best model:", object.log.lik$topics[which(object.log.lik$perplexity == min(object.log.lik$perplexity))], 'topics'))
+      }
     }
-  }
-  else{
-    points(object.log.lik$topics[which(object.log.lik$topics == select)], object.log.lik$second_derivative[which(object.log.lik$topics == select)], pch=4, col='red', lwd = 7)
-    title(sub=paste("Selected model:", object.log.lik$topics[which(object.log.lik$topics == select)], 'topics'))
-    selected.model <- models[[which(object.log.lik$topics == select)]]
+    else{
+      points(object.log.lik$topics[which(object.log.lik$topics == select)], object.log.lik$second_derivative[which(object.log.lik$topics == select)], pch=4, col='red', lwd = 7)
+      title(sub=paste("Selected model:", object.log.lik$topics[which(object.log.lik$topics == select)], 'topics'))
+      selected.model <- models[[which(object.log.lik$topics == select)]]
+    }
   }
   
   # Perplexity
@@ -331,7 +339,7 @@ selectModel <- function(
       if (type=='maximum'){
         points(object.log.lik$topics[which(object.log.lik$LL == max(object.log.lik$LL))], object.log.lik$perplexity[which(object.log.lik$LL == max(object.log.lik$LL))], pch=4, col='red', lwd = 7)
         title(sub=paste("Best model:", object.log.lik$topics[which(object.log.lik$LL == max(object.log.lik$LL))], 'topics'))
-      } else if (type == 'derivative'){
+      } else if (type == 'derivative' && object.log.lik$topics > 2){
         points(object.log.lik$topics[which(object.log.lik$second_derivative == max(object.log.lik$second_derivative))], object.log.lik$perplexity[which(object.log.lik$second_derivative == max(object.log.lik$second_derivative))], pch=4, col='red', lwd = 7)
         title(sub=paste("Best model:", object.log.lik$topics[which(object.log.lik$second_derivative == max(object.log.lik$second_derivative))], 'topics'))
       } else if (type == 'perplexity'){
