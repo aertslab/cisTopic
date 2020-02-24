@@ -846,7 +846,7 @@ cellTopicHeatmap <- function(
         cellColor <- setNames(colVars[[variable]][object.cell.data[,variable]], rownames(object.cell.data))
       }
     }
-    annotation <- ComplexHeatmap::HeatmapAnnotation(df = object.cell.data[,colorBy,drop=FALSE], col = colVars, which='column', width = unit(5, "mm"))
+    annotation <- ComplexHeatmap::HeatmapAnnotation(df = object.cell.data[,colorBy,drop=FALSE], col = colVars, which='column')
     heatmap <- ComplexHeatmap::Heatmap(data.matrix(topic.mat), col=colorPal(20), cluster_columns=dd.cells, name=method,
                                        show_column_names=FALSE, show_row_names = TRUE, top_annotation = annotation, 
                                        heatmap_legend_param = list(legend_direction = "horizontal", legend_width = unit(5, "cm"), title_position='topcenter'),
