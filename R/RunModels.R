@@ -261,6 +261,10 @@ selectModel <- function(
   if (length(models) < 3 && type='derivative'){
     stop('You need at least 3 models to use the derivative method.')
   }
+  
+  if (is.null(object@calc.params[['runWarpModels']]) && type='derivative'){
+    print('Are these CGS models? Please, use type="maximum"')
+  }
 
   # Make data frame
   # LL
