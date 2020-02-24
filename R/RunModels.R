@@ -258,7 +258,7 @@ selectModel <- function(
     stop('Incorrect input. Is it a cisTopic object or a list of models?')
   }
   
-  if (object.log.lik$topics < 3 && type='derivative'){
+  if (length(models) < 3 && type='derivative'){
     stop('You need at least 3 models to use the derivative method.')
   }
 
@@ -271,7 +271,7 @@ selectModel <- function(
   object.log.lik <- object.log.lik[order(object.log.lik$topics),]
   ll <- object.log.lik$LL
   # 2nd derivative
-  if(object.log.lik$topics > 2){
+  if (length(models) > 2){
     object.log.lik$first_derivative <- c(-Inf, (diff(ll) / diff(topics)))
     object.log.lik$second_derivative <- c(-Inf, -Inf, diff(object.log.lik$first_derivative)[-1]/diff(topics[-1]))
     # Perplexity
@@ -309,7 +309,7 @@ selectModel <- function(
     selected.model <- models[[which(object.log.lik$topics == select)]]
   }
   
-  if (object.log.lik$topics > 2){
+  if (length(models) > 2){
     # 2nd derivative
     plot(object.log.lik$topics[-c(1, 2)], object.log.lik$second_derivative[-c(1, 2)], xlab="Number of topics", ylab="Second derivative on the log-likelihood curve", type='o',  pch=16, col='black', main='Model selection')
     
@@ -339,7 +339,7 @@ selectModel <- function(
       if (type=='maximum'){
         points(object.log.lik$topics[which(object.log.lik$LL == max(object.log.lik$LL))], object.log.lik$perplexity[which(object.log.lik$LL == max(object.log.lik$LL))], pch=4, col='red', lwd = 7)
         title(sub=paste("Best model:", object.log.lik$topics[which(object.log.lik$LL == max(object.log.lik$LL))], 'topics'))
-      } else if (type == 'derivative' && object.log.lik$topics > 2){
+      } else if (type == 'derivative' && length(models)  > 2){
         points(object.log.lik$topics[which(object.log.lik$second_derivative == max(object.log.lik$second_derivative))], object.log.lik$perplexity[which(object.log.lik$second_derivative == max(object.log.lik$second_derivative))], pch=4, col='red', lwd = 7)
         title(sub=paste("Best model:", object.log.lik$topics[which(object.log.lik$second_derivative == max(object.log.lik$second_derivative))], 'topics'))
       } else if (type == 'perplexity'){
