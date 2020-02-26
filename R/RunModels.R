@@ -258,11 +258,11 @@ selectModel <- function(
     stop('Incorrect input. Is it a cisTopic object or a list of models?')
   }
   
-  if (length(models) < 3 && type='derivative'){
+  if (length(models) < 2 && type=='derivative'){
     stop('You need at least 3 models to use the derivative method.')
   }
   
-  if (is.null(object@calc.params[['runWarpModels']]) && type='derivative'){
+  if (is.null(object@calc.params[['runWarpModels']]) && type=='derivative'){
     print('Are these CGS models? Please, use type="maximum"')
   }
 
@@ -297,7 +297,7 @@ selectModel <- function(
       points(object.log.lik$topics[which(object.log.lik$LL == max(object.log.lik$LL))], max(object.log.lik$LL), pch=4, col='red', lwd = 7)
       title(sub=paste("Best model:", object.log.lik$topics[which(object.log.lik$LL == max(object.log.lik$LL))], 'topics'))
       selected.model <- models[[which(object.log.lik$LL == max(object.log.lik$LL))]]
-    } else if (type == 'derivative' && object.log.lik$topics > 2){
+    } else if (type == 'derivative' && length(models) > 2){
       points(object.log.lik$topics[which(object.log.lik$second_derivative == max(object.log.lik$second_derivative))], object.log.lik$LL[which(object.log.lik$second_derivative == max(object.log.lik$second_derivative))], pch=4, col='red', lwd = 7)
       title(sub=paste("Best model:", object.log.lik$topics[which(object.log.lik$second_derivative == max(object.log.lik$second_derivative))], 'topics'))
       selected.model <- models[[which(object.log.lik$second_derivative == max(object.log.lik$second_derivative))]]
