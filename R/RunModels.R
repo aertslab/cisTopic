@@ -640,6 +640,7 @@ runWarpLDAModels <- function(
     }
   } 
   else {
+    set.seed(seed)
     if (alphaByTopic==TRUE){
       models <- suppressWarnings(llply(.runWarpLDA_perTopic(input, n_topics=topic, doc_topic_prior=alpha/topic, topic_word_prior = beta, n_iter=iterations, tmp=tmp,...), .progress = progress_text(char = ".")))
     }
@@ -648,8 +649,12 @@ runWarpLDAModels <- function(
     }
   }
   
-  names(models) <- laply(1:length(models), function(x) sapply(models[x], function(y) nrow(y$topic_sums)))
-
+  if (length(topic) > 1){
+    names(models) <- laply(1:length(models), function(x) sapply(models[x], function(y) nrow(y$topic_sums)))
+  } else {
+    names(models) <- topic
+  }
+  
   if (!is.null(object@models)){
     if(length(topic) == 1){
       models <- .addModels(c(object@models, list(models))) 
