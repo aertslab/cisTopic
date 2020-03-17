@@ -647,6 +647,7 @@ runWarpLDAModels <- function(
     else {
       models <- suppressWarnings(llply(.runWarpLDA_perTopic(input, n_topics=topic, doc_topic_prior=alpha, topic_word_prior = beta, n_iter=iterations, tmp=tmp,...), .progress = progress_text(char = ".")))
     }
+    models <- list(models)
   }
   
   if (length(topic) > 1){
@@ -656,11 +657,7 @@ runWarpLDAModels <- function(
   }
   
   if (!is.null(object@models)){
-    if(length(topic) == 1){
-      models <- .addModels(c(object@models, list(models))) 
-    } else {
-      models <- .addModels(c(object@models, models))
-    }
+    models <- .addModels(c(object@models, models))
   } 
   
   if(returnType=='allModels'){
