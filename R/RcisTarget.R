@@ -208,6 +208,7 @@ topicsRcisTarget <- function(
   extension <- strsplit(pathToDb, "\\.")[[1]][length(strsplit(pathToDb, "\\.")[[1]])]
   if (extension == 'feather'){
     columnsinRanking <- feather::feather_metadata(pathToDb)[["dim"]][2]-1
+    metadata <- feather::feather_metadata(pathToDb)
   }
   else if (extension == "parquet"){
     pq <- arrow::parquet_file_reader(pathToDb)
@@ -219,15 +220,22 @@ topicsRcisTarget <- function(
 
   if (reduced_database == FALSE){
     ctxreg <- unique(as.vector(unlist(object@binarized.regions.to.Rct)))
-    motifRankings <- importRankings(pathToDb, columns = c('features', ctxreg))
+    if (extension == 'feather'){
+      if ('motifs' %in% names(metadata$types)){
+        motifRankings <- .importRankings(pathToDb, columns = ctxreg, indexCol = "motifs") 
+      } else {
+        motifRankings <- .importRankings(pathToDb, columns = ctxreg, indexCol = "features") 
+      }
+    } else {
+      motifRankings <- .importRankings(pathToDb, columns = ctxreg, indexCol = "features") 
+    }
   }
   else{
-    motifRankings <- importRankings(pathToDb)
+    motifRankings <- .importRankings(pathToDb)
     ctxregions <- colnames(getRanking(motifRankings))[-1]
     topicsList <- llply(1:length(topicsList), function(i) topicsList[[i]][which(topicsList[[i]] %in% ctxregions)])
     names(topicsList) <- names(object@binarized.regions.to.Rct)
   }
-  
   if (length(topicsList) < nCores){
     print(paste('The number of cores (', nCores, ') is higher than the number of topics (', length(topicsList),').', sep=''))
   }
@@ -587,3 +595,101 @@ getCistromeEnrichment <- function(
   return(object)
 }
   
+# Import rankings (from Rcistarget)
+
+.importRankings <- function(dbFile, columns=NULL, dbDescr=NULL, indexCol="features", warnMissingColumns=FALSE)
+{
+  dbFile <- path.expand(dbFile)
+  if(!file.exists(dbFile)) stop("File does not exist: ", dbFile)
+  
+  if(!is.null(columns)){
+    missingColumns <- columns[which(!columns %in% .getColumnNames(dbFile))]
+    if(length(columns)>0 & warnMissingColumns)
+    {
+      warning("The following columns are missing from the database: ", paste(missingColumns, collapse=", "))
+      columns <- columns[which(columns %in% .getColumnNames(dbFile))]
+    }
+    columns <- unique(c(indexCol, columns))
+  }
+  extension <- strsplit(dbFile, "\\.") [[1]][length(strsplit(dbFile, "\\.") [[1]])]
+  if (extension == 'feather'){
+    rnks <- feather::read_feather(dbFile, columns=columns) # tibble
+    #rnks <- data.frame... #to avoid replacing dash in names: check.names=FALSE
+    nColsInDB <- feather::feather_metadata(dbFile)[["dim"]][2]-1
+  }
+  else if (extension == "parquet"){
+    rnks <- arrow::read_parquet(dbFile, columns = columns)
+    pq <- arrow::parquet_file_reader(dbFile)
+    nColsInDB <- pq$GetSchema()$num_fields()-1
+  }
+  else{
+    stop("Database format must be feather or parquet.")
+  }
+  colnames(rnks)[1] <- 'features'
+  dbFile_descr <- gsub(paste0(".", extension),".descr", dbFile, fixed=TRUE)
+  if(!is.null(dbDescr))
+  {
+    dbDescr <- as.matrix(dbDescr)
+    if(file.exists(dbFile_descr))
+      warning("Ignoring the DB file description (.descr)")
+  } else {
+    if(file.exists(dbFile_descr))
+    {
+      dbDescr <- utils::read.table(file=dbFile_descr,
+                                   sep = "\t", row.names=1, stringsAsFactors=FALSE)
+      message("Imported description file:\n",
+              paste("\t", unname(sapply(rownames(dbDescr),
+                                        function(x) paste(x, dbDescr[x,1], sep=": "))), collapse="\n"))
+    }else{
+      # If not provided: keep empty
+      dbDescr <- as.matrix(list(colType="column",
+                                rowType="row",
+                                org="",
+                                genome="",
+                                nColsAvailable=nColsInDB,
+                                maxRank = Inf,
+                                description=""))
+    }
+  }
+  
+  dbDescr["nColsAvailable",] <- nColsInDB
+  dbDescr["description",] <- paste0(dbDescr["description",],
+                                    " [Source file: ", basename(dbFile),"]")
+  
+  rownames(dbDescr) <- tolower(rownames(dbDescr))
+  new("rankingRcisTarget",
+      rankings=rnks,
+      colType=as.character(dbDescr["coltype",]),
+      rowType=as.character(dbDescr["rowtype",]),
+      org=as.character(dbDescr["org",]),
+      genome=as.character(dbDescr["genome",]),
+      nColsInDB=as.numeric(dbDescr["ncolsavailable",]),
+      maxRank = as.numeric(dbDescr["maxrank",]),
+      description=as.character(dbDescr["description",]))
+}
+
+.getRowNames <- function(dbFile)
+{
+  dbPath <- dbFile
+  extension <- strsplit(dbPath, "\\.") [[1]][length(strsplit(dbPath, "\\.") [[1]])]
+  if (extension == 'feather'){
+    ret <- unlist(feather::read_feather(path.expand(dbPath), columns=1))
+  }
+  else if (extension == "parquet"){
+    stop("Not implemented") # TODO: add arrow
+  }
+  return(ret)
+}
+
+.getColumnNames <- function(dbFile) # TODO: Check if they are really genes/regions
+{
+  dbPath <- dbFile
+  extension <- strsplit(dbPath, "\\.") [[1]][length(strsplit(dbPath, "\\.") [[1]])]
+  if (extension == 'feather'){
+    ret <- names(feather::feather_metadata(path=path.expand(dbPath))$types)[-1]
+  }
+  else if (extension == "parquet"){
+    stop("Not implemented") # TODO: add arrow
+  }
+  return(ret)
+}
