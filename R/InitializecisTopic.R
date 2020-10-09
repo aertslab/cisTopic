@@ -258,12 +258,7 @@ createcisTopicObjectFromBAM <- function(
 ) {
   # Check dependencies
   if(! "Rsubread" %in% installed.packages()){
-    if (Sys.info()['sysname'] != 'Windows'){
-      stop('Please, install Rsubread: \n source("https://bioconductor.org/biocLite.R") \n biocLite("Rsubread")')
-    }
-    else{
-      stop('The Rsubread package is not available for Windows. See our FAQ webpages for possible alternatives at: ')
-    }
+    stop('Please, install Rsubread: \n source("https://bioconductor.org/biocLite.R") \n biocLite("Rsubread")')
   } else {
     suppressMessages(require(Rsubread))
   }
