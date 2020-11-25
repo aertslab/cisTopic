@@ -33,9 +33,17 @@ getSignaturesRegions <- function(
     }
   }
   
-  regionsSignatures <- llply(signatures, function(signature) .getSignatureRegions(object, signature, ...))
+  regionsSignatures <- llply(signatures, function(signature) tryCatch(.getSignatureRegions(object, signature, ...), error=function(e) NULL))
   
   names(regionsSignatures) <- labels
+  
+  if (sum(sapply(regionsSignatures, is.null)) > 0){
+    out <- names(regionsSignatures)[which(sapply(regionsSignatures, is.null) == TRUE)]
+    for (sign in out){
+      print(paste0('The signature ', sign, ' has no overlap with the regions in this cisTopicObject and will be removed.'))
+    }
+    regionsSignatures <- regionsSignatures[-which(sapply(regionsSignatures, is.null) == TRUE)]
+  }
   
   if (length(object@signatures) < 1){
     object@signatures <- regionsSignatures
