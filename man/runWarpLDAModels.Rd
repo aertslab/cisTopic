@@ -4,10 +4,20 @@
 \alias{runWarpLDAModels}
 \title{Run Latent Dirichlet Allocation with WarpLDA in a cisTopic object}
 \usage{
-runWarpLDAModels(object, topic = c(2, 10, 20, 30, 40, 50), nCores = 1,
-  seed = 123, iterations = 500, alpha = 50, beta = 0.1,
-  alphaByTopic = TRUE, tmp = NULL, addModels = FALSE,
-  returnType = "allModels", ...)
+runWarpLDAModels(
+  object,
+  topic = c(2, 10, 20, 30, 40, 50),
+  nCores = 1,
+  seed = 123,
+  iterations = 500,
+  alpha = 50,
+  beta = 0.1,
+  alphaByTopic = TRUE,
+  tmp = NULL,
+  addModels = FALSE,
+  returnType = "allModels",
+  ...
+)
 }
 \arguments{
 \item{object}{Initialized cisTopic object.}

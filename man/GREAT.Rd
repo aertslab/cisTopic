@@ -4,8 +4,16 @@
 \alias{GREAT}
 \title{GREAT}
 \usage{
-GREAT(object, genome = "hg19", liftOver = NULL, fold_enrichment = 2,
-  geneHits = 1, sign = 0.05, request_interval = 20, ...)
+GREAT(
+  object,
+  genome = "hg19",
+  liftOver = NULL,
+  fold_enrichment = 2,
+  geneHits = 1,
+  sign = 0.05,
+  request_interval = 20,
+  ...
+)
 }
 \arguments{
 \item{object}{Initialized cisTopic object, after object@binarized.cisTopics has been filled.}

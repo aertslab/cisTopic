@@ -4,9 +4,17 @@
 \alias{cellTopicHeatmap}
 \title{Cell-cisTopic distribution heatmap}
 \usage{
-cellTopicHeatmap(object, method = "Z-score", colorBy = NULL,
-  colVars = NULL, col.low = "floralwhite", col.mid = "pink",
-  col.high = "red", select.cells = NULL, ...)
+cellTopicHeatmap(
+  object,
+  method = "Z-score",
+  colorBy = NULL,
+  colVars = NULL,
+  col.low = "floralwhite",
+  col.mid = "pink",
+  col.high = "red",
+  select.cells = NULL,
+  ...
+)
 }
 \arguments{
 \item{object}{Initialized cisTopic object, after the object@selected.model has been filled.}

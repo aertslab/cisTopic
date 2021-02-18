@@ -4,7 +4,9 @@
 \name{mm9_CtxRegions}
 \alias{mm9_CtxRegions}
 \title{Data frame containing the mapping from ctx regions to genome coordinates for mm9.}
-\format{Data frame containing the mapping from ctx regions to genome coordinates for mm9.}
+\format{
+Data frame containing the mapping from ctx regions to genome coordinates for mm9.
+}
 \usage{
 mm9_CtxRegions
 }

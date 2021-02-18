@@ -4,9 +4,15 @@
 \alias{createcisTopicObjectFromMeth}
 \title{Initialize and setup the cisTopic object starting from methylation files}
 \usage{
-createcisTopicObjectFromMeth(methfiles, regions,
-  project.name = "cisTopicProject", min.cells = 1, min.regions = 1,
-  is.acc = 0.5, ...)
+createcisTopicObjectFromMeth(
+  methfiles,
+  regions,
+  project.name = "cisTopicProject",
+  min.cells = 1,
+  min.regions = 1,
+  is.acc = 0.5,
+  ...
+)
 }
 \arguments{
 \item{methfiles}{List with the paths to the tab separated files containing the methylation information.}

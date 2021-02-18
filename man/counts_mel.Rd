@@ -4,7 +4,9 @@
 \name{counts_mel}
 \alias{counts_mel}
 \title{Cell data from simulated single cell epigenomes from 5 bulk H3K27Ac melanoma profiles.}
-\format{A matrix with 100 cells and 112,701 regions.}
+\format{
+A matrix with 100 cells and 112,701 regions.
+}
 \source{
 Verfaille, Imrichová & Kalender-Atak et al. (2015, GSE60666)
 }

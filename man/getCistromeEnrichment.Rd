@@ -4,9 +4,17 @@
 \alias{getCistromeEnrichment}
 \title{getCistromeEnrichment}
 \usage{
-getCistromeEnrichment(object, topic, TFname, annotation = "TF_highConf",
-  aucellRankings, nCores = 1, aucMaxRank = 0.03 * nrow(aucellRankings),
-  plot = TRUE, ...)
+getCistromeEnrichment(
+  object,
+  topic,
+  TFname,
+  annotation = "TF_highConf",
+  aucellRankings,
+  nCores = 1,
+  aucMaxRank = 0.03 * nrow(aucellRankings),
+  plot = TRUE,
+  ...
+)
 }
 \arguments{
 \item{object}{Initialized cisTopic object, after object@cistromes.regions have been filled (see \code{getCistromes()}).}

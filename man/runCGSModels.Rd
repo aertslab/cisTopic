@@ -4,10 +4,21 @@
 \alias{runCGSModels}
 \title{Run Latent Dirichlet Allocation with a Collapsed Gibbs Sampler in a cisTopic object}
 \usage{
-runCGSModels(object, topic = c(2, 10, 20, 30, 40, 50), nCores = 1,
-  seed = 123, iterations = 500, burnin = 250, alpha = 50,
-  alphaByTopic = TRUE, beta = 0.1, returnType = "allModels",
-  addModels = TRUE, tmp = NULL, ...)
+runCGSModels(
+  object,
+  topic = c(2, 10, 20, 30, 40, 50),
+  nCores = 1,
+  seed = 123,
+  iterations = 500,
+  burnin = 250,
+  alpha = 50,
+  alphaByTopic = TRUE,
+  beta = 0.1,
+  returnType = "allModels",
+  addModels = TRUE,
+  tmp = NULL,
+  ...
+)
 }
 \arguments{
 \item{object}{Initialized cisTopic object.}

@@ -4,9 +4,17 @@
 \alias{createcisTopicObjectFrom10X}
 \title{Initialize and setup the cisTopic object starting from CellRanger ATAC output files and defined regions}
 \usage{
-createcisTopicObjectFrom10X(fragments, regions, metrics,
-  project.name = "cisTopicProject", min.cells = 1, min.regions = 1,
-  is.acc = 1, keepCountsMatrix = TRUE, ...)
+createcisTopicObjectFrom10X(
+  fragments,
+  regions,
+  metrics,
+  project.name = "cisTopicProject",
+  min.cells = 1,
+  min.regions = 1,
+  is.acc = 1,
+  keepCountsMatrix = TRUE,
+  ...
+)
 }
 \arguments{
 \item{fragments}{Fragment file from CellRanger ATAC (/outs/fragments.tsv.gz)}

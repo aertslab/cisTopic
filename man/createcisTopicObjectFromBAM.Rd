@@ -4,9 +4,17 @@
 \alias{createcisTopicObjectFromBAM}
 \title{Initialize and setup the cisTopic object starting from bam files and defined regions}
 \usage{
-createcisTopicObjectFromBAM(bamfiles, regions,
-  project.name = "cisTopicProject", min.cells = 1, min.regions = 1,
-  is.acc = 1, keepCountsMatrix = TRUE, paired = FALSE, ...)
+createcisTopicObjectFromBAM(
+  bamfiles,
+  regions,
+  project.name = "cisTopicProject",
+  min.cells = 1,
+  min.regions = 1,
+  is.acc = 1,
+  keepCountsMatrix = TRUE,
+  paired = FALSE,
+  ...
+)
 }
 \arguments{
 \item{bamfiles}{List with the paths to the bam files.}

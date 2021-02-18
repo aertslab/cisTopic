@@ -4,9 +4,16 @@
 \alias{createcisTopicObjectFrom10Xmatrix}
 \title{Initialize and setup the cisTopic object starting from CellRanger ATAC output matrix.}
 \usage{
-createcisTopicObjectFrom10Xmatrix(data_folder, metrics,
-  project.name = "cisTopicProject", min.cells = 1, min.regions = 1,
-  is.acc = 1, keepCountsMatrix = TRUE, ...)
+createcisTopicObjectFrom10Xmatrix(
+  data_folder,
+  metrics,
+  project.name = "cisTopicProject",
+  min.cells = 1,
+  min.regions = 1,
+  is.acc = 1,
+  keepCountsMatrix = TRUE,
+  ...
+)
 }
 \arguments{
 \item{data_folder}{Matrix folder from CellRanger ATAC (/outs/filtered_peak_bc_matrix/, after untar file).''}

@@ -4,8 +4,13 @@
 \alias{makeBackgroundFeather}
 \title{makeBackgroundFeather}
 \usage{
-makeBackgroundFeather(pathToFeather, subsetRegions = NULL,
-  subsetMotifs = NULL, pathToSave, ...)
+makeBackgroundFeather(
+  pathToFeather,
+  subsetRegions = NULL,
+  subsetMotifs = NULL,
+  pathToSave,
+  ...
+)
 }
 \arguments{
 \item{pathToFeather}{Path to the feather database to use. Note that this database has to match the genome used for mapping.}

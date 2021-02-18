@@ -4,12 +4,21 @@
 \alias{ontologyDotPlot}
 \title{ontologyDotPlot}
 \usage{
-ontologyDotPlot(object, top = 5, topics = "all",
-  ontology = "GO Biological Process", var.y = "ID",
-  var.col = "Binom_Adjp_BH", var.size = "Binom_Fold_Enrichment",
-  order.by = "Binom_Fold_Enrichment", col.low = "brown1",
-  col.mid = "floralwhite", col.high = "dodgerblue", min.size = 2,
-  max.size = 10)
+ontologyDotPlot(
+  object,
+  top = 5,
+  topics = "all",
+  ontology = "GO Biological Process",
+  var.y = "ID",
+  var.col = "Binom_Adjp_BH",
+  var.size = "Binom_Fold_Enrichment",
+  order.by = "Binom_Fold_Enrichment",
+  col.low = "brown1",
+  col.mid = "floralwhite",
+  col.high = "dodgerblue",
+  min.size = 2,
+  max.size = 10
+)
 }
 \arguments{
 \item{object}{Initialized cisTopic object, after object@binarized.rGREAT has been filled.}

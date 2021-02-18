@@ -4,8 +4,14 @@
 \alias{getCistromes}
 \title{getCistromes}
 \usage{
-getCistromes(object, annotation = "Both", gene.cistrome = FALSE,
-  region.cistrome = TRUE, nCores = 1, ...)
+getCistromes(
+  object,
+  annotation = "Both",
+  gene.cistrome = FALSE,
+  region.cistrome = TRUE,
+  nCores = 1,
+  ...
+)
 }
 \arguments{
 \item{object}{Initialized cisTopic object, after object@binarized.RcisTarget and object@region.data$CtxLabels have been filled.}

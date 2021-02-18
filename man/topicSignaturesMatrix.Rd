@@ -4,9 +4,15 @@
 \alias{topicSignaturesMatrix}
 \title{topicSignaturesMatrix}
 \usage{
-topicSignaturesMatrix(object, topics = "all",
-  selected.signatures = "all", nCores = 4, aucMaxRank = 0.03 *
-  nrow(aucellRankings), scale = TRUE, ...)
+topicSignaturesMatrix(
+  object,
+  topics = "all",
+  selected.signatures = "all",
+  nCores = 4,
+  aucMaxRank = 0.03 * nrow(aucellRankings),
+  scale = TRUE,
+  ...
+)
 }
 \arguments{
 \item{object}{Initialized cisTopic object, after regions scores have been calculated with getRegionScores and object@signatures

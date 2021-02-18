@@ -4,8 +4,14 @@
 \alias{selectModel}
 \title{Model selection based on log likelihood}
 \usage{
-selectModel(object, select = NULL, type = "derivative",
-  keepBinaryMatrix = TRUE, keepModels = TRUE, ...)
+selectModel(
+  object,
+  select = NULL,
+  type = "derivative",
+  keepBinaryMatrix = TRUE,
+  keepModels = TRUE,
+  ...
+)
 }
 \arguments{
 \item{object}{Initialized cisTopic object or list of LDA models.}

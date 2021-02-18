@@ -4,7 +4,9 @@
 \name{dm3_CtxRegions}
 \alias{dm3_CtxRegions}
 \title{Data frame containing the mapping from ctx regions to genome coordinates for dm3.}
-\format{Data frame containing the mapping from ctx regions to genome coordinates for dm3.}
+\format{
+Data frame containing the mapping from ctx regions to genome coordinates for dm3.
+}
 \usage{
 dm3_CtxRegions
 }

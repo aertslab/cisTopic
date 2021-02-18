@@ -4,7 +4,9 @@
 \name{hg19_CtxRegions}
 \alias{hg19_CtxRegions}
 \title{Data frame containing the mapping from ctx regions to genome coordinates for hg19.}
-\format{Data frame containing the mapping from ctx regions to genome coordinates for hg19.}
+\format{
+Data frame containing the mapping from ctx regions to genome coordinates for hg19.
+}
 \usage{
 hg19_CtxRegions
 }

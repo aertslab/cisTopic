@@ -182,14 +182,26 @@ ontologyDotPlot <- function(
   else{
     decreasing <- TRUE
   }
-
+  
   if (topics[1] == 'all'){
+    null_topics <- which(laply(1:length(object@binarized.rGREAT), function(i) is.null(object@binarized.rGREAT[[i]][[ontology]])) == TRUE)
+    if (length(null_topics) == length(object@binarized.rGREAT)){
+      stop('None of your topics has a significant GO terms')
+    }
     topics <- which(laply(1:length(object@binarized.rGREAT), function(i) !is.null(object@binarized.rGREAT[[i]][[ontology]])) == TRUE)
     GOdata <- llply(topics, function(i) object@binarized.rGREAT[[i]][[ontology]])
     GOdata <- llply(1:length(GOdata), function(i) GOdata[[i]][order(GOdata[[i]][order.by], decreasing = decreasing),])
     GOdata <- llply(1:length(GOdata), function(i) GOdata[[i]][1:top,])
   }
   else{
+    null_topics <- which(laply(topics, function(i) is.null(object@binarized.rGREAT[[i]][[ontology]])) == TRUE)
+    if (length(null_topics) == length(topics)){
+      stop('None of your topics has a significant GO terms')
+    }
+    if (length(null_topics) > 0){
+      topics <- topics[-null_topics]
+    }
+    
     GOdata <- llply(topics, function(i) object@binarized.rGREAT[[i]][[ontology]])
     GOdata <- llply(1:length(GOdata), function(i) GOdata[[i]][order(GOdata[[i]][order.by], decreasing = decreasing),])
     GOdata <- llply(1:length(GOdata), function(i) GOdata[[i]][1:top,])

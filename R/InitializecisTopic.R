@@ -408,7 +408,7 @@ createcisTopicObjectFromMeth <- function(
 #' Initialize and setup the cisTopic object
 #'
 #' Initializes the cisTopic object from a counts matrix
-#' @param count.matrix Count matrix containing cells as rows and regions as columns. The row names must be the coordinates in position format (e.g. chr1:110-610).
+#' @param count.matrix Count matrix containing cells as columns and regions as rows. The row names must be the coordinates in position format (e.g. chr1:110-610).
 #' We recommend to use as input sparse matrices.
 #' @param project.name Project name (string).
 #' @param min.cells Minimal number of cells in which the region has to be accessible. By default, all regions accessible in at least one cell are kept.
