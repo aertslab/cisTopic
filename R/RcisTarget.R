@@ -252,7 +252,7 @@ topicsRcisTarget <- function(
                                     motifAnnot = motifAnnot,
                                     nesThreshold = nesThreshold,
                                     aucMaxRank = rocthr * columnsinRanking,
-                                    geneErnMmaxRank = maxRank,
+                                    geneErnMaxRank = maxRank,
                                     nCores=1
     ), .parallel = TRUE))
     stopCluster(cl)
@@ -263,7 +263,7 @@ topicsRcisTarget <- function(
                                                                                              motifAnnot = motifAnnot,
                                                                                              nesThreshold = nesThreshold,
                                                                                              aucMaxRank = rocthr * columnsinRanking,
-                                                                                             geneErnMmaxRank = maxRank,
+                                                                                             geneErnMaxRank = maxRank,
                                                                                              nCores=1
     )))
   }
