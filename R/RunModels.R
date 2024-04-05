@@ -629,6 +629,8 @@ runWarpLDAModels <- function(
       else {
         models <- suppressWarnings(llply(.data=topic, .fun=function(t)  .runWarpLDA_perTopic(input, n_topics=t, doc_topic_prior=alpha, topic_word_prior = beta, n_iter=iterations, tmp=tmp,...), .parallel = TRUE, .paropts = list(.options.snow=opts), .inform=FALSE))
       }
+
+      stopCluster(cl)
     }
     else {
       if (alphaByTopic==TRUE){
